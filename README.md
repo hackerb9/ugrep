@@ -8,12 +8,12 @@ _Find unicode characters based on their names_
 
 ugrep is essentially [grep](https://www.gnu.org/software/grep/) for
 the Unicode table. It prints out the resulting unicode characters
-literally, so you can cut-and-paste easily. Ugrep is useful for
+literally, so you can easily cut-and-paste. Ugrep is useful for
 looking up Emojis 😤, finding obscure symbols ⚸⅗ℏ℞☧☭, or beautiful
 glyphs to decorate your text. 🙶❡✯🟔❢🙷
 
-See also b9's `charname` for the reverse operation which can lookup a
-character you've pasted into the terminal.
+See also b9's `charname` for the reverse operation (lookup a
+character you've pasted into the terminal.)
 
 ## Usage
 

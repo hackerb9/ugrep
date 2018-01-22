@@ -36,11 +36,15 @@ def eprint(*args, **kwargs):
     "Print to stderr"
     print(*args, file=stderr, **kwargs)
 
+def err(*args, **kwargs):
+    "Print to stderr with program name prefixed"
+    eprint(basename(argv[0]) + ": ", end='')
+    eprint(*args, **kwargs)
+
 def debugprint(*args, **kwargs):
     "If debug var is True, print to stderr with progname prefix"
     if (debug):
-        print(basename(argv[0]) + ": ", file=stderr, end='')
-        print(*args, file=stderr, **kwargs)
+        err(*args, **kwargs)
 
 def usage():
     print("""\
@@ -86,6 +90,60 @@ Usage:
 """
     )
 
+def isdifferent(a, b):
+    """Given two strings A & B, determine if B is different enough from A
+       that we don't need to print it as well. "Enough" means "adds
+       significant new information". For example, the following would
+       return False:
+    
+       "LATIN CAPITAL LETTER A WITH GRAVE", "LATIN CAPITAL LETTER A GRAVE"
+
+       Note that order matters. For example,
+
+       "BROKEN BAR", "BROKEN VERTICAL BAR" 	Should return True
+       "BROKEN VERTICAL BAR", "BROKEN BAR" 	Should return False
+    """
+    a=a.upper()
+    b=b.upper()
+
+    if a == b:
+        return False
+    if a == b.replace(" DIGIT ", " "):
+        return False
+    if a == b.replace("FORMS ", "BOX DRAWINGS "):
+        return False
+    if a == b.replace("GRAPHIC ", "SYMBOL "):
+        return False
+    if a == b.replace("GLYPH ", "PRESENTATION FORM "):
+        return False
+    if a == b.replace("CENTER", "CENTRE"):
+        return False
+    if a == b.replace("CENTERED", "CENTRED"):
+        return False
+    if a == b.replace("SQUARED ", "SQUARE "):
+        return False
+
+    b=b.replace(" ", ".*")
+    try:
+        m=search(b, a)
+        if m:
+            return False
+        else:
+            return True
+    except:
+        # regex should never fail, but if it does, we don't care.
+        return True
+
+
+    # if a.replace("WARDS ", " ") == b:
+    #     return False
+    # if a.replace("S ", " ") == b:
+    #     return False
+    # if a.rstrip("S") == b:
+    #     return False
+    
+    return True
+
 # Main
 if len(argv) == 1:
     usage()
@@ -107,7 +165,9 @@ for f in ucdplaces:
 
 # Sanity check: did we find the UnicodeData.txt file?
 if ucd == None:
-    eprint("""\
+    eprin
+
+    t("""\
 Could not find UnicodeData.txt in:
 
 %s
@@ -166,6 +226,13 @@ if debug:
     m=search(s,ucd)
     if not m: debugprint("Definitely not in ucd")
 
+try:
+    s=compile(s)
+except error as e:
+    err("Error parsing regex: '%s'" % ".*".join(argv[1:]))
+    err(e)
+    exit(3)
+
 for m in finditer(s, ucd):
     if m:
         g=m.groupdict()
@@ -178,7 +245,7 @@ for m in finditer(s, ucd):
         print(c, end='\t')
         print ("U+" + g["hex"], end='\t')
         print(g["name"], end='')
-        if (len(g["alias"])):
+        if (len(g["alias"]) and isdifferent(g["name"], g["alias"])):
             print (" (" + g["alias"].lower() + ")", end='')
         print()
 

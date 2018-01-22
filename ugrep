@@ -68,11 +68,11 @@ Usage:
 	⊿	U+22BF	RIGHT TRIANGLE
 
         $ ugrep "\bR\b"         # The letter R used as a word
-        R       U+0052  Latin capital letter r
-        Ŗ       U+0156  Latin capital letter r with cedilla
-        ℛ       U+211B  Script capital r (Script r)
-        ℜ       U+211C  Black-letter capital r (Black-letter r)
-        ℝ       U+211D  Double-struck capital r (Double-struck r)
+        R	U+0052  LATIN CAPITAL LETTER R
+        Ŗ	U+0156  LATIN CAPITAL LETTER R WITH CEDILLA
+        ℛ	U+211B  SCRIPT CAPITAL R (Script r)
+        ℜ	U+211C  BLACK-LETTER CAPITAL R (Black-letter r)
+        ℝ	U+211D  DOUBLE-STRUCK CAPITAL R (Double-struck r)
         
         $ ugrep "^[aeiouy]+$"		# Entire description is vowels
         👁	U+1F441	EYE
@@ -133,10 +133,10 @@ for m in finditer(s, ucd):
     if m:
         g=m.groupdict()
         c=chr(int(g["hex"], 16))
-        if not c.isprintable(): c="\ufffd"	# U+FFFD "Replacement Character"
+        if not c.isprintable(): c="\ufffd"	# U+FFFD = "Replacement Character"
         print(c, end='\t')
         print ("U+" + g["hex"], end='\t')
-        print(g["desc"].capitalize(), end='')
+        print(g["desc"], end='')
         if (len(g["alias"])):
             print (" (" + g["alias"].capitalize() + ")", end='')
         print()

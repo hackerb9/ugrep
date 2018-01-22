@@ -2,12 +2,15 @@
 <img title="ugrep screenshot" alt-text="Example of ugrep vine" align="right" src="README.md.d/screenshot.png" width="50%">
 </a>
 
-# ugrep
+# ☙ ugrep ❧
+
 _Find unicode characters based on their names_
 
-ugrep is essentially grep for the Unicode table. It prints out the
-resulting unicode characters literally, so you can cut-and-paste
-easily.
+ugrep is essentially [grep](https://www.gnu.org/software/grep/) for
+the Unicode table. It prints out the resulting unicode characters
+literally, so you can cut-and-paste easily. Ugrep is useful for
+looking up Emojis 😤, finding obscure symbols ⚸⅗ℏ℞☧🌛, or just beautiful
+glyphs to decorate your text. 🙶❡✯🟔❢🙷
 
 See also b9's `charname` for the reverse operation which can lookup a
 character you've pasted into the terminal.
@@ -15,8 +18,9 @@ character you've pasted into the terminal.
 ## Usage
 
     ugrep: find unicode characters based on their names
+
     Usage: 
-	ugrep <regex>
+        ugrep <regex>
 
 	Where regex is a regular expression or a plain string. 
 
@@ -26,7 +30,10 @@ character you've pasted into the terminal.
 	    ☙	U+2619	REVERSED ROTATED FLORAL HEART BULLET
 	    ❣	U+2763	HEAVY HEART EXCLAMATION MARK ORNAMENT
 	    ❤	U+2764	HEAVY BLACK HEART
-	    [ ... examples truncated for brevity ... ]
+	        [ ... examples truncated for brevity ... ]
+	    💞	U+1F49E REVOLVING HEARTS
+	    💟	U+1F49F HEART DECORATION
+	    😍	U+1F60D SMILING FACE WITH HEART-SHAPED EYES
 	    😻	U+1F63B	SMILING CAT FACE WITH HEART-SHAPED EYES
 
 
@@ -38,17 +45,19 @@ character you've pasted into the terminal.
 	    ⊿	U+22BF	RIGHT TRIANGLE
 
 	    $ ugrep "\bR\b"         # The letter R used as a word
-	    R       U+0052  Latin capital letter r
-	    Ŗ       U+0156  Latin capital letter r with cedilla
-	    ℛ       U+211B  Script capital r (Script r)
-	    ℜ       U+211C  Black-letter capital r (Black-letter r)
-	    ℝ       U+211D  Double-struck capital r (Double-struck r)
+	    R	U+0052  LATIN CAPITAL LETTER R
+	    Ŗ	U+0156  LATIN CAPITAL LETTER R WITH CEDILLA
+	    ℛ	U+211B  SCRIPT CAPITAL R (Script r)
+	    ℜ	U+211C  BLACK-LETTER CAPITAL R (Black-letter r)
+	    ℝ	U+211D  DOUBLE-STRUCK CAPITAL R (Double-struck r)
 
 	    $ ugrep "^[aeiouy]+$"		# Entire name is only vowels
 	    👁	U+1F441	EYE
 
-	    $ ugrep .
-	    [ This would show you every single Unicode character! ]
+	    $ ugrep . | less
+	      [ Output not shown. ]
+	      [ This shows every single Unicode character! ]
+	      [ Use `/` to search. ]
 
 
 ## Prerequisite: UnicodeData.txt
@@ -57,26 +66,21 @@ You must have a copy of
 [UnicodeData.txt](https://unicode.org/Public/UNIDATA/UnicodeData.txt)
 installed.
 
-### Easiest
+*Easiest*: On Ubuntu and Debian GNU/Linux, simply `apt install unicode-data`.
 
-On Ubuntu and Debian GNU/Linux, simply `apt install unicode-data`.
-
-### Still easy
-
-Or, you can download it by hand from
+*Still easy*: Or, you can download it by hand from
 [unicode.org](https://unicode.org/Public/UNIDATA/UnicodeData.txt)
 and place it in `~/.local/share/unicode/UnicodeData.txt`
 
-### Not hard
-
-Or, if you wish the file to be accessible to all users on your machine,
-place it in `/usr/local/share/unicode/UnicodeData.txt`. 
+*Not hard*: Or, if you wish the file to be accessible to all users on
+your machine, place it in `/usr/local/share/unicode/UnicodeData.txt`.
 
 ## Fun things to try:
 
 Here are some examples one can try, to see some useful and lovely
 glyphs.
 
+    ugrep face 
     ugrep alchemical 
     ugrep ornament
     ugrep bullet
@@ -86,6 +90,7 @@ glyphs.
     ugrep drawing
     ugrep . | less
 
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
 ## Boring Implementation notes
 

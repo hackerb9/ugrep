@@ -9,7 +9,7 @@ _Find unicode characters based on their names_
 ugrep is essentially [grep](https://www.gnu.org/software/grep/) for
 the Unicode table. It prints out the resulting unicode characters
 literally, so you can cut-and-paste easily. Ugrep is useful for
-looking up Emojis 😤, finding obscure symbols ⚸⅗ℏ℞☧🌛, or just beautiful
+looking up Emojis 😤, finding obscure symbols ⚸⅗ℏ℞☧🌛, or beautiful
 glyphs to decorate your text. 🙶❡✯🟔❢🙷
 
 See also b9's `charname` for the reverse operation which can lookup a
@@ -17,63 +17,64 @@ character you've pasted into the terminal.
 
 ## Usage
 
-    ugrep: find unicode characters based on their names
+Usage: *ugrep* _regex_
 
-    Usage: 
-        ugrep <regex>
+Where _regex_ is a regular expression. If you don't know [regular
+expressions](https://docs.python.org/3/howto/regex.html), don't worry.
+Just use plain strings.
 
-	Where regex is a regular expression or a plain string. 
+### Examples:
 
-	For example:
+* Plain text search is simple:
 
-	    $ ugrep heart
-	    ☙	U+2619	REVERSED ROTATED FLORAL HEART BULLET
-	    ❣	U+2763	HEAVY HEART EXCLAMATION MARK ORNAMENT
-	    ❤	U+2764	HEAVY BLACK HEART
-	        [ ... examples truncated for brevity ... ]
-	    💞	U+1F49E REVOLVING HEARTS
-	    💟	U+1F49F HEART DECORATION
-	    😍	U+1F60D SMILING FACE WITH HEART-SHAPED EYES
-	    😻	U+1F63B	SMILING CAT FACE WITH HEART-SHAPED EYES
+	$ ugrep heart
+	☙	U+2619	REVERSED ROTATED FLORAL HEART BULLET
+	❣	U+2763	HEAVY HEART EXCLAMATION MARK ORNAMENT
+	❤	U+2764	HEAVY BLACK HEART
+	⋮	[ ... truncated for brevity ... ]
+	💞	U+1F49E REVOLVING HEARTS
+	💟	U+1F49F HEART DECORATION
+	😍	U+1F60D SMILING FACE WITH HEART-SHAPED EYES
+	😻	U+1F63B	SMILING CAT FACE WITH HEART-SHAPED EYES
 
+Note: output from all examples has been excerpted. (You'd be amazed how
+many heart emojis Unicode has.)
 
-	    $ ugrep right.*gle
-	    $ ugrep right gle       # Equivalent
-	    »	U+00BB	RIGHT-POINTING DOUBLE ANGLE QUOTATION MARK
-	    ’	U+2019	RIGHT SINGLE QUOTATION MARK
-	    ∟	U+221F	RIGHT ANGLE
-	    ⊿	U+22BF	RIGHT TRIANGLE
+* Arguments on the command line have an implicit wildcard between them:
 
-	    $ ugrep "\bR\b"         # The letter R used as a word
-	    R	U+0052  LATIN CAPITAL LETTER R
-	    Ŗ	U+0156  LATIN CAPITAL LETTER R WITH CEDILLA
-	    ℛ	U+211B  SCRIPT CAPITAL R (Script r)
-	    ℜ	U+211C  BLACK-LETTER CAPITAL R (Black-letter r)
-	    ℝ	U+211D  DOUBLE-STRUCK CAPITAL R (Double-struck r)
+	$ ugrep right.*gle
+	$ ugrep right gle       # Equivalent
+	»	U+00BB	RIGHT-POINTING DOUBLE ANGLE QUOTATION MARK
+	’	U+2019	RIGHT SINGLE QUOTATION MARK
+	∟	U+221F	RIGHT ANGLE
+	⊿	U+22BF	RIGHT TRIANGLE
 
-	    $ ugrep "^[aeiouy]+$"		# Entire name is only vowels
-	    👁	U+1F441	EYE
+* You can use regular expressions for fancier searches: 
 
-	    $ ugrep . | less
-	      [ Output not shown. ]
-	      [ This shows every single Unicode character! ]
-	      [ Use `/` to search. ]
+	$ ugrep "\bR\b"         # The letter R used as a word
+	R	U+0052  LATIN CAPITAL LETTER R
+	Ŗ	U+0156  LATIN CAPITAL LETTER R WITH CEDILLA
+	ℛ	U+211B  SCRIPT CAPITAL R (Script r)
+	ℜ	U+211C  BLACK-LETTER CAPITAL R (Black-letter r)
+	ℝ	U+211D  DOUBLE-STRUCK CAPITAL R (Double-struck r)
 
+* Browse through all unicode characters
 
-## Prerequisite: UnicodeData.txt
-
-You must have a copy of
-[UnicodeData.txt](https://unicode.org/Public/UNIDATA/UnicodeData.txt)
-installed.
-
-*Easiest*: On Ubuntu and Debian GNU/Linux, simply `apt install unicode-data`.
-
-*Still easy*: Or, you can download it by hand from
-[unicode.org](https://unicode.org/Public/UNIDATA/UnicodeData.txt)
-and place it in `~/.local/share/unicode/UnicodeData.txt`
-
-*Not hard*: Or, if you wish the file to be accessible to all users on
-your machine, place it in `/usr/local/share/unicode/UnicodeData.txt`.
+	$ ugrep . | less
+	⋮
+	⚳       U+26B3  CERES
+	⚴       U+26B4  PALLAS
+	⚵       U+26B5  JUNO
+	⚶       U+26B6  VESTA
+	⚷       U+26B7  CHIRON
+	⚸       U+26B8  BLACK MOON LILITH
+	⚹       U+26B9  SEXTILE
+	⚺       U+26BA  SEMISEXTILE
+	⚻       U+26BB  QUINCUNX
+	⋮
+Sometimes it's useful to page through the unicode table and see what
+characters are defined in a region. (Tip: `less` allows you to search
+forward by hitting `/` and backwards with `?`).
 
 ## Fun things to try:
 
@@ -89,6 +90,21 @@ glyphs.
     ugrep heavy
     ugrep drawing
     ugrep . | less
+
+## Prerequisite: UnicodeData.txt
+
+You must have a copy of
+[UnicodeData.txt](https://unicode.org/Public/UNIDATA/UnicodeData.txt)
+installed.
+
+*Easiest*: On Ubuntu and Debian GNU/Linux, simply `apt install unicode-data`.
+
+*Still easy*: Or, you can download it by hand from
+[unicode.org](https://unicode.org/Public/UNIDATA/UnicodeData.txt)
+and place it in `~/.local/share/unicode/UnicodeData.txt`
+
+*Not hard*: Or, if you wish the file to be accessible to all users on
+your machine, place it in `/usr/local/share/unicode/UnicodeData.txt`.
 
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
@@ -164,3 +180,15 @@ UnicodeData.txt plus "manually created annotations". However, those
 annotations are what is interesting about the file (the aliases and
 cross references) and there appears to be no other official source of
 that data.
+
+### Don't show identical aliases
+
+Unicode often has aliases that don't add any information, they merely
+remove non-essential parts like a dash, the letter "s", or the word
+"with". For example:
+
+* BLACK RIGHT-POINTING TRIANGLE (Black right pointing triangle)
+* VULGAR FRACTION TWO THIRDS (Fraction two thirds)
+* LEFTWARDS TWO HEADED ARROW (Left two headed arrow)
+* LATIN CAPITAL LETTER A WITH GRAVE (Latin capital letter a grave)
+

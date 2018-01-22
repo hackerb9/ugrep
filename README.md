@@ -17,7 +17,7 @@ character you've pasted into the terminal.
 
 ## Usage
 
-Usage: *ugrep* _regex_
+Usage: **ugrep** _regex_
 
 Where _regex_ is a regular expression. If you don't know [regular
 expressions](https://docs.python.org/3/howto/regex.html), don't worry.
@@ -25,8 +25,10 @@ Just use plain strings.
 
 ### Examples:
 
-* Plain text search is simple:
+Note: output from all examples has been excerpted. (You'd be amazed
+how many heart emojis Unicode has. 🅬)
 
+* Plain text search is simple:
 	    $ ugrep heart
 	    ☙	U+2619	REVERSED ROTATED FLORAL HEART BULLET
 	    ❣	U+2763	HEAVY HEART EXCLAMATION MARK ORNAMENT
@@ -37,11 +39,7 @@ Just use plain strings.
 	    😍	U+1F60D SMILING FACE WITH HEART-SHAPED EYES
 	    😻	U+1F63B	SMILING CAT FACE WITH HEART-SHAPED EYES
 
-	Note: output from all examples has been excerpted. (You'd be
-	amazed how many heart emojis Unicode has.)
-
 * Arguments on the command line have an implicit wildcard between them:
-
 	    $ ugrep right.*gle
 	    $ ugrep right gle       # Equivalent
 	    »	U+00BB	RIGHT-POINTING DOUBLE ANGLE QUOTATION MARK
@@ -50,7 +48,6 @@ Just use plain strings.
 	    ⊿	U+22BF	RIGHT TRIANGLE
 
 * You can use regular expressions for fancier searches: 
-
 	    $ ugrep "\bR\b"         # The letter R used as a word
 	    R	U+0052  LATIN CAPITAL LETTER R
 	    Ŗ	U+0156  LATIN CAPITAL LETTER R WITH CEDILLA
@@ -59,28 +56,26 @@ Just use plain strings.
 	    ℝ	U+211D  DOUBLE-STRUCK CAPITAL R (Double-struck r)
 
 * Browse through all unicode characters
-
 	    $ ugrep . | less
 	    ⋮
-	    ⚳       U+26B3  CERES
-	    ⚴       U+26B4  PALLAS
-	    ⚵       U+26B5  JUNO
-	    ⚶       U+26B6  VESTA
-	    ⚷       U+26B7  CHIRON
-	    ⚸       U+26B8  BLACK MOON LILITH
-	    ⚹       U+26B9  SEXTILE
-	    ⚺       U+26BA  SEMISEXTILE
-	    ⚻       U+26BB  QUINCUNX
+	    ⚳	U+26B3	CERES
+	    ⚴	U+26B4	PALLAS
+	    ⚵	U+26B5	JUNO
+	    ⚶	U+26B6	VESTA
+	    ⚷	U+26B7	CHIRON
+	    ⚸	U+26B8	BLACK MOON LILITH
+	    ⚹	U+26B9	SEXTILE
+	    ⚺	U+26BA	SEMISEXTILE
+	    ⚻	U+26BB	QUINCUNX
 	    ⋮
 
 	Sometimes it's useful to page through the unicode table and
 	see what characters are defined in a region. (Tip: search for
 	a code point in `less` by pressing `/U\+A60F`).
 
-## Fun things to try:
+### Fun things to try:
 
-Here are some examples one can try, to see some useful and lovely
-glyphs.
+To see some useful and lovely glyphs, try this:
 
     ugrep face 
     ugrep alchemical 
@@ -98,16 +93,16 @@ You must have a copy of
 [UnicodeData.txt](https://unicode.org/Public/UNIDATA/UnicodeData.txt)
 installed.
 
-*Easiest*: On Ubuntu and Debian GNU/Linux, simply `apt install unicode-data`.
+**Easiest**: On Ubuntu and Debian GNU/Linux, simply `apt install unicode-data`.
 
-*Still easy*: Or, you can download it by hand from
+**Still easy**: Or, you can download it by hand from
 [unicode.org](https://unicode.org/Public/UNIDATA/UnicodeData.txt)
 and place it in `~/.local/share/unicode/UnicodeData.txt`
 
-*Not hard*: Or, if you wish the file to be accessible to all users on
+**Not hard**: Or, if you wish the file to be accessible to all users on
 your machine, place it in `/usr/local/share/unicode/UnicodeData.txt`.
 
-꘏
+<div style="text-align:center; width:100%">꘏</div>
 
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 

@@ -1,4 +1,4 @@
-<img align="right" src="README.md.d/screenshot.png">
+<img align="right" src="README.md.d/screenshot.png" style="max-width:50%;">
 
 # ugrep
 _Find unicode characters based on their names_

@@ -85,7 +85,7 @@ glyphs.
 
 ## Boring Implementation notes
 
-This is a rewrite of b9's AWK ugrep in Python. While AWK makes more
+This is a rewrite of b9's AWK ugrep into Python. While AWK makes more
 sense for what this program does (comparing fields based on regexps),
 a rewrite was necessary because GNU awk, while plenty powerful, uses
 `\y` for word edges instead of the standard `\b`. Gawk does this for

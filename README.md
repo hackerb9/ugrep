@@ -181,15 +181,3 @@ UnicodeData.txt plus "manually created annotations". However, those
 annotations are what is interesting about the file (the aliases and
 cross references) and there appears to be no other official source of
 that data.
-
-### Don't show identical aliases
-
-Unicode often has aliases that don't add any information, they merely
-remove non-essential parts like a dash, the letter "s", or the word
-"with". For example:
-
-* BLACK RIGHT-POINTING TRIANGLE (Black right pointing triangle)
-* VULGAR FRACTION TWO THIRDS (Fraction two thirds)
-* LEFTWARDS TWO HEADED ARROW (Left two headed arrow)
-* LATIN CAPITAL LETTER A WITH GRAVE (Latin capital letter a grave)
-

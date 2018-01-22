@@ -2,8 +2,8 @@
 _Find unicode characters based on their names_
 
 ugrep is essentially grep for the Unicode table. It prints out the
-actual resulting unicode characters literally, so you can
-cut-and-paste easily.
+resulting unicode characters literally, so you can cut-and-paste
+easily.
 
 See also b9's `charname` for the reverse operation which can lookup a
 character you've pasted into the terminal.
@@ -50,7 +50,7 @@ character you've pasted into the terminal.
 ## Prerequisite: UnicodeData.txt
 
 You must have a copy of
-[UnicodeData.txt](ftp://ftp.unicode.org/Public/UNIDATA/UnicodeData.txt)
+[UnicodeData.txt](https://unicode.org/Public/UNIDATA/UnicodeData.txt)
 installed.
 
 ### Easiest
@@ -60,7 +60,7 @@ On Ubuntu and Debian GNU/Linux, simply `apt install unicode-data`.
 ### Still easy
 
 Or, you can download it by hand from
-[unicode.org](ftp://ftp.unicode.org/Public/UNIDATA/UnicodeData.txt)
+[unicode.org](https://unicode.org/Public/UNIDATA/UnicodeData.txt)
 and place it in `~/.local/share/unicode/UnicodeData.txt`
 
 ### Not hard
@@ -88,12 +88,12 @@ glyphs.
 This is a rewrite of b9's AWK ugrep in Python. While AWK makes more
 sense for what this program does (comparing fields based on regexps),
 a rewrite was necessary because GNU awk, while plenty powerful, uses
-\y for word edges instead of \b and that was bugging me. Gawk does
-this for backwards compatibility with historic AWK, which is all well
-and good, but gawk has no way to disable it for new scripts.
+`\y` for word edges instead of the standard `\b`. Gawk does this for
+backwards compatibility with historic AWK, but lacks a way to disable
+it for new scripts.
 
 Switching to Python did have the benefit of allowing more powerful
-Perl-like regexes (not that anyone has requested that).
+Perlesque regexes (not that anyone has requested that).
 
 ### Why not use unicodedata module?
 
@@ -107,9 +107,9 @@ BLACK HEART BULLET")`.
 ### Search comment field
 
 The original AWK version of `ugrep` also searched through the comment
-field, which meant `ugrep backslash` would work properly, even though
-Unicode calls that character "Reverse solidus". This is a bug and I
-plan on fixing it.
+field, which meant, for example, that `ugrep backslash` would work
+properly, even though Unicode calls that character "Reverse solidus".
+This is a bug and I plan on fixing it.
 
 ### Maybe use NamesList.txt
 

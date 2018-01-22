@@ -1,10 +1,12 @@
 # ugrep
-Find unicode characters based on their names
+_Find unicode characters based on their names_
 
-# ugrep: find unicode characters based on their names.
-# 	 Essentially grep for the Unicode table.
+ugrep is essentially grep for the Unicode table. It prints out the
+actual resulting unicode characters literally, so you can
+cut-and-paste easily.
 
-# See also b9's charname for the reverse operation.
+See also b9's `charname` for the reverse operation which can lookup a
+character you've pasted into the terminal.
 
 ## Usage
 
@@ -63,7 +65,7 @@ and place it in `~/.local/share/unicode/UnicodeData.txt`
 
 ### Not hard
 
-If you wish the file to be accessible to all users on your machine,
+Or, if you wish the file to be accessible to all users on your machine,
 place it in `/usr/local/share/unicode/UnicodeData.txt`. 
 
 ## Fun things to try:

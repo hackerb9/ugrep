@@ -9,7 +9,7 @@ _Find unicode characters based on their names_
 ugrep is essentially [grep](https://www.gnu.org/software/grep/) for
 the Unicode table. It prints out the resulting unicode characters
 literally, so you can cut-and-paste easily. Ugrep is useful for
-looking up Emojis 😤, finding obscure symbols ⚸⅗ℏ℞☧🌛, or beautiful
+looking up Emojis 😤, finding obscure symbols ⚸⅗ℏ℞☧☭, or beautiful
 glyphs to decorate your text. 🙶❡✯🟔❢🙷
 
 See also b9's `charname` for the reverse operation which can lookup a
@@ -26,11 +26,11 @@ Just use plain strings.
 ### Examples:
 
 Note: output from all examples has been excerpted. (You'd be amazed
-how many heart emojis Unicode has. 🅬)
+how many heart emojis Unicode has. 😜)
 
 * Plain text search is simple:
 
-      $ ugrep heart
+	    $ ugrep heart
 	    ☙	U+2619	REVERSED ROTATED FLORAL HEART BULLET
 	    ❣	U+2763	HEAVY HEART EXCLAMATION MARK ORNAMENT
 	    ❤	U+2764	HEAVY BLACK HEART
@@ -89,7 +89,6 @@ To see some useful and lovely glyphs, try this:
     ugrep vai
     ugrep heavy
     ugrep drawing
-    ugrep . | less
 
 ## Prerequisite: UnicodeData.txt
 

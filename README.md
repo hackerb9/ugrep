@@ -58,7 +58,16 @@ how many heart emojis Unicode has. 😜)
 	    ℜ	U+211C  BLACK-LETTER CAPITAL R (Black-letter r)
 	    ℝ	U+211D  DOUBLE-STRUCK CAPITAL R (Double-struck r)
 
-* Browse through all unicode characters
+	    $ ugrep ^x		    #  Regex anchors ^ and $ work
+	    ⊻	U+22BB	XOR
+	    ⌧	U+2327	X IN A RECTANGLE BOX (clear key)
+
+* Aliases (alternate names) are also searched:
+
+	    $ ugrep backslash
+	    \	U+005C	REVERSE SOLIDUS (backslash)
+
+* Browse through all unicode characters:
 
 	    $ ugrep . | less
 	    ⋮
@@ -127,13 +136,6 @@ specifying it fully and exactly: `unicodedata.lookup("ROTATED HEAVY
 BLACK HEART BULLET")`.
 
 ## Future Work
-
-### Search comment field
-
-The original AWK version of `ugrep` also searched through the comment
-field, which meant, for example, that `ugrep backslash` would work
-properly, even though Unicode calls that character "Reverse solidus".
-This is a bug and I plan on fixing it.
 
 ### Maybe use NamesList.txt
 

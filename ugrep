@@ -77,6 +77,10 @@ Usage:
         $ ugrep backslash		# ugrep also searches in aliases
         \	U+005C	REVERSE SOLIDUS (backslash)
 
+        $ ugrep ^x			# Regex ^ and $ work, mostly
+        ⊻	U+22BB	XOR
+        ⌧	U+2327	X IN A RECTANGLE BOX (clear key)
+
         $ ugrep .
         [ This would show you every single Unicode character! ]
 """
@@ -125,25 +129,29 @@ if debug:
 # For example:
 #     002F;SOLIDUS;Po;0;CS;;;;;N;SLASH;;;;
 
+# combine and quote the command line arguments so we can use them in
+# verbose regex. Also, allow the user to use ^ and $, just like in awk
+# to refer to the beginning and end of the field instead of line.
+args=".*".join(argv[1:])          # search terms can have junk between
+args=sub(r"(\s)", r"\\\1", args)  # quote whitespace for verbose regex
+args=sub(r"^\^", r"(?<=;)", args) # ^ matches semicolon before field 
+args=sub(r"\$$", r"(?=;)", args)  # $ matches semicolon after field 
+
 # s is a search regex for field 2 (name) based on the command line arguments
-s=".*".join(argv[1:])           # search terms can have junk between
-s=sub(r"(\s)", r"\\\1", s)      # quote spaces so I can do a verbose regex
 s=r"""^
     (?P<hex>[^;]*);             # first field is hexadecimal codepoint
-    (?P<name>[^;]*"""+s+"""[^;]*); # field 2 (charactername) matches?
+    (?P<name>[^;]*"""+args+"""[^;]*); # field 2 (charactername) matches?
     ([^;]*;){8}                 # skip next 8 fields
     (?P<alias>[^;]*)            # field 11 is comment/alias
     (;[^;]*){4}$                # line ends with four more fields
 """
 
 # r is a search regex for field 11 (alias)
-r=".*".join(argv[1:])           # search terms can have junk between
-r=sub(r"(\s)", r"\\\1", r)      # quote spaces so I can do a verbose regex
 r=r"""^
     (?P<hextwo>[^;]*);            # first field is hexadecimal codepoint
     (?P<desctwo>[^;]*);           # second field is charactername
     ([^;]*;){8}                   # skip next 8 fields
-    (?P<aliastwo>[^;]*("""+r+""")[^;]*) # field 11 matches arguments?
+    (?P<aliastwo>[^;]*("""+args+""")[^;]*) # field 11 (alias) matches?
     (;[^;]*){4}$                # line ends with four more fields
 """
 
@@ -194,6 +202,13 @@ for m in finditer(s, ucd):
 # One downside is that I needed a huge hairy regex to simply search
 # only in a certain field of each line. Maybe there's some Pythonic
 # way to do it, but it's not obvious.
+#
+# Also, I took for granted that awk let me use ^ and $ to search for
+# the beginning and ending of fields instead of lines. I tried to
+# reimplement that in Python, but it's not quite right as it only
+# checks the first and last character. For example, ugrep "^x" works,
+# but ugrep "(^x)" does not.
+
 
 # Note: I do not use Python's `unicodedata` module because it is
 # insufficient. It allows one to search by character name only if the

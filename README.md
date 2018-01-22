@@ -27,54 +27,55 @@ Just use plain strings.
 
 * Plain text search is simple:
 
-	$ ugrep heart
-	☙	U+2619	REVERSED ROTATED FLORAL HEART BULLET
-	❣	U+2763	HEAVY HEART EXCLAMATION MARK ORNAMENT
-	❤	U+2764	HEAVY BLACK HEART
-	⋮	[ ... truncated for brevity ... ]
-	💞	U+1F49E REVOLVING HEARTS
-	💟	U+1F49F HEART DECORATION
-	😍	U+1F60D SMILING FACE WITH HEART-SHAPED EYES
-	😻	U+1F63B	SMILING CAT FACE WITH HEART-SHAPED EYES
+	    $ ugrep heart
+	    ☙	U+2619	REVERSED ROTATED FLORAL HEART BULLET
+	    ❣	U+2763	HEAVY HEART EXCLAMATION MARK ORNAMENT
+	    ❤	U+2764	HEAVY BLACK HEART
+	    ⋮	[ ... truncated for brevity ... ]
+	    💞	U+1F49E REVOLVING HEARTS
+	    💟	U+1F49F HEART DECORATION
+	    😍	U+1F60D SMILING FACE WITH HEART-SHAPED EYES
+	    😻	U+1F63B	SMILING CAT FACE WITH HEART-SHAPED EYES
 
-Note: output from all examples has been excerpted. (You'd be amazed how
-many heart emojis Unicode has.)
+	Note: output from all examples has been excerpted. (You'd be
+	amazed how many heart emojis Unicode has.)
 
 * Arguments on the command line have an implicit wildcard between them:
 
-	$ ugrep right.*gle
-	$ ugrep right gle       # Equivalent
-	»	U+00BB	RIGHT-POINTING DOUBLE ANGLE QUOTATION MARK
-	’	U+2019	RIGHT SINGLE QUOTATION MARK
-	∟	U+221F	RIGHT ANGLE
-	⊿	U+22BF	RIGHT TRIANGLE
+	    $ ugrep right.*gle
+	    $ ugrep right gle       # Equivalent
+	    »	U+00BB	RIGHT-POINTING DOUBLE ANGLE QUOTATION MARK
+	    ’	U+2019	RIGHT SINGLE QUOTATION MARK
+	    ∟	U+221F	RIGHT ANGLE
+	    ⊿	U+22BF	RIGHT TRIANGLE
 
 * You can use regular expressions for fancier searches: 
 
-	$ ugrep "\bR\b"         # The letter R used as a word
-	R	U+0052  LATIN CAPITAL LETTER R
-	Ŗ	U+0156  LATIN CAPITAL LETTER R WITH CEDILLA
-	ℛ	U+211B  SCRIPT CAPITAL R (Script r)
-	ℜ	U+211C  BLACK-LETTER CAPITAL R (Black-letter r)
-	ℝ	U+211D  DOUBLE-STRUCK CAPITAL R (Double-struck r)
+	    $ ugrep "\bR\b"         # The letter R used as a word
+	    R	U+0052  LATIN CAPITAL LETTER R
+	    Ŗ	U+0156  LATIN CAPITAL LETTER R WITH CEDILLA
+	    ℛ	U+211B  SCRIPT CAPITAL R (Script r)
+	    ℜ	U+211C  BLACK-LETTER CAPITAL R (Black-letter r)
+	    ℝ	U+211D  DOUBLE-STRUCK CAPITAL R (Double-struck r)
 
 * Browse through all unicode characters
 
-	$ ugrep . | less
-	⋮
-	⚳       U+26B3  CERES
-	⚴       U+26B4  PALLAS
-	⚵       U+26B5  JUNO
-	⚶       U+26B6  VESTA
-	⚷       U+26B7  CHIRON
-	⚸       U+26B8  BLACK MOON LILITH
-	⚹       U+26B9  SEXTILE
-	⚺       U+26BA  SEMISEXTILE
-	⚻       U+26BB  QUINCUNX
-	⋮
-Sometimes it's useful to page through the unicode table and see what
-characters are defined in a region. (Tip: `less` allows you to search
-forward by hitting `/` and backwards with `?`).
+	    $ ugrep . | less
+	    ⋮
+	    ⚳       U+26B3  CERES
+	    ⚴       U+26B4  PALLAS
+	    ⚵       U+26B5  JUNO
+	    ⚶       U+26B6  VESTA
+	    ⚷       U+26B7  CHIRON
+	    ⚸       U+26B8  BLACK MOON LILITH
+	    ⚹       U+26B9  SEXTILE
+	    ⚺       U+26BA  SEMISEXTILE
+	    ⚻       U+26BB  QUINCUNX
+	    ⋮
+
+	Sometimes it's useful to page through the unicode table and
+	see what characters are defined in a region. (Tip: search for
+	a code point in `less` by pressing `/U\+A60F`).
 
 ## Fun things to try:
 
@@ -105,6 +106,8 @@ and place it in `~/.local/share/unicode/UnicodeData.txt`
 
 *Not hard*: Or, if you wish the file to be accessible to all users on
 your machine, place it in `/usr/local/share/unicode/UnicodeData.txt`.
+
+꘏
 
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
@@ -147,15 +150,15 @@ character. For example (from `grep -B1 [=%] NamesList.txt`):
             = pound sign, hash, crosshatch, octothorpe
 
     002E    FULL STOP
-	    = period, dot, decimal point
+            = period, dot, decimal point
     --
     002F    SOLIDUS
-	    = slash, virgule
+            = slash, virgule
 
     1F70A   ALCHEMICAL SYMBOL FOR VINEGAR
             = crucible; acid; distill; atrament; vitriol; red
               sulfur; borax; wine; alkali salt; mercurius vivus,
-    	      quick silver
+              quick silver
 
 I'm not sure how useful this will be (who is going to look up the
 number sign by searching on "octothorpe"), but it'd be nice to be able
@@ -164,13 +167,13 @@ to at least show them as aliases.
 Also, NamesList.txt has a fascinating "cross reference" feature:
 
     0021    EXCLAMATION MARK
-	    = factorial
-	    = bang
-	    x (inverted exclamation mark - 00A1)
-	    x (latin letter retroflex click - 01C3)
-	    x (double exclamation mark - 203C)
-	    x (interrobang - 203D)
-	    x (heavy exclamation mark ornament - 2762)
+            = factorial
+            = bang
+            x (inverted exclamation mark - 00A1)
+            x (latin letter retroflex click - 01C3)
+            x (double exclamation mark - 203C)
+            x (interrobang - 203D)
+            x (heavy exclamation mark ornament - 2762)
 
 How would one find the interrobang (‽) without such a cross reference?
 

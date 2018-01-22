@@ -1,5 +1,5 @@
-<a href="README.md.d/screenshot.png">
-<img align="right" src="README.md.d/screenshot.png" width="50%">
+<a href="https://raw.githubusercontent.com/hackerb9/ugrep/master/README.md.d/screenshot.png">
+<img title="ugrep screenshot" alt-text="Example of ugrep vine" align="right" src="README.md.d/screenshot.png" width="50%">
 </a>
 
 # ugrep

@@ -67,7 +67,7 @@ Usage:
 	∟	U+221F	RIGHT ANGLE
 	⊿	U+22BF	RIGHT TRIANGLE
 
-        $ ugrep "\bR\b"         	# The letter R used as a word
+        $ ugrep "\\bR\\b"         	# The letter R used as a word
         R	U+0052  LATIN CAPITAL LETTER R
         Ŗ	U+0156  LATIN CAPITAL LETTER R WITH CEDILLA
         ℛ	U+211B  SCRIPT CAPITAL R (Script r)
@@ -81,7 +81,7 @@ Usage:
         ⊻	U+22BB	XOR
         ⌧	U+2327	X IN A RECTANGLE BOX (clear key)
 
-        $ ugrep .
+        $ ugrep .  |  less
         [ This would show you every single Unicode character! ]
 """
     )

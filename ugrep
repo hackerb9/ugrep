@@ -1,0 +1,170 @@
+#!/usr/bin/python3
+# ugrep: find unicode characters based on their names.
+# 	 Essentially grep for the Unicode table.
+
+# See also b9's charname for the reverse operation.
+
+
+# PREREQUISITES: You must have a copy of UnicodeData.txt installed.
+# On Debian GNU/Linux, this can be done by `apt install unicode-data`.
+# Or, you can download it by hand from the Unicode Consortium and
+# place it in `~/.local/share/unicode/UnicodeData.txt`.
+
+# Fun things to try:
+
+# ugrep alchemical 
+# ugrep ornament
+# ugrep bullet
+# ugrep '(vine|bud)'
+# ugrep vai
+# ugrep heavy
+# ugrep drawing
+
+# GPL ≥3 (see LICENSE file)
+# B9 January 2018
+
+
+from re import *
+from sys import argv
+from pprint import pprint 
+from os.path import expanduser, expandvars, basename
+from sys import stderr
+
+debug=False
+
+def eprint(*args, **kwargs):
+    "Print to stderr"
+    print(*args, file=stderr, **kwargs)
+
+def debugprint(*args, **kwargs):
+    "If debug var is True, print to stderr with progname prefix"
+    if (debug):
+        print(basename(argv[0]) + ": ", file=stderr, end='')
+        print(*args, file=stderr, **kwargs)
+
+def usage():
+    print("""\
+ugrep: find unicode characters based on their names
+Usage: 
+    ugrep <regex>
+
+    Where regex is a regular expression or a plain string. 
+
+    For example:
+
+	$ ugrep heart
+	☙	U+2619	REVERSED ROTATED FLORAL HEART BULLET
+	❣	U+2763	HEAVY HEART EXCLAMATION MARK ORNAMENT
+	❤	U+2764	HEAVY BLACK HEART
+	[ ... examples truncated for brevity ... ]
+	😻	U+1F63B	SMILING CAT FACE WITH HEART-SHAPED EYES
+
+
+	$ ugrep right.*gle
+	$ ugrep right gle       # Equivalent
+	»	U+00BB	RIGHT-POINTING DOUBLE ANGLE QUOTATION MARK
+	’	U+2019	RIGHT SINGLE QUOTATION MARK
+	∟	U+221F	RIGHT ANGLE
+	⊿	U+22BF	RIGHT TRIANGLE
+
+        $ ugrep "\bR\b"         # The letter R used as a word
+        R       U+0052  Latin capital letter r
+        Ŗ       U+0156  Latin capital letter r with cedilla
+        ℛ       U+211B  Script capital r (Script r)
+        ℜ       U+211C  Black-letter capital r (Black-letter r)
+        ℝ       U+211D  Double-struck capital r (Double-struck r)
+        
+        $ ugrep "^[aeiouy]+$"		# Entire description is vowels
+        👁	U+1F441	EYE
+
+        $ ugrep .
+        [ This would show you every single Unicode character! ]
+"""
+    )
+
+# Main
+if len(argv) == 1:
+    usage()
+    exit(1)
+
+
+# Find the UnicodeData and load it up into ucd
+ucdplaces=( "/usr/local/share/unicode/UnicodeData.txt",
+            "/usr/share/unicode/UnicodeData.txt",
+            "~/.local/share/unicode/UnicodeData.txt",
+            "UnicodeData.txt" )
+for f in ucdplaces:
+    f=expanduser(expandvars(f)) 		# Python's open() is silly
+    try:
+        ucd=open(f).read()
+        debugprint("Found data file at " + f)
+    except:
+        continue
+
+# Sanity check: did we find the UnicodeData.txt file?
+if ucd == None:
+    eprint("""\
+Could not find UnicodeData.txt in:
+
+%s
+On most GNU/Linux systems your package manager can install it easily.
+For example:  apt install unicode-data.""" %
+           ("".join(["    " + s + "\n" for s in ucdplaces])))
+    exit(2)
+
+if debug:
+    debugprint("Number of Unicode chars: %d" % len(ucd.splitlines()))
+
+# Make the search string based on the command line arguments
+s=".*".join(argv[1:])           # search terms can have junk between
+s="(?P<desc>[^;]*"+s+"[^;]*)"   # Name the character description group
+s="^(?P<hex>[^;]+);"+s          # Must be after the first semicolon...
+s=s+"[^;]*(;[^;]*){8};"         # ...followed by nine semicolons...
+s=s+"(?P<alias>[^;]*)"          # ...then an optional alternate name...
+s=s+"(;[^;]*){4}$"              # ...and four more semicolons
+s="(?im)"+s                     # multiline, case insensitive
+debugprint("Search regex is " + s)
+
+if debug:
+    m=search(s,ucd)
+    if not m: debugprint("Definitely not in ucd")
+
+for m in finditer(s, ucd):
+    if m:
+        g=m.groupdict()
+        c=chr(int(g["hex"], 16))
+        if not c.isprintable(): c="\ufffd"	# U+FFFD "Replacement Character"
+        print(c, end='\t')
+        print ("U+" + g["hex"], end='\t')
+        print(g["desc"].capitalize(), end='')
+        if (len(g["alias"])):
+            print (" (" + g["alias"].capitalize() + ")", end='')
+        print()
+
+
+
+
+
+# Implementation notes:
+
+# This is a rewrite of b9's AWK ugrep in Python. While AWK makes a lot
+# more sense for what this program does (comparing fields based on
+# regexps), I had to rewrite this because GNU awk, while plenty
+# powerful, uses \y for word edges instead of \b and that was bugging
+# me. Gawk does this for backwards compatibility with historic AWK,
+# which is all well and good, but gawk has no way to disable it for
+# new scripts.
+#
+# Switching to Python did have the benefit of allowing more powerful
+# Perl-like regexes (not that anyone has requested that).
+# 
+# One downside is that this Python version does not (yet) search
+# through aliases, which means if you `ugrep backslash` you won't get
+# what you're looking for because Unicode calls that character
+# "Reverse solidus".
+
+# Note: I do not use Python's `unicodedata` module because it is
+# insufficient. It allows one to search by character name only if the
+# precise name: `unicodedata.lookup("ROTATED HEAVY BLACK HEART BULLET")`.
+
+        

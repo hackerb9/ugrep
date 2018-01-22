@@ -106,8 +106,6 @@ and place it in `~/.local/share/unicode/UnicodeData.txt`
 **Not hard**: Or, if you wish the file to be accessible to all users on
 your machine, place it in `/usr/local/share/unicode/UnicodeData.txt`.
 
-<div style="font-size: 72px; text-align:center; transform:scale(2,1);">꘏</div>
-
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
 ## Boring Implementation notes

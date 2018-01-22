@@ -29,7 +29,8 @@ Note: output from all examples has been excerpted. (You'd be amazed
 how many heart emojis Unicode has. 🅬)
 
 * Plain text search is simple:
-	    $ ugrep heart
+
+      $ ugrep heart
 	    ☙	U+2619	REVERSED ROTATED FLORAL HEART BULLET
 	    ❣	U+2763	HEAVY HEART EXCLAMATION MARK ORNAMENT
 	    ❤	U+2764	HEAVY BLACK HEART
@@ -40,6 +41,7 @@ how many heart emojis Unicode has. 🅬)
 	    😻	U+1F63B	SMILING CAT FACE WITH HEART-SHAPED EYES
 
 * Arguments on the command line have an implicit wildcard between them:
+
 	    $ ugrep right.*gle
 	    $ ugrep right gle       # Equivalent
 	    »	U+00BB	RIGHT-POINTING DOUBLE ANGLE QUOTATION MARK
@@ -48,6 +50,7 @@ how many heart emojis Unicode has. 🅬)
 	    ⊿	U+22BF	RIGHT TRIANGLE
 
 * You can use regular expressions for fancier searches: 
+
 	    $ ugrep "\bR\b"         # The letter R used as a word
 	    R	U+0052  LATIN CAPITAL LETTER R
 	    Ŗ	U+0156  LATIN CAPITAL LETTER R WITH CEDILLA
@@ -56,6 +59,7 @@ how many heart emojis Unicode has. 🅬)
 	    ℝ	U+211D  DOUBLE-STRUCK CAPITAL R (Double-struck r)
 
 * Browse through all unicode characters
+
 	    $ ugrep . | less
 	    ⋮
 	    ⚳	U+26B3	CERES
@@ -102,7 +106,7 @@ and place it in `~/.local/share/unicode/UnicodeData.txt`
 **Not hard**: Or, if you wish the file to be accessible to all users on
 your machine, place it in `/usr/local/share/unicode/UnicodeData.txt`.
 
-<div style="text-align:center; width:100%">꘏</div>
+<div style="font-size: 72px; text-align:center; transform:scale(2,1);">꘏</div>
 
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 

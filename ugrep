@@ -1,9 +1,6 @@
 #!/usr/bin/python3
-# ugrep: find unicode characters based on their names.
+# ugrep: find unicode characters based on their names or number.
 # 	 Essentially grep for the Unicode table.
-
-# See also b9's charname for the reverse operation.
-
 
 # PREREQUISITES: You must have a copy of UnicodeData.txt installed.
 # On Debian GNU/Linux, this can be done by `apt install unicode-data`.
@@ -15,14 +12,13 @@
 # ugrep alchemical 
 # ugrep ornament
 # ugrep bullet
-# ugrep '(vine|bud)'
+# ugrep 'vine|bud'
 # ugrep vai
 # ugrep heavy
 # ugrep drawing
 
 # GPL ≥3 (see LICENSE file)
-# B9 January 2018
-
+# B9 September 2018
 
 from re import *
 from sys import argv
@@ -48,13 +44,17 @@ def debugprint(*args, **kwargs):
 
 def usage():
     print("""\
-ugrep: find unicode characters based on their names
+ugrep: find unicode characters based on their names or codepoints
 Usage: 
-    ugrep <regex>
+    ugrep [-w] <codepoint> | <character> | <character name>
 
-    Where regex is a regular expression or a plain string. 
+    	-w:	matches only whole words, e.g., ugrep -w pi
 
-    For example:
+    <character> is a single character, e.g.:  ugrep ☙
+    <codepoint> is a unicode character number, e.g.: ugrep U+23FB
+    <character name> is a regular expression, see examples below.
+
+    Character name examples:
 
 	$ ugrep heart
 	☙	U+2619	REVERSED ROTATED FLORAL HEART BULLET
@@ -72,6 +72,7 @@ Usage:
 	⊿	U+22BF	RIGHT TRIANGLE
 
         $ ugrep "\\bR\\b"         	# The letter R used as a word
+        $ ugrep -w "R"	         	# Same as above, but simpler
         R	U+0052  LATIN CAPITAL LETTER R
         Ŗ	U+0156  LATIN CAPITAL LETTER R WITH CEDILLA
         ℛ	U+211B  SCRIPT CAPITAL R (Script r)
@@ -85,7 +86,7 @@ Usage:
         ⊻	U+22BB	XOR
         ⌧	U+2327	X IN A RECTANGLE BOX (clear key)
 
-        $ ugrep .  |  less
+        $ ugrep .?  |  less
         [ This would show you every single Unicode character! ]
 """
     )
@@ -144,112 +145,162 @@ def isdifferent(a, b):
     
     return True
 
+def loaducd():
+    "Find the UnicodeData.txt file and load it up into ucd global variable."
+
+    global ucd
+    ucdplaces=( "/usr/local/share/unicode/UnicodeData.txt",
+                "/usr/share/unicode/UnicodeData.txt",
+                "~/.local/share/unicode/UnicodeData.txt",
+                "UnicodeData.txt" )
+    for f in ucdplaces:
+        f=expanduser(expandvars(f)) 		# Python's open() is silly
+        try:
+            ucd=open(f).read()
+            debugprint("Found data file at " + f)
+        except:
+            continue
+
+    # Sanity check: did we find the UnicodeData.txt file?
+    if ucd == None:
+        eprint("""\
+    Could not find UnicodeData.txt in:
+
+    %s
+    On most GNU/Linux systems your package manager can install it easily.
+    For example:  apt install unicode-data.""" %
+               ("".join(["    " + s + "\n" for s in ucdplaces])))
+        exit(2)
+
+    if debug:
+        debugprint("Number of Unicode chars: %d" % len(ucd.splitlines()))
+
+    return ucd
+
+
+def makeregexcharname():
+    "Create a regular expression to search for a character name"
+
+    # Format of ucd: each character is on a separate line.
+    # Each line is fifteen columns separated by semicolons.
+    # We only care about columns 1, 2, and 11
+    #      1: Code value
+    #      2: Character name
+    #     11: ISO 10646 comment field (usually an alias)
+    #
+    # For example:
+    #     002F;SOLIDUS;Po;0;CS;;;;;N;SLASH;;;;
+
+    # combine and quote the command line arguments so we can use them in
+    # verbose regex. Also, allow the user to use ^ and $, just like in awk
+    # to refer to the beginning and end of the field instead of line.
+    global argv
+    argv=["("+x+")" for x in argv]    # wrap in parens to fix | (alternation) 
+    args=".*".join(argv[1:])          # search terms can have junk between
+    args=sub(r"(\s)", r"\\\1", args)  # quote whitespace for verbose regex
+    args=sub(r"^\^", r"(?<=;)", args) # ^ matches semicolon before field 
+    args=sub(r"\$$", r"(?=;)", args)  # $ matches semicolon after field 
+
+    # s is a search regex for field 2 (name) based on the command line arguments
+    s=r"""^
+        (?P<hex>[^;]*);             # first field is hexadecimal codepoint
+        (?P<name>[^;]*"""+args+"""[^;]*); # field 2 (charactername) matches?
+        ([^;]*;){8}                 # skip next 8 fields
+        (?P<alias>[^;]*)            # field 11 is comment/alias
+        (;[^;]*){4}$                # line ends with four more fields
+    """
+
+    # r is a search regex for field 11 (alias)
+    r=r"""^
+        (?P<hextwo>[^;]*);            # first field is hexadecimal codepoint
+        (?P<desctwo>[^;]*);           # second field is charactername
+        ([^;]*;){8}                   # skip next 8 fields
+        (?P<aliastwo>[^;]*("""+args+""")[^;]*) # field 11 (alias) matches?
+        (;[^;]*){4}$                  # line ends with four more fields
+    """
+
+    s=s+"|"+r                   # Search for either name or alias
+    s="(?mix)"+s                # multiline, case insensitive, verbose
+
+    debugprint("Complete search regex is " + s)
+
+    return s
+
+def makeregexcodepoint(cp):
+    "Make a regular expression to search for a hexadecimal codepoint"
+
+    # User specified a codepoint, e.g., "U+23fb" 
+
+    # Normalize whatever they put in to "23FB"
+    cp=cp.lstrip("Uu+0Xx").upper().zfill(4)
+
+    # s is a search regex for field 1 (hexadecimal)
+    s=r"""^
+        (?P<hex>"""+cp+""");		#first field is hex codepoint
+        (?P<name>[^;]*);		# second field is charactername
+        ([^;]*;){8}			# skip next 8 fields
+        (?P<alias>[^;]*)            	# field 11 is comment/alias
+    """
+    s="(?mix)"+s                     # multiline, case insensitive, verbose
+    return(s)
+
+
 # Main
-if len(argv) == 1:
-    usage()
-    exit(1)
+def main():
+    global argv
 
+    if len(argv) == 1:
+        usage()
+        exit(1)
 
-# Find the UnicodeData and load it up into ucd
-ucdplaces=( "/usr/local/share/unicode/UnicodeData.txt",
-            "/usr/share/unicode/UnicodeData.txt",
-            "~/.local/share/unicode/UnicodeData.txt",
-            "UnicodeData.txt" )
-for f in ucdplaces:
-    f=expanduser(expandvars(f)) 		# Python's open() is silly
+    if argv[1]=='-w':
+        argv=argv[1:]
+        for i in range(1,len(argv)):
+            argv[i]="\\b"+argv[i]+"\\b"
+        debugprint(argv)
+    loaducd()
+    
+    if match(r"(?i)^[U]?\+?[0-9A-F]+$", argv[1]):
+        s=makeregexcodepoint(argv[1])
+    elif len(argv[1])==1:
+        s=makeregexcodepoint( hex(ord(argv[1])) )
+    else:
+        s=makeregexcharname()
+
+    if debug:
+        debugprint(s)
+        m=search(s,ucd)
+        if not m: debugprint("Definitely not in ucd")
+
     try:
-        ucd=open(f).read()
-        debugprint("Found data file at " + f)
-    except:
-        continue
+        s=compile(s)
+    except error as e:
+        err("Error parsing regex: '%s'" % ".*".join(argv[1:]))
+        err(e)
+        exit(3)
 
-# Sanity check: did we find the UnicodeData.txt file?
-if ucd == None:
-    eprin
-
-    t("""\
-Could not find UnicodeData.txt in:
-
-%s
-On most GNU/Linux systems your package manager can install it easily.
-For example:  apt install unicode-data.""" %
-           ("".join(["    " + s + "\n" for s in ucdplaces])))
-    exit(2)
-
-if debug:
-    debugprint("Number of Unicode chars: %d" % len(ucd.splitlines()))
-
-# Format of ucd: each character is on a separate line.
-# Each line is fifteen columns separated by semicolons.
-# We only care about columns 1, 2, and 11
-#      1: Code value
-#      2: Character name
-#     11: ISO 10646 comment field (usually an alias)
-#
-# For example:
-#     002F;SOLIDUS;Po;0;CS;;;;;N;SLASH;;;;
-
-# combine and quote the command line arguments so we can use them in
-# verbose regex. Also, allow the user to use ^ and $, just like in awk
-# to refer to the beginning and end of the field instead of line.
-args=".*".join(argv[1:])          # search terms can have junk between
-args=sub(r"(\s)", r"\\\1", args)  # quote whitespace for verbose regex
-args=sub(r"^\^", r"(?<=;)", args) # ^ matches semicolon before field 
-args=sub(r"\$$", r"(?=;)", args)  # $ matches semicolon after field 
-
-# s is a search regex for field 2 (name) based on the command line arguments
-s=r"""^
-    (?P<hex>[^;]*);             # first field is hexadecimal codepoint
-    (?P<name>[^;]*"""+args+"""[^;]*); # field 2 (charactername) matches?
-    ([^;]*;){8}                 # skip next 8 fields
-    (?P<alias>[^;]*)            # field 11 is comment/alias
-    (;[^;]*){4}$                # line ends with four more fields
-"""
-
-# r is a search regex for field 11 (alias)
-r=r"""^
-    (?P<hextwo>[^;]*);            # first field is hexadecimal codepoint
-    (?P<desctwo>[^;]*);           # second field is charactername
-    ([^;]*;){8}                   # skip next 8 fields
-    (?P<aliastwo>[^;]*("""+args+""")[^;]*) # field 11 (alias) matches?
-    (;[^;]*){4}$                # line ends with four more fields
-"""
-
-# Search for either name or alias
-s=s+"|"+r
-s="(?mix)"+s                     # multiline, case insensitive, verbose
-
-debugprint("Complete search regex is " + s)
+    printmatches(s)
 
 
-if debug:
-    m=search(s,ucd)
-    if not m: debugprint("Definitely not in ucd")
+def printmatches(s):
+    for m in finditer(s, ucd):
+        if m:
+            g=m.groupdict()
+            if g["hex"] == None: g["hex"]=g["hextwo"]
+            if g["name"] == None: g["name"]=g["desctwo"]
+            if g["alias"] == None: g["alias"]=g["aliastwo"]
 
-try:
-    s=compile(s)
-except error as e:
-    err("Error parsing regex: '%s'" % ".*".join(argv[1:]))
-    err(e)
-    exit(3)
-
-for m in finditer(s, ucd):
-    if m:
-        g=m.groupdict()
-        if g["hex"] == None: g["hex"]=g["hextwo"]
-        if g["name"] == None: g["name"]=g["desctwo"]
-        if g["alias"] == None: g["alias"]=g["aliastwo"]
-
-        c=chr(int(g["hex"], 16))
-        if not c.isprintable(): c="\ufffd" # U+FFFD = "Replacement Character"
-        print(c, end='\t')
-        print ("U+" + g["hex"], end='\t')
-        print(g["name"], end='')
-        if (len(g["alias"]) and isdifferent(g["name"], g["alias"])):
-            print (" (" + g["alias"].lower() + ")", end='')
-        print()
+            c=chr(int(g["hex"], 16))
+            if not c.isprintable(): c="\ufffd" # U+FFFD=="Replacement Character"
+            print(c, end='\t')
+            print ("U+" + g["hex"], end='\t')
+            print(g["name"], end='')
+            if (len(g["alias"]) and isdifferent(g["name"], g["alias"])):
+                print (" (" + g["alias"].lower() + ")", end='')
+            print()
 
 
+main()
 
 
 
@@ -268,7 +319,7 @@ for m in finditer(s, ucd):
 # 
 # One downside is that I needed a huge hairy regex to simply search
 # only in a certain field of each line. Maybe there's some Pythonic
-# way to do it, but it's not obvious.
+# way to do it, but it's not obvious. Perhaps a 2D array?
 #
 # Also, I took for granted that awk let me use ^ and $ to search for
 # the beginning and ending of fields instead of lines. I tried to

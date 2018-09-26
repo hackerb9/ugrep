@@ -16,6 +16,7 @@
 # ugrep vai
 # ugrep heavy
 # ugrep drawing
+# ugrep 23{{0..9},{a..f}}{{0..9},{a..f}}
 
 # GPL ≥3 (see LICENSE file)
 # B9 September 2018
@@ -52,43 +53,44 @@ Usage:
 
     <character> is a single character, e.g.:  ugrep ☙
     <codepoint> is one or more hexadecimal unicode character numbers, 
-		e.g.: ugrep U+23FB  or ugrep 23b{0..9}
+		optionally prefixed by "U+" or "0x".
+		e.g.: ugrep U+1F639  or  ugrep 23b{0..7}
     <character name> is a regular expression, see examples below.
 
-    Character name examples:
+Character name examples:
 
-	$ ugrep heart
-	☙	U+2619	REVERSED ROTATED FLORAL HEART BULLET
-	❣	U+2763	HEAVY HEART EXCLAMATION MARK ORNAMENT
-	❤	U+2764	HEAVY BLACK HEART
-	[ ... examples truncated for brevity ... ]
-	😻	U+1F63B	SMILING CAT FACE WITH HEART-SHAPED EYES
+    $ ugrep heart
+    ☙	U+2619	REVERSED ROTATED FLORAL HEART BULLET
+    ❣	U+2763	HEAVY HEART EXCLAMATION MARK ORNAMENT
+    ❤	U+2764	HEAVY BLACK HEART
+    [ ... examples truncated for brevity ... ]
+    😻	U+1F63B	SMILING CAT FACE WITH HEART-SHAPED EYES
 
 
-	$ ugrep right.*gle
-	$ ugrep right gle       	# Equivalent
-	»	U+00BB	RIGHT-POINTING DOUBLE ANGLE QUOTATION MARK
-	’	U+2019	RIGHT SINGLE QUOTATION MARK
-	∟	U+221F	RIGHT ANGLE
-	⊿	U+22BF	RIGHT TRIANGLE
+    $ ugrep right gle       	# By default words match anywhere.
+    $ ugrep right.*gle		# Equivalent.
+    »	U+00BB	RIGHT-POINTING DOUBLE ANGLE QUOTATION MARK
+    ’	U+2019	RIGHT SINGLE QUOTATION MARK
+    ∟	U+221F	RIGHT ANGLE
+    ⊿	U+22BF	RIGHT TRIANGLE
 
-        $ ugrep "\\bR\\b"         	# The letter R used as a word
-        $ ugrep -w "R"	         	# Same as above, but simpler
-        R	U+0052  LATIN CAPITAL LETTER R
-        Ŗ	U+0156  LATIN CAPITAL LETTER R WITH CEDILLA
-        ℛ	U+211B  SCRIPT CAPITAL R (Script r)
-        ℜ	U+211C  BLACK-LETTER CAPITAL R (Black-letter r)
-        ℝ	U+211D  DOUBLE-STRUCK CAPITAL R (Double-struck r)
-        
-        $ ugrep backslash		# ugrep also searches in aliases
-        \	U+005C	REVERSE SOLIDUS (backslash)
+    $ ugrep -w "R"	         	# Match only whole words
+    $ ugrep "\\bR\\b"         	# Equivalent.
+    R	U+0052  LATIN CAPITAL LETTER R
+    Ŗ	U+0156  LATIN CAPITAL LETTER R WITH CEDILLA
+    ℛ	U+211B  SCRIPT CAPITAL R (Script r)
+    ℜ	U+211C  BLACK-LETTER CAPITAL R (Black-letter r)
+    ℝ	U+211D  DOUBLE-STRUCK CAPITAL R (Double-struck r)
 
-        $ ugrep ^x			# Regex ^ and $ work, mostly
-        ⊻	U+22BB	XOR
-        ⌧	U+2327	X IN A RECTANGLE BOX (clear key)
+    $ ugrep backslash		# ugrep also searches in aliases
+    \	U+005C	REVERSE SOLIDUS (backslash)
 
-        $ ugrep .?  |  less
-        [ This would show you every single Unicode character! ]
+    $ ugrep ^x			# Regex ^ and $ work, mostly
+    ⊻	U+22BB	XOR
+    ⌧	U+2327	X IN A RECTANGLE BOX (clear key)
+
+    $ ugrep .?  |  less
+    [ This would show you every single Unicode character! ]
 """
     )
 

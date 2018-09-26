@@ -190,6 +190,8 @@ def makeregexcharname():
     #
     # For example:
     #     002F;SOLIDUS;Po;0;CS;;;;;N;SLASH;;;;
+    #
+    # XXX Todo: maybe look up in table of confusable entities.
 
     # combine and quote the command line arguments so we can use them in
     # verbose regex. Also, allow the user to use ^ and $, just like in awk
@@ -258,15 +260,31 @@ def main():
         for i in range(1,len(argv)):
             argv[i]="\\b"+argv[i]+"\\b"
         debugprint(argv)
+
+    # Load the Unicode Data into the global ucd variable.
     loaducd()
     
-    if match(r"(?i)^[U]?\+?[0-9A-F]+$", argv[1]):
-        s=makeregexcodepoint(argv[1])
-    elif len(argv[1])==1:
+    # Is it a single character? Then only show that one character.
+    if len(argv[1])==1:
         s=makeregexcodepoint( hex(ord(argv[1])) )
-    else:
-        s=makeregexcharname()
+        compileit(s)
+        printmatches(s)
+        exit(0)
 
+    # Is it a hexadecimal number: 26A0 or 0xdeadbeef or U+FACE?
+    # Then *also* look up that code point.
+    if match(r"(?i)^(U\+?|0x)?[0-9A-F]+$", argv[1]):
+        s=makeregexcodepoint(argv[1])
+        compileit(s)
+        printmatches(s)
+
+    # Now, look it up as a character name or alias. 
+    s=makeregexcharname()
+    printmatches(s)
+
+
+def compileit(s):
+    global ucd, argv
     if debug:
         debugprint(s)
         m=search(s,ucd)
@@ -279,7 +297,6 @@ def main():
         err(e)
         exit(3)
 
-    printmatches(s)
 
 
 def printmatches(s):
@@ -332,4 +349,3 @@ main()
 # insufficient. It allows one to search by character name only if the
 # precise name: `unicodedata.lookup("ROTATED HEAVY BLACK HEART BULLET")`.
 
-        

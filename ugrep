@@ -66,31 +66,27 @@ Character name examples:
     [ ... examples truncated for brevity ... ]
     😻	U+1F63B	SMILING CAT FACE WITH HEART-SHAPED EYES
 
+    # By default words match anywhere.
+    $ ugrep clos brac			# Equivalent to "clos.*brac"
+    ]       U+005D  RIGHT SQUARE BRACKET (closing square bracket)
+    }       U+007D  RIGHT CURLY BRACKET (closing curly bracket)
+    〉      U+3009  RIGHT ANGLE BRACKET (closing angle bracket)
 
-    $ ugrep right gle       	# By default words match anywhere.
-    $ ugrep right.*gle		# Equivalent.
-    »	U+00BB	RIGHT-POINTING DOUBLE ANGLE QUOTATION MARK
-    ’	U+2019	RIGHT SINGLE QUOTATION MARK
-    ∟	U+221F	RIGHT ANGLE
-    ⊿	U+22BF	RIGHT TRIANGLE
-
-    $ ugrep -w "R"	         	# Match only whole words
-    $ ugrep "\\bR\\b"         	# Equivalent.
+    # Use -w to match only whole words.
+    $ ugrep -w "R"			# Equivalent to "\\bR\\b"
     R	U+0052  LATIN CAPITAL LETTER R
-    Ŗ	U+0156  LATIN CAPITAL LETTER R WITH CEDILLA
     ℛ	U+211B  SCRIPT CAPITAL R (Script r)
     ℜ	U+211C  BLACK-LETTER CAPITAL R (Black-letter r)
     ℝ	U+211D  DOUBLE-STRUCK CAPITAL R (Double-struck r)
 
-    $ ugrep backslash		# ugrep also searches in aliases
+    $ ugrep backslash			# ugrep finds aliases (in parens)
     \	U+005C	REVERSE SOLIDUS (backslash)
 
-    $ ugrep ^x			# Regex ^ and $ work, mostly
+    $ ugrep ^x				# Regex ^ and $ work, mostly
     ⊻	U+22BB	XOR
     ⌧	U+2327	X IN A RECTANGLE BOX (clear key)
 
-    $ ugrep .?  |  less
-    [ This would show you every single Unicode character! ]
+    $ ugrep .?  |  less			# Show every single Unicode character!
 """
     )
 

@@ -46,12 +46,13 @@ def usage():
     print("""\
 ugrep: find unicode characters based on their names or codepoints
 Usage: 
-    ugrep [-w] <codepoint> | <character> | <character name>
+    ugrep [-w] <character> | <codepoint ...> | <character name>
 
     	-w:	matches only whole words, e.g., ugrep -w pi
 
     <character> is a single character, e.g.:  ugrep ☙
-    <codepoint> is a unicode character number, e.g.: ugrep U+23FB
+    <codepoint> is one or more hexadecimal unicode character numbers, 
+		e.g.: ugrep U+23FB  or ugrep 23b{0..9}
     <character name> is a regular expression, see examples below.
 
     Character name examples:
@@ -271,14 +272,19 @@ def main():
         printmatches(s)
         exit(0)
 
-    # Is it a hexadecimal number: 26A0 or 0xdeadbeef or U+FACE?
+    # Is first arg a hexadecimal number? E.g., 26A0, 0xdeadbeef, U+FACE
     # Then *also* look up that code point.
     if match(r"(?i)^(U\+?|0x)?[0-9A-F]+$", argv[1]):
-        s=makeregexcodepoint(argv[1])
-        compileit(s)
-        printmatches(s)
+        # Loop to allow people to do things like "ugrep 23b{0..9}"
+        for arg in argv[1:]:
+            if match(r"(?i)^(U\+?|0x)?[0-9A-F]+$", arg):
+                s=makeregexcodepoint(arg)
+                compileit(s)
+                printmatches(s)
+            else:
+                break
 
-    # Now, look it up as a character name or alias. 
+    # Now, look up the entire argv[] as a character name or alias. 
     s=makeregexcharname()
     printmatches(s)
 

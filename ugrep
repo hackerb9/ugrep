@@ -39,8 +39,8 @@ Usage:
 
     <character> is a single character, e.g.:  ugrep ☙
     <codepoint> is one or more hexadecimal unicode character numbers, 
-		optionally prefixed by "U+" or "0x".
-		e.g.: ugrep U+1F639  or  ugrep 23b{0..7}
+		optionally prefixed by "U+" or "0x".e.g.: ugrep U+1F639.
+    		Ranges are allowed with to dots: ugrep 23b0..f
     <character name> is a regular expression, see examples below.
 
 Character name examples:
@@ -340,22 +340,22 @@ def braceexpansion():
       {01..10} is expanded by Bash to ten numbers, but
       {01..0f} is expanded by this program to fifteen!
     
-    Because of that inconsistency, maybe this isn't such a good idea.
-    I'm going to branch this change.
+    * Because of that inconsistency, maybe this isn't such a good idea.
+      Perhaps we should make people have to prefix hex with U+ or 0x?
 
     """
 
     global argv
     s=r"""(?mix)
-	  (?P<prefix>.*?)
-	  \{                    # Literal open curly brace
+	  (?P<prefix>[^{]*)
+	  {?                   # Literal open curly brace (optional)
 	  (U\+?|0?x)?
     	  (?P<start>.*)
-	  \.\.                  # Literal two periods
+	  \.\.                  # Literal two periods. MANDATORY.
 	  (U\+?|0?x)?
 	  (?P<end>.*)
-	  \}                    # Literal close curly brace
-	  (?P<suffix>.*)
+	  }?                  # Literal close curly brace (optional)
+	  (?P<suffix>[^}]*)
     """
     s=compile(s)
     newargv=[argv[0]]
@@ -367,16 +367,24 @@ def braceexpansion():
         else:
             debugprint("Doing brace expansion on " + arg)
             g=m.groupdict()
-            start=g["start"]
-            end=g["end"]
-            
+            prefix=g["prefix"]
+            start=g["start"].strip("{}") # Python doesn't do lazy regexps?
+            end=g["end"].strip("{}")     # So, we kludge this way.
+
+            if start == "":
+                # They left off the braces: 2390..f instead of 239{0..f}
+                start=prefix
+                end=prefix[:-len(end)]+end
+                prefix=""
+                
+            debugprint("Found range from " + start + " to " + end)
             z=max(len(start), len(end))
             start=int(start, 16)
             end=int(end, 16)
 
             for i in range(start, end+1):
                 hexits=hex(i)[2:].zfill(z)
-                newargv.append( g["prefix"] + hexits + g["suffix"] )
+                newargv.append( prefix + hexits + g["suffix"] )
 
     argv=newargv
     return(0)

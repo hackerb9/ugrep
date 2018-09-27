@@ -176,7 +176,7 @@ def braceexpansion():
         else:
             newargv.append(arg)
 
-        argv=newargv
+    argv=newargv
     return(0)
 
 

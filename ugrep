@@ -120,75 +120,6 @@ def main():
     printmatches(s)
 
 
-def braceexpansion():
-    """Look for ranges "{a..z}" in argv and expand it by inserting new elements.
-
-    {0..7} 	-->	0 1 2 3 4 5 6 7
-    abc{0..7} 	--> 	abc0 abc1 abc2 abc3 abc4 abc5 abc6 abc7
-
-    This is mostly useful for people who do not run a modern UNIX
-    shell, like GNU Bash that expand braces on the command line. 
-
-    It also fills in the gap until shells understand hexadecimal
-    ranges. For example, the following is ignored by bash-4.4, but we
-    want to accept it in ugrep.
-
-    23b{8..f}	-->	23b8 23b9 23ba 23bb 23bc 23bd 23be 23bf
-
-    Notes:
-
-    * In Bash, if start or end begin with a "0", then it zfills to
-      that width. For this program, the 0 is optional as it always
-      uses the largest width of the two ends E.g., 23{0..ff} -> 2300, 2301,...
-    * Does not handle nested braces nor alternation with a comma.
-    * Should check for invalid ranges and ignore them instead of barfing.
-    * Checks for and ignores prefix of U+ or 0x
-
-    * Presumes both arguments are hexadecimal, this makes things weird where 
-      {01..10} is expanded by Bash to ten numbers, but
-      {01..0f} is expanded by this program to fifteen!
-    
-    Maybe this isn't such a good idea. I'm going to branch this change.
-
-    """
-
-    global argv
-    s=r"""(?mix)
-	  (?P<prefix>.*?)
-	  \{                    # Literal open curly brace
-	  (U\+?|0x)?
-    	  (?P<start>.*)
-	  \.\.                  # Literal two periods
-	  (U\+?|0x)?
-	  (?P<end>.*)
-	  \}                    # Literal close curly brace
-	  (?P<suffix>.*)
-    """
-    s=compile(s)
-    newargv=[argv[0]]
-    for arg in argv[1:]:
-        m=search(s, arg)
-        if not m:
-            newargv.append(arg)
-        else:
-            debugprint("Doing brace expansion on " + arg)
-            g=m.groupdict()
-            start=g["start"]
-            end=g["end"]
-            
-            z=max(len(start), len(end))
-
-            start=int(start, 16)
-            end=int(end, 16)
-
-            for i in range(start, end+1):
-                hexits=hex(i)[2:].zfill(z)
-                newargv.append( g["prefix"] + hexits + g["suffix"] )
-
-    argv=newargv
-    return(0)
-
-
 def compileit(s):
     "Compile the regular expresion in s, or die trying."
     global ucd, argv
@@ -378,6 +309,75 @@ def makeregexcodepoint(cp):
     """
     s="(?mix)"+s                     # multiline, case insensitive, verbose
     return(s)
+
+
+
+def braceexpansion():
+    """Look for ranges "{a..z}" in argv[] and expand by inserting new elements.
+
+    {0..7} 	-->	0 1 2 3 4 5 6 7
+    abc{0..7} 	--> 	abc0 abc1 abc2 abc3 abc4 abc5 abc6 abc7
+
+    This is mostly useful for people who do not run a modern UNIX
+    shell, like GNU Bash that expands braces on the command line. 
+
+    It also fills in the gap until shells understand hexadecimal
+    ranges. For example, the following is ignored by bash-4.4, but we
+    want to accept it in ugrep.
+
+    23b{8..f}	-->	23b8 23b9 23ba 23bb 23bc 23bd 23be 23bf
+
+    Notes:
+
+    * In Bash, if start or end begin with a "0", then it zfills to
+      that width. For this program, the 0 is optional as it always
+      uses the largest width of the two ends E.g., 23{0..ff} -> 2300, 2301,...
+    * Does not handle nested braces nor alternation with a comma.
+    * Should check for invalid ranges and ignore them instead of barfing.
+    * Checks for and ignores prefix of U+ or 0x
+
+    * Presumes both arguments are hexadecimal, this makes things weird where 
+      {01..10} is expanded by Bash to ten numbers, but
+      {01..0f} is expanded by this program to fifteen!
+    
+    Maybe this isn't such a good idea. I'm going to branch this change.
+    """
+
+    global argv
+    s=r"""(?mix)
+	  (?P<prefix>.*?)
+	  \{                    # Literal open curly brace
+	  (U\+?|0x)?
+    	  (?P<start>.*)
+	  \.\.                  # Literal two periods
+	  (U\+?|0x)?
+	  (?P<end>.*)
+	  \}                    # Literal close curly brace
+	  (?P<suffix>.*)
+    """
+    s=compile(s)
+    newargv=[argv[0]]
+
+    for arg in argv[1:]:
+        m=search(s, arg)
+        if not m:
+            newargv.append(arg)
+        else:
+            debugprint("Doing brace expansion on " + arg)
+            g=m.groupdict()
+            start=g["start"]
+            end=g["end"]
+            
+            z=max(len(start), len(end))
+            start=int(start, 16)
+            end=int(end, 16)
+
+            for i in range(start, end+1):
+                hexits=hex(i)[2:].zfill(z)
+                newargv.append( g["prefix"] + hexits + g["suffix"] )
+
+    argv=newargv
+    return(0)
 
 
 def eprint(*args, **kwargs):

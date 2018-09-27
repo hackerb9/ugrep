@@ -16,7 +16,7 @@
 # ugrep vai
 # ugrep heavy
 # ugrep drawing
-# ugrep 23{{0..9},{a..f}}{{0..9},{a..f}}
+# ugrep 23{00..ff}
 
 # GPL ≥3 (see LICENSE file)
 # B9 September 2018
@@ -340,17 +340,19 @@ def braceexpansion():
       {01..10} is expanded by Bash to ten numbers, but
       {01..0f} is expanded by this program to fifteen!
     
-    Maybe this isn't such a good idea. I'm going to branch this change.
+    Because of that inconsistency, maybe this isn't such a good idea.
+    I'm going to branch this change.
+
     """
 
     global argv
     s=r"""(?mix)
 	  (?P<prefix>.*?)
 	  \{                    # Literal open curly brace
-	  (U\+?|0x)?
+	  (U\+?|0?x)?
     	  (?P<start>.*)
 	  \.\.                  # Literal two periods
-	  (U\+?|0x)?
+	  (U\+?|0?x)?
 	  (?P<end>.*)
 	  \}                    # Literal close curly brace
 	  (?P<suffix>.*)

@@ -136,12 +136,13 @@ def braceexpansion():
     23b{8..f}	-->	23b8 23b9 23ba 23bb 23bc 23bd 23be 23bf
 
     Notes:
+
+    * In Bash, if start or end begin with a "0", then it zfills to
+      that width. For this program, the 0 is optional as it always
+      uses the largest width of the two ends E.g., 23{0..ff} -> 2300, 2301,...
     * Does not handle nested braces nor alternation with a comma.
-    * Should fill to width if either range begins with a zero.
-    * Does not handle zero filling in two-hexit numbers, 23{00..1F} correctly.
-    * Should returns sufficent digits to make result 4 hexits long.
     * Should check for invalid ranges and ignore them instead of barfing.
-    * Should check for and ignore U+,0x
+    * Checks for and ignores prefix of U+ or 0x
 
     * Presumes both arguments are hexadecimal, this makes things weird where 
       {01..10} is expanded by Bash to ten numbers, but
@@ -155,9 +156,10 @@ def braceexpansion():
     s=r"""(?mix)
 	  (?P<prefix>.*?)
 	  \{                    # Literal open curly brace
-	  (U+|0x)?
+	  (U\+?|0x)?
     	  (?P<start>.*)
 	  \.\.                  # Literal two periods
+	  (U\+?|0x)?
 	  (?P<end>.*)
 	  \}                    # Literal close curly brace
 	  (?P<suffix>.*)
@@ -166,15 +168,22 @@ def braceexpansion():
     newargv=[argv[0]]
     for arg in argv[1:]:
         m=search(s, arg)
-        if m:
+        if not m:
+            newargv.append(arg)
+        else:
             debugprint("Doing brace expansion on " + arg)
             g=m.groupdict()
-            start=int(g["start"], 16)
-            end=int(g["end"], 16)
+            start=g["start"]
+            end=g["end"]
+            
+            z=max(len(start), len(end))
+
+            start=int(start, 16)
+            end=int(end, 16)
+
             for i in range(start, end+1):
-                newargv.append( g["prefix"] + hex(i)[2:] + g["suffix"] )
-        else:
-            newargv.append(arg)
+                hexits=hex(i)[2:].zfill(z)
+                newargv.append( g["prefix"] + hexits + g["suffix"] )
 
     argv=newargv
     return(0)

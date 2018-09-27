@@ -29,20 +29,6 @@ from sys import stderr
 
 debug=False
 
-def eprint(*args, **kwargs):
-    "Print to stderr"
-    print(*args, file=stderr, **kwargs)
-
-def err(*args, **kwargs):
-    "Print to stderr with program name prefixed"
-    eprint(basename(argv[0]) + ": ", end='')
-    eprint(*args, **kwargs)
-
-def debugprint(*args, **kwargs):
-    "If debug var is True, print to stderr with progname prefix"
-    if (debug):
-        err(*args, **kwargs)
-
 def usage():
     print("""\
 ugrep: find unicode characters based on their names or codepoints
@@ -89,6 +75,135 @@ Character name examples:
     $ ugrep .?  |  less			# Show every single Unicode character!
 """
     )
+
+# Main
+def main():
+    global argv
+
+    if len(argv) == 1:
+        usage()
+        exit(1)
+
+    if argv[1]=='-w':
+        argv=argv[1:]
+        for i in range(1,len(argv)):
+            argv[i]="\\b"+argv[i]+"\\b"
+        debugprint(argv)
+
+    # Load the Unicode Data into the global ucd variable.
+    loaducd()
+    
+    # Is it a single character? Then only show that one character.
+    if len(argv[1])==1:
+        s=makeregexcodepoint( hex(ord(argv[1])) )
+        compileit(s)
+        printmatches(s)
+        exit(0)
+
+    # Do brace expansion on argv if our system doesn't have it.
+    braceexpansion()
+
+    # Is first arg a hexadecimal number? E.g., 26A0, 0xdeadbeef, U+FACE
+    # Then *also* look up that code point.
+    if match(r"(?i)^(U\+?|0x)?[0-9A-F]+$", argv[1]):
+        # Loop to allow people to do things like "ugrep 23b{0..9}"
+        for arg in argv[1:]:
+            if match(r"(?i)^(U\+?|0x)?[0-9A-F]+$", arg):
+                s=makeregexcodepoint(arg)
+                compileit(s)
+                printmatches(s)
+            else:
+                break
+
+    # Now, look up the entire argv[] as a character name or alias. 
+    s=makeregexcharname()
+    printmatches(s)
+
+
+def braceexpansion():
+    """Look for ranges "{a..z}" in argv and expand it by inserting new elements.
+
+    {0..7} 	-->	0 1 2 3 4 5 6 7
+    abc{0..7} 	--> 	abc0 abc1 abc2 abc3 abc4 abc5 abc6 abc7
+
+    This is mostly useful for people who do not run a modern UNIX
+    shell, like GNU Bash that would expand the braces on the command
+    line. It also fills in the gap in older shells that do not yet
+    understand hexadecimal ranges. For example, the following is
+    ignored by bash-4.4, but we want to accept it in ugrep.
+
+    23b{8..f}	-->	23b8 23b9 23ba 23bb 23bc 23bd 23be 23bf
+
+    Notes:
+    * Does not handle nested braces nor alternation with a comma.
+    * 
+    * Does not handle zero filling in two-hexit numbers, 23{00..1F} correctly.
+    * Should returns sufficent digits to make result 4 hexits long.
+    * Should check for invalid ranges and ignore them instead of barfing.
+
+    * Presumes both arguments are hexadecimal, this makes things weird where 
+      {01..10} is expanded by Bash to ten numbers, but
+      {01..0f} is expanded by this program to fifteen!
+    
+    Maybe this isn't such a good idea. I'm going to branch this change.
+
+    """
+
+    global argv
+    s=r"(?mix)(?P<prefix>.*?)\{(?P<start>.*)\.\.(?P<end>.*)\}(?P<suffix>.*)"
+
+    s=compile(s)
+    newargv=[argv[0]]
+    for arg in argv[1:]:
+        m=search(s, arg)
+        if m:
+            debugprint("Doing brace expansion on " + arg)
+            g=m.groupdict()
+            start=int(g["start"], 16)
+            end=int(g["end"], 16)
+            for i in range(start, end+1):
+                newargv.append( g["prefix"] + hex(i)[2:] + g["suffix"] )
+        else:
+            newargv.append(arg)
+
+        argv=newargv
+    return(0)
+
+
+def compileit(s):
+    "Compile the regular expresion in s, or die trying."
+    global ucd, argv
+
+    if debug:
+        debugprint(s)
+        m=search(s,ucd)
+        if not m: debugprint("Uncompiled, definitely not in ucd")
+
+    try:
+        s=compile(s)
+    except error as e:
+        err("Error parsing regex: '%s'" % ".*".join(argv[1:]))
+        err(e)
+        exit(3)
+
+
+
+def printmatches(s):
+    for m in finditer(s, ucd):
+        if m:
+            g=m.groupdict()
+            if g["hex"] == None: g["hex"]=g["hextwo"]
+            if g["name"] == None: g["name"]=g["desctwo"]
+            if g["alias"] == None: g["alias"]=g["aliastwo"]
+
+            c=chr(int(g["hex"], 16))
+            if not c.isprintable(): c="\ufffd" # U+FFFD=="Replacement Character"
+            print(c, end='\t')
+            print ("U+" + g["hex"], end='\t')
+            print(g["name"], end='')
+            if (len(g["alias"]) and isdifferent(g["name"], g["alias"])):
+                print (" (" + g["alias"].lower() + ")", end='')
+            print()
 
 def isdifferent(a, b):
     """Given two strings A & B, determine if B is different enough from A
@@ -246,79 +361,20 @@ def makeregexcodepoint(cp):
     return(s)
 
 
-# Main
-def main():
-    global argv
+def eprint(*args, **kwargs):
+    "Print to stderr"
+    print(*args, file=stderr, **kwargs)
 
-    if len(argv) == 1:
-        usage()
-        exit(1)
+def err(*args, **kwargs):
+    "Print to stderr with program name prefixed"
+    eprint(basename(argv[0]) + ": ", end='')
+    eprint(*args, **kwargs)
 
-    if argv[1]=='-w':
-        argv=argv[1:]
-        for i in range(1,len(argv)):
-            argv[i]="\\b"+argv[i]+"\\b"
-        debugprint(argv)
+def debugprint(*args, **kwargs):
+    "If debug var is True, print to stderr with progname prefix"
+    if (debug):
+        err(*args, **kwargs)
 
-    # Load the Unicode Data into the global ucd variable.
-    loaducd()
-    
-    # Is it a single character? Then only show that one character.
-    if len(argv[1])==1:
-        s=makeregexcodepoint( hex(ord(argv[1])) )
-        compileit(s)
-        printmatches(s)
-        exit(0)
-
-    # Is first arg a hexadecimal number? E.g., 26A0, 0xdeadbeef, U+FACE
-    # Then *also* look up that code point.
-    if match(r"(?i)^(U\+?|0x)?[0-9A-F]+$", argv[1]):
-        # Loop to allow people to do things like "ugrep 23b{0..9}"
-        for arg in argv[1:]:
-            if match(r"(?i)^(U\+?|0x)?[0-9A-F]+$", arg):
-                s=makeregexcodepoint(arg)
-                compileit(s)
-                printmatches(s)
-            else:
-                break
-
-    # Now, look up the entire argv[] as a character name or alias. 
-    s=makeregexcharname()
-    printmatches(s)
-
-
-def compileit(s):
-    global ucd, argv
-    if debug:
-        debugprint(s)
-        m=search(s,ucd)
-        if not m: debugprint("Definitely not in ucd")
-
-    try:
-        s=compile(s)
-    except error as e:
-        err("Error parsing regex: '%s'" % ".*".join(argv[1:]))
-        err(e)
-        exit(3)
-
-
-
-def printmatches(s):
-    for m in finditer(s, ucd):
-        if m:
-            g=m.groupdict()
-            if g["hex"] == None: g["hex"]=g["hextwo"]
-            if g["name"] == None: g["name"]=g["desctwo"]
-            if g["alias"] == None: g["alias"]=g["aliastwo"]
-
-            c=chr(int(g["hex"], 16))
-            if not c.isprintable(): c="\ufffd" # U+FFFD=="Replacement Character"
-            print(c, end='\t')
-            print ("U+" + g["hex"], end='\t')
-            print(g["name"], end='')
-            if (len(g["alias"]) and isdifferent(g["name"], g["alias"])):
-                print (" (" + g["alias"].lower() + ")", end='')
-            print()
 
 
 main()

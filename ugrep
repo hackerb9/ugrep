@@ -213,6 +213,7 @@ def loaducd():
     "Find the UnicodeData.txt file and load it up into ucd global variable."
 
     global ucd
+    ucd=None
     ucdplaces=( "/usr/local/share/unicode/UnicodeData.txt",
                 "/usr/share/unicode/UnicodeData.txt",
                 "~/.local/share/unicode/UnicodeData.txt",
@@ -230,9 +231,16 @@ def loaducd():
         eprint("""\
     Could not find UnicodeData.txt in:
 
-    %s
+%s
     On most GNU/Linux systems your package manager can install it easily.
-    For example:  apt install unicode-data.""" %
+    For example:  apt install unicode-data.
+
+    Alternately, you can grab it via wget like so:
+
+        mkdir -p ~/.local/share/unicode
+	cd ~/.local/share/unicode
+        wget ftp://ftp.unicode.org/Public/UNIDATA/UnicodeData.txt
+""" %
                ("".join(["    " + s + "\n" for s in ucdplaces])))
         exit(2)
 

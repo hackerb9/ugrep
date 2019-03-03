@@ -16,7 +16,7 @@
 # ugrep vai
 # ugrep heavy
 # ugrep drawing
-# ugrep 23{00..ff}
+# ugrep 2300..ff
 
 # GPL ≥3 (see LICENSE file)
 # B9 September 2018
@@ -40,7 +40,7 @@ Usage:
     <character> is a single character, e.g.:  ugrep ☙
     <codepoint> is one or more hexadecimal unicode character numbers, 
 		optionally prefixed by "U+" or "0x".e.g.: ugrep U+1F639.
-    		Ranges are allowed with to dots: ugrep 23b0..f
+    		Ranges are allowed with two dots: ugrep 23b0..f
     <character name> is a regular expression, see examples below.
 
 Character name examples:

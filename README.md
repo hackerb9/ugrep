@@ -40,6 +40,11 @@ how many heart emojis Unicode has. 😜)
 	    😍	U+1F60D SMILING FACE WITH HEART-SHAPED EYES
 	    😻	U+1F63B	SMILING CAT FACE WITH HEART-SHAPED EYES
 
+* Reverse lookup to find the codepoint of a single character:
+
+	    $ ugrep ☺
+	    ☺       U+263A  WHITE SMILING FACE
+
 * Arguments on the command line have an implicit wildcard between them:
 
 	    $ ugrep right.*gle
@@ -51,25 +56,47 @@ how many heart emojis Unicode has. 😜)
 
 * You can use regular expressions for fancier searches: 
 
-	    $ ugrep "\bR\b"         # The letter R used as a word
+	    $ ugrep ^x		    #  Regex anchors ^ and $ work
+	    ⊻	U+22BB	XOR
+	    ⌧	U+2327	X IN A RECTANGLE BOX (clear key)
+
+* Use the `-w` flag to search only for complete words:
+	    $ ugrep -w R            # The letter R used as a word
+	    $ ugrep "\bR\b"         # (regex equivalent)
 	    R	U+0052  LATIN CAPITAL LETTER R
 	    Ŗ	U+0156  LATIN CAPITAL LETTER R WITH CEDILLA
 	    ℛ	U+211B  SCRIPT CAPITAL R (Script r)
 	    ℜ	U+211C  BLACK-LETTER CAPITAL R (Black-letter r)
 	    ℝ	U+211D  DOUBLE-STRUCK CAPITAL R (Double-struck r)
 
-	    $ ugrep ^x		    #  Regex anchors ^ and $ work
-	    ⊻	U+22BB	XOR
-	    ⌧	U+2327	X IN A RECTANGLE BOX (clear key)
-
 * Aliases (alternate names) are also searched:
 
 	    $ ugrep backslash
 	    \	U+005C	REVERSE SOLIDUS (backslash)
 
-* Browse through all unicode characters:
+* Browse through a range of Unicode characters:
 
-	    $ ugrep . | less
+	    $ ugrep 23b0..f
+	    ⎰	U+23B0	UPPER LEFT OR LOWER RIGHT CURLY BRACKET SECTION
+	    ⎱	U+23B1	UPPER RIGHT OR LOWER LEFT CURLY BRACKET SECTION
+	    ⎲	U+23B2	SUMMATION TOP
+	    ⎳	U+23B3	SUMMATION BOTTOM
+	    ⎴	U+23B4	TOP SQUARE BRACKET
+	    ⎵	U+23B5	BOTTOM SQUARE BRACKET
+	    ⎶	U+23B6	BOTTOM SQUARE BRACKET OVER TOP SQUARE BRACKET
+	    ⎷	U+23B7	RADICAL SYMBOL BOTTOM
+	    ⎸	U+23B8	LEFT VERTICAL BOX LINE
+	    ⎹	U+23B9	RIGHT VERTICAL BOX LINE
+	    ⎺	U+23BA	HORIZONTAL SCAN LINE-1
+	    ⎻	U+23BB	HORIZONTAL SCAN LINE-3
+	    ⎼	U+23BC	HORIZONTAL SCAN LINE-7
+	    ⎽	U+23BD	HORIZONTAL SCAN LINE-9
+	    ⎾	U+23BE	DENTISTRY SYMBOL LIGHT VERTICAL AND TOP RIGHT
+	    ⎿	U+23BF	DENTISTRY SYMBOL LIGHT VERTICAL AND BOTTOM RIGHT
+
+* View _all_ Unicode characters:
+
+	    $ ugrep ".?" | less
 	    ⋮
 	    ⚳	U+26B3	CERES
 	    ⚴	U+26B4	PALLAS
@@ -80,7 +107,7 @@ how many heart emojis Unicode has. 😜)
 	    ⚹	U+26B9	SEXTILE
 	    ⚺	U+26BA	SEMISEXTILE
 	    ⚻	U+26BB	QUINCUNX
-	    ⋮
+	    ⋮	[ ... about 30,000 lines elided for brevity ... ]
 
 	Sometimes it's useful to page through the unicode table and
 	see what characters are defined in a region. (Tip: search for
@@ -114,8 +141,6 @@ and place it in `~/.local/share/unicode/UnicodeData.txt`
 **Not hard**: Or, if you wish the file to be accessible to all users on
 your machine, place it in `/usr/local/share/unicode/UnicodeData.txt`.
 
-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-
 ## Installation
 
 It's just a shell script. Download it to `/usr/local/bin` or `~/bin`
@@ -123,7 +148,9 @@ and make it executable.
 
     cd /usr/local/bin
     wget https://github.com/hackerb9/ugrep/blob/master/ugrep
-    chmod 755 ugrep
+    chmod +x ugrep
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
 ## Boring Implementation notes
 

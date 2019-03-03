@@ -61,13 +61,13 @@ how many heart emojis Unicode has. 😜)
 	    ⌧	U+2327	X IN A RECTANGLE BOX (clear key)
 
 * Use the `-w` flag to search only for complete words:
-	    $ ugrep -w R            # The letter R used as a word
-	    $ ugrep "\bR\b"         # (regex equivalent)
-	    R	U+0052  LATIN CAPITAL LETTER R
-	    Ŗ	U+0156  LATIN CAPITAL LETTER R WITH CEDILLA
-	    ℛ	U+211B  SCRIPT CAPITAL R (Script r)
-	    ℜ	U+211C  BLACK-LETTER CAPITAL R (Black-letter r)
-	    ℝ	U+211D  DOUBLE-STRUCK CAPITAL R (Double-struck r)
+            $ ugrep -w R            # The letter R used as a word
+            $ ugrep "\bR\b"         # (regex equivalent)
+            R   U+0052  LATIN CAPITAL LETTER R
+            Ŗ   U+0156  LATIN CAPITAL LETTER R WITH CEDILLA
+            ℛ   U+211B  SCRIPT CAPITAL R (Script r)
+            ℜ   U+211C  BLACK-LETTER CAPITAL R (Black-letter r)
+            ℝ   U+211D  DOUBLE-STRUCK CAPITAL R (Double-struck r)
 
 * Aliases (alternate names) are also searched:
 

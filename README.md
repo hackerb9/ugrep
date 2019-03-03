@@ -40,7 +40,7 @@ how many heart emojis Unicode has. 😜)
 	    😍	U+1F60D SMILING FACE WITH HEART-SHAPED EYES
 	    😻	U+1F63B	SMILING CAT FACE WITH HEART-SHAPED EYES
 
-* Reverse lookup to find the codepoint of a single character:
+* Paste in a single character to lookup its codepoint:
 
 	    $ ugrep ☺
 	    ☺       U+263A  WHITE SMILING FACE

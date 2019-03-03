@@ -77,28 +77,7 @@ how many heart emojis Unicode has. 😜)
 
 * Browse through a range of Unicode characters:
 
-	    $ ugrep 23b0..f
-	    ⎰	U+23B0	UPPER LEFT OR LOWER RIGHT CURLY BRACKET SECTION
-	    ⎱	U+23B1	UPPER RIGHT OR LOWER LEFT CURLY BRACKET SECTION
-	    ⎲	U+23B2	SUMMATION TOP
-	    ⎳	U+23B3	SUMMATION BOTTOM
-	    ⎴	U+23B4	TOP SQUARE BRACKET
-	    ⎵	U+23B5	BOTTOM SQUARE BRACKET
-	    ⎶	U+23B6	BOTTOM SQUARE BRACKET OVER TOP SQUARE BRACKET
-	    ⎷	U+23B7	RADICAL SYMBOL BOTTOM
-	    ⎸	U+23B8	LEFT VERTICAL BOX LINE
-	    ⎹	U+23B9	RIGHT VERTICAL BOX LINE
-	    ⎺	U+23BA	HORIZONTAL SCAN LINE-1
-	    ⎻	U+23BB	HORIZONTAL SCAN LINE-3
-	    ⎼	U+23BC	HORIZONTAL SCAN LINE-7
-	    ⎽	U+23BD	HORIZONTAL SCAN LINE-9
-	    ⎾	U+23BE	DENTISTRY SYMBOL LIGHT VERTICAL AND TOP RIGHT
-	    ⎿	U+23BF	DENTISTRY SYMBOL LIGHT VERTICAL AND BOTTOM RIGHT
-
-* View _all_ Unicode characters:
-
-	    $ ugrep ".?" | less
-	    ⋮
+	    $ ugrep 26b3..b
 	    ⚳	U+26B3	CERES
 	    ⚴	U+26B4	PALLAS
 	    ⚵	U+26B5	JUNO
@@ -108,11 +87,36 @@ how many heart emojis Unicode has. 😜)
 	    ⚹	U+26B9	SEXTILE
 	    ⚺	U+26BA	SEMISEXTILE
 	    ⚻	U+26BB	QUINCUNX
-	    ⋮	[ ... about 30,000 lines elided for brevity ... ]
 
-	Sometimes it's useful to page through the unicode table and
-	see what characters are defined in a region. (Tip: search for
-	a code point in `less` by pressing `/U\+A60F`).
+	    $ ugrep 1f470..ff
+	    👰	U+1F470	BRIDE WITH VEIL
+	    👱	U+1F471	PERSON WITH BLOND HAIR
+	    👲	U+1F472	MAN WITH GUA PI MAO
+	    👳	U+1F473	MAN WITH TURBAN
+	    👴	U+1F474	OLDER MAN
+	    👵	U+1F475	OLDER WOMAN
+	    👶	U+1F476	BABY
+	    👷	U+1F477	CONSTRUCTION WORKER
+	    👸	U+1F478	PRINCESS
+	    👹	U+1F479	JAPANESE OGRE
+	    👺	U+1F47A	JAPANESE GOBLIN
+	    👻	U+1F47B	GHOST
+	    👼	U+1F47C	BABY ANGEL
+	    👽	U+1F47D	EXTRATERRESTRIAL ALIEN
+	    ⋮	[ ... truncated for brevity ... ]
+	    📼	U+1F4FC	VIDEOCASSETTE
+	    📽	U+1F4FD	FILM PROJECTOR
+	    📾	U+1F4FE	PORTABLE STEREO
+	    📿	U+1F4FF	PRAYER BEADS
+
+* View _all_ Unicode characters:
+
+	    $ ugrep ".?" | less
+	    ⋮	[ ... over 30,000 glyphs elided for brevity ... ]
+
+	Sometimes it's useful (or fun) to page through the Unicode
+	table and see what characters are defined in a region. (Tip:
+	search for a code point in `less` by pressing `/U\+A60F`).
 
 ### Fun things to try:
 

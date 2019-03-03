@@ -12,8 +12,8 @@ literally, so you can easily cut-and-paste. Ugrep is useful for
 looking up Emojis 😤, finding obscure symbols ⚸⅗ℏ℞☧☭, or beautiful
 glyphs to decorate your text. 🙶❡✯🟔❢🙷
 
-See also b9's `charname` for the reverse operation (lookup a
-character you've pasted into the terminal.)
+You can also use it for the reverse operation to lookup a single
+character you've pasted into the terminal.
 
 ## Usage
 
@@ -115,6 +115,15 @@ and place it in `~/.local/share/unicode/UnicodeData.txt`
 your machine, place it in `/usr/local/share/unicode/UnicodeData.txt`.
 
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+## Installation
+
+It's just a shell script. Download it to `/usr/local/bin` or `~/bin`
+and make it executable.
+
+    cd /usr/local/bin
+    wget https://github.com/hackerb9/ugrep/blob/master/ugrep
+    chmod 755 ugrep
 
 ## Boring Implementation notes
 

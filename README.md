@@ -56,6 +56,19 @@ how many heart emojis Unicode has. 😜)
 
 * You can use regular expressions for fancier searches: 
 
+	    $ ugrep -w '(wo|hu)?mans?'
+	    ᛗ	U+16D7	RUNIC LETTER MANNAZ MAN M
+	    ⛀	U+26C0	WHITE DRAUGHTS MAN
+	    ⛂	U+26C2	BLACK DRAUGHTS MAN
+	    ⼈	U+2F08	KANGXI RADICAL MAN
+	    ⼥	U+2F25	KANGXI RADICAL WOMAN
+	    𝌂	U+1D302	DIGRAM FOR HUMAN EARTH
+	    𝌄	U+1D304	DIGRAM FOR EARTHLY HUMAN
+	    🕴	U+1F574	MAN IN BUSINESS SUIT LEVITATING
+	    �	U+1F57A	MAN DANCING
+	    �	U+1F930	PREGNANT WOMAN
+	    �	U+1F935	MAN IN TUXEDO
+	    
 	    $ ugrep ^x		    #  Regex anchors ^ and $ work
 	    ⊻	U+22BB	XOR
 	    ⌧	U+2327	X IN A RECTANGLE BOX (clear key)

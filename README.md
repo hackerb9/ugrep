@@ -17,7 +17,7 @@ character you've pasted into the terminal.
 
 ## Usage
 
-Usage: **ugrep** _regex_
+Usage: **ugrep** [-w] _regex_
 
 Where _regex_ is a regular expression. If you don't know [regular
 expressions](https://docs.python.org/3/howto/regex.html), don't worry.

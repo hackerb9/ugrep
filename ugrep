@@ -414,8 +414,12 @@ def debugprint(*args, **kwargs):
 
 
 
-main()
-
+### Run the main routine
+try:
+    main()
+except BrokenPipeError:
+    # Ignore non-error errors. For example: 'ugrep -w pi | head'
+    True
 
 
 # Implementation notes:

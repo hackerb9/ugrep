@@ -148,7 +148,7 @@ def iscombining(c):
     # Given a category 'c', return True if it is a combining character.
     # We presume all combining characters are in category 'M' and vice-versa.
     if debug:
-        printdebug ("XXX category is <" + c + ">")  
+        debugprint ("XXX category is <" + c + ">")  
 
     return c.startswith('M')
 
@@ -336,7 +336,8 @@ def makeregexcodepoint(cp):
     s=r"""^
         (?P<hex>"""+cp+""");		#first field is hex codepoint
         (?P<name>[^;]*);		# second field is charactername
-        ([^;]*;){8}			# skip next 8 fields
+        (?P<category>[^;]*);		# third field is category
+        ([^;]*;){7}			# skip next 7 fields
         (?P<alias>[^;]*)            	# field 11 is comment/alias
     """
     s="(?mix)"+s                     # multiline, case insensitive, verbose

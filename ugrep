@@ -138,16 +138,28 @@ def compileit(s):
 
 
 
+def isprint(c):
+    # Given a category 'c', return True if it is printable.
+    # We presume the only non-printable category is 'C' (control).
+    # However, technically, much of category 'Z' (spaces) is non-printable.
+    return not c.startswith('C')
+
+def iscombining(c):
+    # Given a category 'c', return True if it is a combining character.
+    # We presume all combining characters are in category 'M' and vice-versa.
+    return c.startswith('M')
+
 def printmatches(s):
     for m in finditer(s, ucd):
         if m:
             g=m.groupdict()
             if g["hex"] == None: g["hex"]=g["hextwo"]
             if g["name"] == None: g["name"]=g["desctwo"]
+            if g["category"] == None: g["category"]=g["categorytwo"]
             if g["alias"] == None: g["alias"]=g["aliastwo"]
-
             c=chr(int(g["hex"], 16))
-            if not c.isprintable(): c="\ufffd" # U+FFFD=="Replacement Character"
+            if not isprint(g["category"]): c="\ufffd" # "Replacement Character"
+            if iscombining(g["category"]): print(' ', end='')
             print(c, end='\t')
             print ("U+" + g["hex"], end='\t')
             print(g["name"], end='')
@@ -255,13 +267,16 @@ def makeregexcharname():
 
     # Format of ucd: each character is on a separate line.
     # Each line is fifteen columns separated by semicolons.
-    # We only care about columns 1, 2, and 11
+    # We only care about columns 1, 2, 3 and 11
     #      1: Code value
     #      2: Character name
+    #      3: General category
     #     11: ISO 10646 comment field (usually an alias)
     #
     # For example:
     #     002F;SOLIDUS;Po;0;CS;;;;;N;SLASH;;;;
+    #
+    # See Tech Report 44 for more details.
     #
     # XXX Todo: maybe look up in table of confusable entities.
 
@@ -279,7 +294,8 @@ def makeregexcharname():
     s=r"""^
         (?P<hex>[^;]*);             # first field is hexadecimal codepoint
         (?P<name>[^;]*"""+args+"""[^;]*); # field 2 (charactername) matches?
-        ([^;]*;){8}                 # skip next 8 fields
+        (?P<category>[^;]*);        # third field is general category 
+        ([^;]*;){7}                 # skip next 7 fields
         (?P<alias>[^;]*)            # field 11 is comment/alias
         (;[^;]*){4}$                # line ends with four more fields
     """
@@ -288,7 +304,8 @@ def makeregexcharname():
     r=r"""^
         (?P<hextwo>[^;]*);            # first field is hexadecimal codepoint
         (?P<desctwo>[^;]*);           # second field is charactername
-        ([^;]*;){8}                   # skip next 8 fields
+        (?P<categorytwo>[^;]*);       # third field is general category 
+        ([^;]*;){7}                   # skip next 7 fields
         (?P<aliastwo>[^;]*("""+args+""")[^;]*) # field 11 (alias) matches?
         (;[^;]*){4}$                  # line ends with four more fields
     """

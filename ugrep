@@ -27,7 +27,7 @@ from pprint import pprint
 from os.path import expanduser, expandvars, basename
 from sys import stderr
 
-debug=False
+debug=True
 
 def usage():
     print("""\
@@ -147,19 +147,26 @@ def isprint(c):
 def iscombining(c):
     # Given a category 'c', return True if it is a combining character.
     # We presume all combining characters are in category 'M' and vice-versa.
+    if debug:
+        printdebug ("XXX category is <" + c + ">")  
+
     return c.startswith('M')
 
 def printmatches(s):
+    category=""
     for m in finditer(s, ucd):
         if m:
             g=m.groupdict()
             if g["hex"] == None: g["hex"]=g["hextwo"]
             if g["name"] == None: g["name"]=g["desctwo"]
-            if g["category"] == None: g["category"]=g["categorytwo"]
+            if "category" not in g and "categorytwo" in g:
+                category=g["categorytwo"]
+            elif "category" in g:
+                category=g["category"]
             if g["alias"] == None: g["alias"]=g["aliastwo"]
             c=chr(int(g["hex"], 16))
-            if not isprint(g["category"]): c="\ufffd" # "Replacement Character"
-            if iscombining(g["category"]): print(' ', end='')
+            if not isprint(category): c="\ufffd" # "Replacement Character"
+            if iscombining(category): print(' ', end='')
             print(c, end='\t')
             print ("U+" + g["hex"], end='\t')
             print(g["name"], end='')

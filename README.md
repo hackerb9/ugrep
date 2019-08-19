@@ -261,7 +261,7 @@ that data.
   xfonts-jmk`.
 
 * Gnome-terminal uses `font-config`, so it has very nice Unicode
-  support and can easily zoom in with Ctrl-＋⃣ and Ctrl-－⃣.
+  support and can easily zoom in with Ctrl-+⃣ and Ctrl--⃣.
   Unfortunately, it has a bug where combining characters are combined
   with the following character instead of the previous. Note that
   Xterm and mlterm handles this correctly.

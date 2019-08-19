@@ -142,7 +142,11 @@ def isprint(c):
     # Given a category 'c', return True if it is printable.
     # We presume the only non-printable category is 'C' (control).
     # However, technically, much of category 'Z' (spaces) is non-printable.
-    return not c.startswith('C')
+
+    # Side note: Python is silly and regex clauses that match an empty
+    # string are set to None instead of ''. That's why we doublecheck
+    # that category is not None.
+    return c and not c.startswith('C')
 
 def iscombining(c):
     # Given a category 'c', return True if it is a combining character.
@@ -150,7 +154,7 @@ def iscombining(c):
     if debug:
         debugprint ("Category is <" + c + ">")  
 
-    return c.startswith('M')
+    return c and c.startswith('M')
 
 def printmatches(s):
     category=""
@@ -166,7 +170,7 @@ def printmatches(s):
             if g["alias"] == None: g["alias"]=g["aliastwo"]
             c=chr(int(g["hex"], 16))
             if not isprint(category): c="\ufffd" # "Replacement Character"
-            if iscombining(category): print(' ', end='')
+            if iscombining(category): print('\u25cc', end='') # "Dotted circle"
             print(c, end='\t')
             print ("U+" + g["hex"], end='\t')
             print(g["name"], end='')

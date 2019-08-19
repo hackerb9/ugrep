@@ -145,6 +145,7 @@ To see some useful and lovely glyphs, try this:
     ugrep vai
     ugrep heavy
     ugrep drawing
+    ugrep combining
 
 ## Prerequisite: UnicodeData.txt
 
@@ -237,3 +238,36 @@ UnicodeData.txt plus "manually created annotations". However, those
 annotations are what is interesting about the file (the aliases and
 cross references) and there appears to be no other official source of
 that data.
+
+
+## Bugs, Misfeatures, and Workarounds
+
+* Xterm (as of version 327) seems to be able to only show one font at
+  a time, which means a single font must have all the glyphs you want
+  shown! Technically, you can have a second font for "wide" CJK, but
+  that's still not enough. The author (hackerb9) currently prefers
+  using the Neep font like so in `~/.Xresources`:
+
+      ! Neep looks nice, has good unicode coverage. Requires xfonts-jmk.
+      xterm*vt100.font        :       *neep-medium-r-normal--20*10646*
+      ! Neep lacks Asian characters
+      xterm*vt100.wideFont    :       *fixed-medium-r-normal-ja-18*10646*
+
+  Neep has two major downsides. 1. It is a bitmap font with only one
+  size well implemented, so you can't zoom in or out. 2. It is limited
+  to 65536 characters, which means it cannot show characters outside
+  of Unicode's Basic Multilingual Plane, such as new emojis. Neep can
+  be installed on Debian GNU/Linux systems with `apt install
+  xfonts-jmk`.
+
+* Gnome-terminal uses `font-config`, so it has very nice Unicode
+  support and can easily zoom in with Ctrl-+⃣ and Ctrl--⃣.
+  Unfortunately, it has a bug where combining characters are combined
+  with the following character instead of the previous. Note that
+  Xterm and mlterm handles this correctly.
+
+* Mlterm appears to have the same single font limitation as Xterm.
+  Also, it right aligns text that has even a single character in a
+  right-to-left alphabet, such as Arabic, so the output from ugrep
+  will look a little funny.
+  

@@ -37,17 +37,23 @@ Usage:
     ugrep -c <character string>
 
     	-w:	matches only whole words, e.g., ugrep -w pi
-    	-c:	matches each character in the string, e.g., ugrep -c "(ﾟ∀ﾟ)"
+    	-c:	show each character in a string, e.g., ugrep -c "(ﾟ∀ﾟ)"
+	-x:	show example usage
 
     <character> is a single character, e.g.:  ugrep ☙
     <codepoint> is one or more hexadecimal unicode character numbers, 
 		optionally prefixed by "U+" or "0x".e.g.: ugrep U+1F639.
     		Ranges are allowed with two dots: ugrep 23b0..f
-    <character name> is a regular expression, see examples below.
-    <character string> is one or more characters. e.g., "abc123"
+    <character name> is a regular expression, see examples in ugrep --examples.
+    <character string> is one or more characters. e.g., ugrep -c "( ͡° ͜ʖ ͡°)"
 
-Character name examples:
+    Try 'ugrep --examples' to see more examples of usage.
+"""
+    )
 
+def examples():
+    print("""\
+# You can search by character name.
     $ ugrep heart
     ☙	U+2619	REVERSED ROTATED FLORAL HEART BULLET
     ❣	U+2763	HEAVY HEART EXCLAMATION MARK ORNAMENT
@@ -55,38 +61,46 @@ Character name examples:
     [ ... examples truncated for brevity ... ]
     😻	U+1F63B	SMILING CAT FACE WITH HEART-SHAPED EYES
 
-    # By default words match anywhere.
+# Or, you can search by pasting in a specific character.
+    $ ugrep ✿
+    ✿       U+273F  BLACK FLORETTE
+
+# Or, you can search by code point.
+    $ ugrep 273a
+    ✺       U+273A  SIXTEEN POINTED ASTERISK
+
+# By default, words match anywhere.
     $ ugrep clos brac			# Equivalent to "clos.*brac"
     ]       U+005D  RIGHT SQUARE BRACKET (closing square bracket)
     }       U+007D  RIGHT CURLY BRACKET (closing curly bracket)
     〉      U+3009  RIGHT ANGLE BRACKET (closing angle bracket)
 
-    # Use -w to match only whole words.
+# Use -w to match only whole words.
     $ ugrep -w "R"			# Equivalent to "\\bR\\b"
     R	U+0052  LATIN CAPITAL LETTER R
     ℛ	U+211B  SCRIPT CAPITAL R (Script r)
     ℜ	U+211C  BLACK-LETTER CAPITAL R (Black-letter r)
     ℝ	U+211D  DOUBLE-STRUCK CAPITAL R (Double-struck r)
 
-    # Use -c to display info for each character in a string.
+# Use -c to display info for each character in a string.
     $ ugrep -c "ᕕ( ᐛ )ᕗ"
     ᕕ	U+1555	CANADIAN SYLLABICS FI
     (	U+0028	LEFT PARENTHESIS (opening parenthesis)
-     	U+0020	SPACE
     ᐛ	U+141B	CANADIAN SYLLABICS NASKAPI WAA
-     	U+0020	SPACE
     )	U+0029	RIGHT PARENTHESIS (closing parenthesis)
     ᕗ	U+1557	CANADIAN SYLLABICS FO
 
-    $ ugrep backslash			# ugrep finds aliases (in parens)
+# ugrep finds aliases (in parens)
+    $ ugrep backslash
     \	U+005C	REVERSE SOLIDUS (backslash)
 
-    $ ugrep ^x				# Regex ^ and $ work, mostly
+# Regex ^ and $ work, mostly
+    $ ugrep ^x				
     ⊻	U+22BB	XOR
     ⌧	U+2327	X IN A RECTANGLE BOX (clear key)
 
-    $ ugrep .?  |  less			# Show every single Unicode character!
-"""
+# Show every single Unicode character!
+    $ ugrep 0..10FFFF  |  less"""
     )
 
 # Main
@@ -99,6 +113,10 @@ def main():
 
     if argv[1]=='-h' or argv[1]=='--help':
         usage()
+        exit(0)
+
+    if argv[1]=='-x' or argv[1]=='--examples' or argv[1]=='--example':
+        examples()
         exit(0)
 
     if argv[1]=='-w':

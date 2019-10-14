@@ -34,14 +34,17 @@ def usage():
 ugrep: find unicode characters based on their names or codepoints
 Usage: 
     ugrep [-w] <character> | <codepoint ...> | <character name>
+    ugrep -c <character string>
 
     	-w:	matches only whole words, e.g., ugrep -w pi
+    	-c:	matches each character in the string, e.g., ugrep -c "(ﾟ∀ﾟ)"
 
     <character> is a single character, e.g.:  ugrep ☙
     <codepoint> is one or more hexadecimal unicode character numbers, 
 		optionally prefixed by "U+" or "0x".e.g.: ugrep U+1F639.
     		Ranges are allowed with two dots: ugrep 23b0..f
     <character name> is a regular expression, see examples below.
+    <character string> is one or more characters. e.g., "abc123"
 
 Character name examples:
 
@@ -64,6 +67,16 @@ Character name examples:
     ℛ	U+211B  SCRIPT CAPITAL R (Script r)
     ℜ	U+211C  BLACK-LETTER CAPITAL R (Black-letter r)
     ℝ	U+211D  DOUBLE-STRUCK CAPITAL R (Double-struck r)
+
+    # Use -c to display info for each character in a string.
+    $ ugrep -c "ᕕ( ᐛ )ᕗ"
+    ᕕ	U+1555	CANADIAN SYLLABICS FI
+    (	U+0028	LEFT PARENTHESIS (opening parenthesis)
+     	U+0020	SPACE
+    ᐛ	U+141B	CANADIAN SYLLABICS NASKAPI WAA
+     	U+0020	SPACE
+    )	U+0029	RIGHT PARENTHESIS (closing parenthesis)
+    ᕗ	U+1557	CANADIAN SYLLABICS FO
 
     $ ugrep backslash			# ugrep finds aliases (in parens)
     \	U+005C	REVERSE SOLIDUS (backslash)
@@ -93,6 +106,17 @@ def main():
     # Load the Unicode Data into the global ucd variable.
     loaducd()
     
+    # Is it -c followed by a string of characters?
+    if argv[1]=='-c':
+        # Look up each character in the string.
+        argv=argv[1:]
+        for i in range(1,len(argv)):
+            for j in range(0,len(argv[i])):
+                s=makeregexcodepoint( hex(ord(argv[i][j])) )
+                compileit(s)
+                printmatches(s)
+            if (i<len(argv)-1): print("")
+
     # Is it a single character? Then only show that one character.
     if len(argv[1])==1:
         s=makeregexcodepoint( hex(ord(argv[1])) )

@@ -144,7 +144,7 @@ def main():
 
 
 def showonecharacter(c):
-    s=makeregexcodepoint(arg)
+    s=makeregexcodepoint(c)
     compileit(s)
     printmatches(s)
 

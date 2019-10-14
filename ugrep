@@ -97,6 +97,10 @@ def main():
         usage()
         exit(1)
 
+    if argv[1]=='-h' or argv[1]=='--help':
+        usage()
+        exit(0)
+
     if argv[1]=='-w':
         argv=argv[1:]
         for i in range(1,len(argv)):
@@ -116,6 +120,7 @@ def main():
                 compileit(s)
                 printmatches(s)
             if (i<len(argv)-1): print("")
+        exit(0)
 
     # Is it a single character? Then only show that one character.
     if len(argv[1])==1:

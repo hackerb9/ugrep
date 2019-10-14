@@ -26,7 +26,7 @@ and make it executable.
 
 ## Usage
 
-### Basic usage: **ugrep** [**-w**] _regex_
+* Search by name: **ugrep** [**-w**] _regex_
 
 Look up a character name where _regex_ is a regular expression. If you don't
 know [regular expressions](https://docs.python.org/3/howto/regex.html), 
@@ -38,16 +38,16 @@ If you find ugrep returning too many hits because the phrase you used
 is found in other terms, e.g., "thema" found in "mathematical", use
 the **-w** option to limit the search to complete words.
 
-### Advanced usage: **ugrep** _codepoint_**[..**_codepoint_]
+* Search by number: **ugrep** _codepoint_**[..**_codepoint_]
 
 Look up a character (or a range of them) using Unicode code points in
 hexadecimal. For example,
 
     ugrep 23b0..f
 
-### Advanced usage: **ugrep** [**-c**] _character string_
+* Search by character: **ugrep** [**-c**] _character string_
 
-Look up every character in a string. Note that if the string is a
+Look up each character in a string. Note that if the string is a
 single character, e.g., `ugrep X`, then **-c** is implied and need not
 be specified.
 
@@ -116,6 +116,7 @@ how many heart emojis Unicode has. 😜)
 	    ℝ	U+211D	DOUBLE-STRUCK CAPITAL R (Double-struck r)
 
 * Use -c to display info for each character in a string.
+
 	    $ ugrep -c "ᕕ( ᐛ )ᕗ"
 	    ᕕ	U+1555	CANADIAN SYLLABICS FI
 	    (	U+0028	LEFT PARENTHESIS (opening parenthesis)

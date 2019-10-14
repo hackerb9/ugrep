@@ -134,17 +134,13 @@ def main():
         argv=argv[1:]
         for i in range(1,len(argv)):
             for j in range(0,len(argv[i])):
-                s=makeregexcodepoint( hex(ord(argv[i][j])) )
-                compileit(s)
-                printmatches(s)
+                showonecharacter( hex(ord(argv[i][j])) )
             if (i<len(argv)-1): print("")
         exit(0)
 
     # Is it a single character? Then only show that one character.
     if len(argv[1])==1:
-        s=makeregexcodepoint( hex(ord(argv[1])) )
-        compileit(s)
-        printmatches(s)
+        showonecharacter( hex(ord(argv[1])) )
         exit(0)
 
     # Do brace expansion on argv if our system doesn't have it.
@@ -156,14 +152,18 @@ def main():
         # Loop to allow people to do things like "ugrep 23b{0..9}"
         for arg in argv[1:]:
             if match(r"(?i)^(U\+?|0x)?[0-9A-F]+$", arg):
-                s=makeregexcodepoint(arg)
-                compileit(s)
-                printmatches(s)
+                showonecharacter(arg)
             else:
                 break
 
     # Now, look up the entire argv[] as a character name or alias. 
     s=makeregexcharname()
+    printmatches(s)
+
+
+def showonecharacter(c):
+    s=makeregexcodepoint(arg)
+    compileit(s)
     printmatches(s)
 
 

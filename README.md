@@ -28,30 +28,32 @@ and make it executable.
 
 * Search by name: **ugrep** [**-w**] _regex_
 
-Look up a character name where _regex_ is a regular expression. If you don't
-know [regular expressions](https://docs.python.org/3/howto/regex.html), 
-don't worry. Just use plain strings and you'll rarely be wrong.
+	Look up a character name where _regex_ is a regular
+	expression. If you don't know [regular
+	expressions](https://docs.python.org/3/howto/regex.html),
+	don't worry. Just use plain strings and you'll rarely be
+	wrong.
 
-    ugrep runic
+	    ugrep runic
 
-If you find ugrep returning too many hits because the phrase you used
-is found in other terms, e.g., "thema" found in "mathematical", use
-the **-w** option to limit the search to complete words.
+	If you find ugrep returning too many hits because the phrase you used
+	is found in other terms, e.g., _thema_ found in _mathematical_, use
+	the **-w** option to limit the search to complete words.
 
 * Search by number: **ugrep** _codepoint_**[..**_codepoint_]
 
-Look up a character (or a range of them) using Unicode code points in
-hexadecimal. For example,
+	Look up a character (or a range of them) using Unicode code points in
+	hexadecimal. For example,
 
-    ugrep 23b0..f
+	    ugrep 23b0..f
 
 * Search by character: **ugrep** [**-c**] _character string_
 
-Look up each character in a string. Note that if the string is a
-single character, e.g., `ugrep X`, then **-c** is implied and need not
-be specified.
+	Look up each character in a string. Note that if the string is a
+	single character, e.g., `ugrep X`, then **-c** is implied and need not
+	be specified.
 
-    ugrep -c "(ﾟ∀ﾟ)"
+	    ugrep -c "(ﾟ∀ﾟ)"
 
 ### Examples:
 
@@ -170,9 +172,9 @@ how many heart emojis Unicode has. 😜)
 	    $ ugrep 0..10FFFF  |  less		# ugrep ".?" is equivalent.
 	    ⋮	[ ... over 30,000 glyphs elided for brevity ... ]
 
-Sometimes it's useful (or fun) to page through the Unicode
-table and see what characters are defined in a region. (Tip:
-search for a code point in `less` by pressing `/U\+A60F`).
+	Sometimes it's useful (or fun) to page through the Unicode
+	table and see what characters are defined in a region. (Tip:
+	search for a code point in `less` by pressing `/U\+A60F`).
 
 ### Fun things to try:
 

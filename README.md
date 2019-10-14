@@ -13,15 +13,45 @@ looking up Emojis 😤, finding obscure symbols ⚸⅗ℏ℞☧☭, or beautiful
 glyphs to decorate your text. 🙶❡✯🟔❢🙷
 
 You can also use it for the reverse operation to lookup a single
-character you've pasted into the terminal.
+character (or a string of them) you've pasted into the terminal.
+
+## Installation
+
+It's just a Python 3 shell script. Download it to `/usr/local/bin` or `~/bin`
+and make it executable.
+
+    cd /usr/local/bin
+    wget https://github.com/hackerb9/ugrep/blob/master/ugrep
+    chmod +x ugrep
 
 ## Usage
 
-Usage: **ugrep** [-w] _regex_
+### Basic usage: **ugrep** [**-w**] _regex_
 
-Where _regex_ is a regular expression. If you don't know [regular
-expressions](https://docs.python.org/3/howto/regex.html), don't worry.
-Just use plain strings.
+Look up a character name where _regex_ is a regular expression. If you don't
+know [regular expressions](https://docs.python.org/3/howto/regex.html), 
+don't worry. Just use plain strings and you'll rarely be wrong.
+
+    ugrep runic
+
+If you find ugrep returning too many hits because the phrase you used
+is found in other terms, e.g., "thema" found in "mathematical", use
+the **-w** option to limit the search to complete words.
+
+### Advanced usage: **ugrep** _codepoint_**[..**_codepoint_]
+
+Look up a character (or a range of them) using Unicode code points in
+hexadecimal. For example,
+
+    ugrep 23b0..f
+
+### Advanced usage: **ugrep** [**-c**] _character string_
+
+Look up every character in a string. Note that if the string is a
+single character, e.g., `ugrep X`, then **-c** is implied and need not
+be specified.
+
+    ugrep -c "(ﾟ∀ﾟ)"
 
 ### Examples:
 
@@ -85,6 +115,16 @@ how many heart emojis Unicode has. 😜)
 	    ℜ	U+211C	BLACK-LETTER CAPITAL R (Black-letter r)
 	    ℝ	U+211D	DOUBLE-STRUCK CAPITAL R (Double-struck r)
 
+* Use -c to display info for each character in a string.
+	    $ ugrep -c "ᕕ( ᐛ )ᕗ"
+	    ᕕ	U+1555	CANADIAN SYLLABICS FI
+	    (	U+0028	LEFT PARENTHESIS (opening parenthesis)
+	        U+0020	SPACE
+	    ᐛ	U+141B	CANADIAN SYLLABICS NASKAPI WAA
+	        U+0020	SPACE
+	    )	U+0029	RIGHT PARENTHESIS (closing parenthesis)
+	    ᕗ	U+1557	CANADIAN SYLLABICS FO
+
 * Aliases (alternate names) are also searched:
 
 	    $ ugrep backslash
@@ -126,12 +166,12 @@ how many heart emojis Unicode has. 😜)
 
 * View _all_ Unicode characters:
 
-	    $ ugrep ".?" | less
+	    $ ugrep 0..10FFFF  |  less		# ugrep ".?" is equivalent.
 	    ⋮	[ ... over 30,000 glyphs elided for brevity ... ]
 
-	Sometimes it's useful (or fun) to page through the Unicode
-	table and see what characters are defined in a region. (Tip:
-	search for a code point in `less` by pressing `/U\+A60F`).
+Sometimes it's useful (or fun) to page through the Unicode
+table and see what characters are defined in a region. (Tip:
+search for a code point in `less` by pressing `/U\+A60F`).
 
 ### Fun things to try:
 
@@ -161,15 +201,6 @@ and place it in `~/.local/share/unicode/UnicodeData.txt`
 
 **Not hard**: Or, if you wish the file to be accessible to all users on
 your machine, place it in `/usr/local/share/unicode/UnicodeData.txt`.
-
-## Installation
-
-It's just a shell script. Download it to `/usr/local/bin` or `~/bin`
-and make it executable.
-
-    cd /usr/local/bin
-    wget https://github.com/hackerb9/ugrep/blob/master/ugrep
-    chmod +x ugrep
 
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
@@ -242,7 +273,7 @@ that data.
 
 ## Bugs, Misfeatures, and Workarounds
 
-* Xterm (as of version 327) seems to be able to only show one font at
+* Xterm (as of version 349) seems to be able to only show one font at
   a time, which means a single font must have all the glyphs you want
   shown! Technically, you can have a second font for "wide" CJK, but
   that's still not enough. The author (hackerb9) currently prefers
@@ -260,14 +291,14 @@ that data.
   be installed on Debian GNU/Linux systems with `apt install
   xfonts-jmk`.
 
-* Gnome-terminal uses `font-config`, so it has very nice Unicode
-  support and can easily zoom in with Ctrl-+⃣ and Ctrl--⃣.
-  Unfortunately, it has a bug where combining characters are combined
-  with the following character instead of the previous. Note that
-  Xterm and mlterm handles this correctly.
-
 * Mlterm appears to have the same single font limitation as Xterm.
   Also, it right aligns text that has even a single character in a
   right-to-left alphabet, such as Arabic, so the output from ugrep
   will look a little funny.
-  
+
+* Gnome-terminal uses `font-config`, so it has very nice Unicode
+  support and can easily zoom in with Ctrl-+⃣ and Ctrl--⃣.
+  Unfortunately, older versions had a bug where combining characters
+  were combined with the following character instead of the previous.
+  Note that Xterm and mlterm handle this correctly.
+

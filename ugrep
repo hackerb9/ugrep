@@ -33,8 +33,7 @@ def usage():
     print("""\
 ugrep: find unicode characters based on their names or codepoints
 Usage: 
-    ugrep [-w] <character> | <codepoint ...> | <character name>
-    ugrep -c <character string>
+    ugrep [-wcx] <character ...> | <codepoint ...> | <character name>
 
     	-w:	matches only whole words, e.g., ugrep -w pi
     	-c:	show each character in a string, e.g., ugrep -c "(ﾟ∀ﾟ)"

@@ -119,14 +119,14 @@ how many heart emojis Unicode has. 😜)
 
 * Use -c to display info for each character in a string.
 
-            $ ugrep -c "ᕕ( ᐛ )ᕗ"
-            ᕕ   U+1555  CANADIAN SYLLABICS FI
-            (   U+0028  LEFT PARENTHESIS (opening parenthesis)
-                U+0020  SPACE
-            ᐛ   U+141B  CANADIAN SYLLABICS NASKAPI WAA
-                U+0020  SPACE
-            )   U+0029  RIGHT PARENTHESIS (closing parenthesis)
-            ᕗ   U+1557  CANADIAN SYLLABICS FO
+        $ ugrep -c "ᕕ( ᐛ )ᕗ"
+        ᕕ   U+1555  CANADIAN SYLLABICS FI
+        (   U+0028  LEFT PARENTHESIS (opening parenthesis)
+            U+0020  SPACE
+        ᐛ   U+141B  CANADIAN SYLLABICS NASKAPI WAA
+            U+0020  SPACE
+        )   U+0029  RIGHT PARENTHESIS (closing parenthesis)
+        ᕗ   U+1557  CANADIAN SYLLABICS FO
 
 * Aliases (alternate names) are also searched:
 

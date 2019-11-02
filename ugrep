@@ -342,8 +342,8 @@ def makeregexcharname():
     argv=["("+x+")" for x in argv]    # wrap in parens to fix | (alternation) 
     args=".*".join(argv[1:])          # search terms can have junk between
     args=sub(r"(\s)", r"\\\1", args)  # quote whitespace for verbose regex
-    args=sub(r"^\^", r"(?<=;)", args) # ^ matches semicolon before field 
-    args=sub(r"\$$", r"(?=;)", args)  # $ matches semicolon after field 
+    args=sub(r"^\(\^", r"(?<=;)(", args) # ^ matches semicolon before field 
+    args=sub(r"\$\)$", r"(?=;))", args)  # $ matches semicolon after field 
 
     # s is a search regex for field 2 (name) based on the command line arguments
     s=r"""^

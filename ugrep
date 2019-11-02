@@ -161,8 +161,10 @@ def main():
     s=makeregexcharname()
     printmatches(s)
 
-    # Finally, look up argv[] as an entry in the NamesList.txt
-    s=makeregexcharname()
+    # Finally, look up argv[] as an entry in the NamesList.txt.
+    # For examples, `ugrep eggplant` should return U+1F346 AUBERGINE.
+    # (Arg. This would be a lot easier in Awk.)
+    s=searchnameslist()
     printmatches(s)
 
 

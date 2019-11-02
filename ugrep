@@ -126,6 +126,8 @@ def main():
 
     # Load the Unicode Data into the global ucd variable.
     loaducd()
+    # Same for NamesList.txt file into nameslist variable.
+    loadnameslist()
     
     # Is it -c followed by a string of characters?
     if argv[1]=='-c':
@@ -156,6 +158,10 @@ def main():
                 break
 
     # Now, look up the entire argv[] as a character name or alias. 
+    s=makeregexcharname()
+    printmatches(s)
+
+    # Finally, look up argv[] as an entry in the NamesList.txt
     s=makeregexcharname()
     printmatches(s)
 
@@ -315,6 +321,43 @@ def loaducd():
         debugprint("Number of Unicode chars: %d" % len(ucd.splitlines()))
 
     return ucd
+
+def loadnameslist():
+    "Find the nameslist.txt file and load it up into nameslist global variable."
+
+    global nameslist
+    nameslist=None
+    nlplaces=( "/usr/local/share/unicode/NamesList.txt",
+                "/usr/share/unicode/NamesList.txt",
+                "~/.local/share/unicode/NamesList.txt",
+                "NamesList.txt" )
+    for f in nlplaces:
+        f=expanduser(expandvars(f)) 		# Python's open() is silly
+        try:
+            nameslist=open(f).read()
+            debugprint("Found nameslist file at " + f)
+        except:
+            continue
+
+    # Sanity check: did we find the NamesList.txt file?
+    if nameslist == None:
+        eprint("""\
+    Could not find NamesList.txt in:
+
+%s
+    On most GNU/Linux systems your package manager can install it easily.
+    For example:  apt install unicode-data.
+
+    Alternately, you can grab it via wget like so:
+
+        mkdir -p ~/.local/share/unicode
+	cd ~/.local/share/unicode
+        wget ftp://ftp.unicode.org/Public/UNIDATA/NamesList.txt
+""" %
+               ("".join(["    " + s + "\n" for s in nlplaces])))
+        exit(2)
+
+    return nameslist
 
 
 def makeregexcharname():

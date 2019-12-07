@@ -21,7 +21,7 @@ It's just a Python 3 shell script. Download it to `/usr/local/bin` or `~/bin`
 and make it executable.
 
     cd /usr/local/bin
-    wget https://github.com/hackerb9/ugrep/blob/master/ugrep
+    wget https://github.com/hackerb9/ugrep/raw/master/ugrep
     chmod +x ugrep
 
 ## Usage

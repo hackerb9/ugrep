@@ -9,7 +9,7 @@
 
 # Fun things to try:
 
-# ugrep alchemical 
+# ugrep alchemical
 # ugrep ornament
 # ugrep bullet
 # ugrep 'vine|bud'
@@ -23,16 +23,16 @@
 
 from re import *
 from sys import argv
-from pprint import pprint 
+from pprint import pprint
 from os.path import expanduser, expandvars, basename
 from sys import stderr
 
-debug=False
+debug=True
 
 def usage():
     print("""\
 ugrep: find unicode characters based on their names or codepoints
-Usage: 
+Usage:
     ugrep [-wcx] <character ...> | <codepoint ...> | <character name>
 
     	-w:	matches only whole words, e.g., ugrep -w pi
@@ -40,7 +40,7 @@ Usage:
 	-x:	show example usage
 
     <character> is a single character, e.g.:  ugrep ☙
-    <codepoint> is one or more hexadecimal unicode character numbers, 
+    <codepoint> is one or more hexadecimal unicode character numbers,
 		optionally prefixed by "U+" or "0x".e.g.: ugrep U+1F639.
     		Ranges are allowed with two dots: ugrep 23b0..f
     <character name> is a regular expression, see examples in ugrep --examples.
@@ -94,7 +94,7 @@ def examples():
     \	U+005C	REVERSE SOLIDUS (backslash)
 
 # Regex ^ and $ work, mostly
-    $ ugrep ^x				
+    $ ugrep ^x
     ⊻	U+22BB	XOR
     ⌧	U+2327	X IN A RECTANGLE BOX (clear key)
 
@@ -128,7 +128,7 @@ def main():
     loaducd()
     # Same for NamesList.txt file into nameslist variable.
     loadnameslist()
-    
+
     # Is it -c followed by a string of characters?
     if argv[1]=='-c':
         # Look up each character in the string.
@@ -157,15 +157,15 @@ def main():
             else:
                 break
 
-    # Now, look up the entire argv[] as a character name or alias. 
+    # Now, look up the entire argv[] as a character name or alias.
     s=makeregexcharname()
     printmatches(s)
 
     # Finally, look up argv[] as an entry in the NamesList.txt.
     # For examples, `ugrep eggplant` should return U+1F346 AUBERGINE.
-    # (Arg. This would be a lot easier in Awk.)
-    s=searchnameslist()
-    printmatches(s)
+    # (Argh. This would be so much easier in Awk.)
+    s=makeregexnameslist()
+    printnameslistmatches(s)
 
 
 def showonecharacter(c):
@@ -206,7 +206,7 @@ def iscombining(c):
     # Given a category 'c', return True if it is a combining character.
     # We presume all combining characters are in category 'M' and vice-versa.
     if debug:
-        debugprint ("Category is <" + str(c) + ">")  
+        debugprint ("Category is <" + str(c) + ">")
 
     return c and c.startswith('M')
 
@@ -230,12 +230,25 @@ def printmatches(s):
                 print (" (" + g["alias"].lower() + ")", end='')
             print()
 
+def printnameslistmatches(s):
+    for m in finditer(s, nameslist):
+        if m:
+            g=m.groupdict()
+            debugprint(g)
+            c=chr(int(g["hex"], 16))
+            if not isprint(category): c="\ufffd" # "Replacement Character"
+            if iscombining(category): print('\u25cc', end='') # "Dotted circle"
+            print(c, end='\t')
+            print ("U+" + g["hex"], end='\t')
+            print(g["name"], end='')
+            print()
+
 def isdifferent(a, b):
     """Given two strings A & B, determine if B is different enough from A
        that we don't need to print it as well. "Enough" means "adds
        significant new information". For example, the following would
        return False:
-    
+
        "LATIN CAPITAL LETTER A WITH GRAVE", "LATIN CAPITAL LETTER A GRAVE"
 
        Note that order matters. For example,
@@ -281,7 +294,7 @@ def isdifferent(a, b):
     #     return False
     # if a.rstrip("S") == b:
     #     return False
-    
+
     return True
 
 def loaducd():
@@ -357,6 +370,7 @@ def loadnameslist():
         wget ftp://ftp.unicode.org/Public/UNIDATA/NamesList.txt
 """ %
                ("".join(["    " + s + "\n" for s in nlplaces])))
+        # XXX Todo: issue a warning but not fail if missing NamesList.txt
         exit(2)
 
     return nameslist
@@ -378,23 +392,23 @@ def makeregexcharname():
     #
     # See Tech Report 44 for more details.
     #
-    # XXX Todo: maybe look up in table of confusable entities.
+    # XXX Todo: maybe look up in table of confusable entities. (NamesList.txt)
 
     # combine and quote the command line arguments so we can use them in
     # verbose regex. Also, allow the user to use ^ and $, just like in awk
     # to refer to the beginning and end of the field instead of line.
     global argv
-    argv=["("+x+")" for x in argv]    # wrap in parens to fix | (alternation) 
+    argv=["("+x+")" for x in argv]    # wrap in parens to fix | (alternation)
     args=".*".join(argv[1:])          # search terms can have junk between
     args=sub(r"(\s)", r"\\\1", args)  # quote whitespace for verbose regex
-    args=sub(r"^\(\^", r"(?<=;)(", args) # ^ matches semicolon before field 
-    args=sub(r"\$\)$", r"(?=;))", args)  # $ matches semicolon after field 
+    args=sub(r"^\(\^", r"(?<=;)(", args) # ^ matches semicolon before field
+    args=sub(r"\$\)$", r"(?=;))", args)  # $ matches semicolon after field
 
     # s is a search regex for field 2 (name) based on the command line arguments
     s=r"""^
         (?P<hex>[^;]*);             # first field is hexadecimal codepoint
         (?P<name>[^;]*"""+args+"""[^;]*); # field 2 (charactername) matches?
-        (?P<category>[^;]*);        # third field is general category 
+        (?P<category>[^;]*);        # third field is general category
         ([^;]*;){7}                 # skip next 7 fields
         (?P<alias>[^;]*)            # field 11 is comment/alias
         (;[^;]*){4}$                # line ends with four more fields
@@ -404,7 +418,7 @@ def makeregexcharname():
     r=r"""^
         (?P<hextwo>[^;]*);            # first field is hexadecimal codepoint
         (?P<desctwo>[^;]*);           # second field is charactername
-        (?P<categorytwo>[^;]*);       # third field is general category 
+        (?P<categorytwo>[^;]*);       # third field is general category
         ([^;]*;){7}                   # skip next 7 fields
         (?P<aliastwo>[^;]*("""+args+""")[^;]*) # field 11 (alias) matches?
         (;[^;]*){4}$                  # line ends with four more fields
@@ -417,10 +431,236 @@ def makeregexcharname():
 
     return s
 
+def makeregexnameslist():
+    "Create a regular expression to search for an alias in NamesList.txt"
+
+    # Format of NamesList.txt is multiple lines. (Wish I had awk for this).
+    # Note: ⇥⃞ means TAB character.
+    #
+    # Each character on its own line :
+    # 	hex⇥⃞charname		      | 1F346	AUBERGINE
+    #				      |
+    # Followed by zero or more lines: |
+    # Synonym:			      |
+    #      ⇥⃞= text[, text...]         |		= eggplant
+    # Commentary on standards	      |
+    #      @+⇥⃞* text		      |	@+	* see ISO 69835 for details
+    # Commentary:		      |
+    #      ⇥⃞* text		      |		* most commonly depicts a penis
+    # Cross reference:		      |
+    #      ⇥⃞x (text - hex)	      |		x (hand with middle finger extended - 1F595)
+    # Variation:		      |
+    #      ⇥⃞# hex... text	      |		# 2642 male sign
+    #      ⇥⃞# <how> hex... 	      |		# <noBreak> 1F34C
+    # Canonical equivalent:	      |
+    #      ⇥⃞: hex text		      | 00C0	LATIN CAPITAL LETTER A WITH GRAVE
+    #				      |		: 0041 0300
+    # Alternate presentation form:    |
+    #      ⇥⃞~ hex... text	      | FF1F    FULLWIDTH QUESTION MARK
+    #				      |	        ~ FF1F FE00 corner-justified form
+    #				      |	        ~ FF1F FE01 centered form
+    #				      |	        # <wide> 003F
+    #				      |
+    # Range: @@⇥⃞start⇥⃞description⇥⃞end | @@	1F650	Ornamental Dingbats	1F67F
+    # Section dividers: @⇥⃞⇥⃞text	      | @		Fleurons
+    # Section comments: @+⇥⃞⇥⃞text      | @+		Fleurons are leaf or floral-shaped ornaments used for text decoration.
+    #				      | 1F650	NORTH WEST POINTING LEAF
+    #				      | 1F651	SOUTH WEST POINTING LEAF
+
+
+    # Examples of regulard commentary  and standards commentary:
+    # 1E37    LATIN SMALL LETTER L WITH DOT BELOW
+    #         * Indic transliteration
+    #         : 006C 0323
+    # @+      * see ISO 15919 on the use of dot below versus ring below in Indic transliteration
+    #         x (combining ring below - 0325)
+    # 2301    ELECTRIC ARROW
+    # @+      * from ISO 2047
+    #         * symbol for End of Transmission
+
+    # Example of commentary on sections (indented by two tabs):
+    # @               Ceilings and floors
+    # @+              These characters are tall and narrow mathematical delimiters, in contrast to the quine corners or half brackets. They are also distinct from CJK corner brackets, which are wide quotation marks.
+    
+
+    # Variation Examples:
+    # 2007    FIGURE SPACE
+    # 	      * space equal to tabular width of a font
+    # 	      * this is equivalent to the digit width of fonts with fixed-width digits
+    # 	      # <noBreak> 0020
+    # 200A    HAIR SPACE
+    #         * thinner than a thin space
+    #         * in traditional typography, the thinnest space available
+    #         # 0020 space
+    # 2026    HORIZONTAL ELLIPSIS
+    #         = three dot leader
+    #         x (vertical ellipsis - 22EE)
+    #         x (presentation form for vertical horizontal ellipsis - FE19)
+    #         # 002E 002E 002E
+    # 1FBF0   SEGMENTED DIGIT ZERO
+    #         # <font> 0030 digit zero
+
+    # Canonical equivalent example:
+    # 1D164   MUSICAL SYMBOL ONE HUNDRED TWENTY-EIGHTH NOTE
+    #         = semihemidemisemiquaver, quasihemidemisemiquaver
+    #         : 1D15F 1D172
+
+    # Alternate form example:
+    # 2205    EMPTY SET
+    #         = null set
+    #         * used in linguistics to indicate a null morpheme or phonological "zero"
+    #         x (latin capital letter o with stroke - 00D8)
+    #         x (diameter sign - 2300)
+    #         ~ 2205 FE00 zero with long diagonal stroke overlay form
+
+    # Extended attribute lines attached to section comment:
+    # @               Accidentals
+    # @+              The most common accidentals are encoded in the Miscellaneous Symbols block.
+    #                 x (music flat sign - 266D)
+    #                 x (music natural sign - 266E)
+    #                 x (music sharp sign - 266F)
+
+
+    # What does @~ mean? It is always followed by either "⇥⃞!" or
+    # "⇥⃞Standardized Variation Sequences"
+    # 
+    # 007F    <control>
+    #         = DELETE
+    # @~      !
+    # @@      0080    C1 Controls and Latin-1 Supplement (Latin-1 Supplement) 00FF
+    # @               C1 controls
+    # @+              Alias names are those for ISO/IEC 6429:1992.
+    # 0080    <control>
+    
+
+
+    # All lines that start with @ have one of these prefixes:
+       # @⇥⃞⇥⃞			# Section title
+       # @+⇥⃞⇥⃞			# Section comment
+       # @+⇥⃞*			# Standards comment
+       # @@⇥⃞			# Range Title
+       # @@+			# [The space intentionally left blank]
+       # @~⇥⃞			# "Standardized Variation Sequences"(?)
+       # @@@			# Unicode Standard folderol
+
+    # Ignoring the first 12 lines which are just Unicode prologue,
+    # all lines that start with ⇥⃞ (TAB) have one of these prefixes
+       # ⇥⃞*␠			# Commentary
+       # ⇥⃞#␠			# Variant
+       # ⇥⃞x␠			# Crossreference
+       # ⇥⃞=␠			# Synonym
+       # ⇥⃞:␠			# Canonical equivalent
+       # ⇥⃞~␠			# Alternate presentation form
+       # ⇥⃞⇥⃞x␠			# Xref in section comment
+       # ⇥⃞%␠			# Unicode commentary
+    # (Note that ␠ represents the SPACE character):
+
+
+    # Example of Unicode commentary:
+    # FEFF    ZERO WIDTH NO-BREAK SPACE
+    #         % BYTE ORDER MARK
+    #         = BOM, ZWNBSP
+    # 0EA3    LAO LETTER LO LING
+    #         % LAO LETTER RO
+    #         = ro rot
+    #         * name is a mistake, lo ling is the mnemonic for 0EA5
+    # 0EA5    LAO LETTER LO LOOT
+    #         % LAO LETTER LO
+    #         = lo ling
+    #         * name is a mistake, lo loot is the mnemonic for 0EA3
+
+    # Three entries have abberant use of semicolons instead of commas:
+    # 1F70A   ALCHEMICAL SYMBOL FOR VINEGAR
+    #         = crucible; acid; distill; atrament; vitriol; red sulfur; borax; wine; alkali salt; mercurius vivus, quick silver
+    #         x (cross of jerusalem - 2629)
+    # 0598    HEBREW ACCENT ZARQA
+    #         = tsinorit, zinorit; tsinor, zinor
+    #         * This character is to be used when Zarqa or Tsinor are placed above, and also for Tsinorit.
+    #         x (hebrew accent zinor - 05AE)
+    # 05AE    HEBREW ACCENT ZINOR
+    #         = tsinor; zarqa
+    #         * This character is to be used when Zarqa or Tsinor are placed above left.
+    #         x (hebrew accent zarqa - 0598)
+
+    # Maybe should treat semicolons as commas, but that would break this one entry:
+    # 29DC    INCOMPLETE INFINITY
+    #         = ISOtech entity &iinfin;
+    #         x (infinity - 221E)
+
+    # File begins with a header discouraging machine-reading, but
+    # since this data is nowhere else, we are forced to parse it:
+    #
+    # ; charset=UTF-8
+    # @@@     The Unicode Standard 13.0.0
+    # @@@+    U13M200203.lst
+    #         Unicode 13.0.0 final names list.
+    #         This file is semi-automatically derived from UnicodeData.txt and
+    #         a set of manually created annotations using a script to select
+    #         or suppress information from the data file. The rules used
+    #         for this process are aimed at readability for the human reader,
+    #         at the expense of some details; therefore, this file should not
+    #         be parsed for machine-readable information.
+    # @+              © 2020 Unicode®, Inc.
+    #         For terms of use, see http://www.unicode.org/terms_of_use.html
+
+
+
+
+    # EXAMPLE ENTRIES
+    #
+    # 2052    COMMERCIAL MINUS SIGN
+    #         = abzüglich (German), med avdrag av (Swedish), piska (Swedish, "whip")
+    #         * a common glyph variant and fallback representation looks like ./.
+    #         * may also be used as a dingbat to indicate correctness
+    #         * used in Finno-Ugric Phonetic Alphabet to indicate a related borrowed form with different sound
+    #         x (percent sign - 0025)
+    #         x (arabic percent sign - 066A)
+    #         x (division sign - 00F7)
+
+    # 1F374	FORK AND KNIFE
+    # 		= restaurant, meal
+    # 		* glyph may show a fork and spoon
+    # 		* glyph may show a crossed fork and knife
+    # 		x (fork and knife with plate - 1F37D)
+    # 		x (spoon - 1F944)
+
+    # 1F943	TUMBLER GLASS
+    #         	= whisky
+    #         	* typically shown with ice
+    #         	x (cocktail glass - 1F378)
+
+    # 1FBB2	LEFT HALF RUNNING MAN
+    #         	* paired with 1FBB3, faces to the right
+    #         	* the Apple II documentation refers to these characters as "Running Man"
+    #         	x (runner - 1F3C3)
+    ######################################################################
+    
+    # combine and quote the command line arguments so we can use them in
+    # verbose regex. 
+    global argv
+    argv=["("+x+")" for x in argv]    # wrap in parens to fix | (alternation)
+    args=".*".join(argv[1:])          # search terms can have junk between
+    args=sub(r"(\s)", r"\\\1", args)  # quote whitespace for verbose regex
+
+XXX buggy. does not do multiline right yet. There has to be a better way.
+
+    # s is a search regex for field 2 (name) based on the command line arguments
+    s=r"""^	                    # Head anchor 
+        (?P<hex>[0-9A-F]+)\t;       # first field is hexadecimal codepoint
+        (?P<name>.*$);              # second field is character name
+        (^(\t|@\+))+; 	    	    # at least one subsequent line that starts with a TAB or @+
+        ("""+args+"""); 	    # command line args 
+    """
+    s="(?mix)"+s                # multiline, case insensitive, verbose
+
+    debugprint("Complete search regex is " + s)
+
+    return s
+
 def makeregexcodepoint(cp):
     "Make a regular expression to search for a hexadecimal codepoint"
 
-    # User specified a codepoint, e.g., "U+23fb" 
+    # User specified a codepoint, e.g., "U+23fb"
 
     # Normalize whatever they put in to "23FB"
     cp=cp.lstrip("Uu+0Xx").upper().zfill(4)
@@ -445,7 +685,7 @@ def braceexpansion():
     abc{0..7} 	--> 	abc0 abc1 abc2 abc3 abc4 abc5 abc6 abc7
 
     This is mostly useful for people who do not run a modern UNIX
-    shell, like GNU Bash that expands braces on the command line. 
+    shell, like GNU Bash that expands braces on the command line.
 
     It also fills in the gap until shells understand hexadecimal
     ranges. For example, the following is ignored by bash-4.4, but we
@@ -462,10 +702,10 @@ def braceexpansion():
     * Should check for invalid ranges and ignore them instead of barfing.
     * Checks for and ignores prefix of U+ or 0x
 
-    * Presumes both arguments are hexadecimal, this makes things weird where 
+    * Presumes both arguments are hexadecimal, this makes things weird where
       {01..10} is expanded by Bash to ten numbers, but
       {01..0f} is expanded by this program to fifteen!
-    
+
     * Because of that inconsistency, maybe this isn't such a good idea.
       Perhaps we should make people have to prefix hex with U+ or 0x?
 
@@ -502,7 +742,7 @@ def braceexpansion():
                 start=prefix
                 end=prefix[:-len(end)]+end
                 prefix=""
-                
+
             debugprint("Found range from " + start + " to " + end)
             z=max(len(start), len(end))
             start=int(start, 16)
@@ -552,7 +792,7 @@ except BrokenPipeError:
 #
 # Switching to Python did have the benefit of allowing more powerful
 # Perl-like regexes (not that anyone has requested that).
-# 
+#
 # One downside is that I needed a huge hairy regex to simply search
 # only in a certain field of each line. Maybe there's some Pythonic
 # way to do it, but it's not obvious. Perhaps a 2D array?
@@ -567,4 +807,3 @@ except BrokenPipeError:
 # Note: I do not use Python's `unicodedata` module because it is
 # insufficient. It allows one to search by character name only if the
 # precise name: `unicodedata.lookup("ROTATED HEAVY BLACK HEART BULLET")`.
-

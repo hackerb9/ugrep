@@ -138,7 +138,7 @@ def main():
         exit(0)
 
     # Is it a single character? Then only show that one character.
-    if len(argv[1])==1:
+    if  len(argv)==2 and len(argv[1])==1:
         showonecharacter( hex(ord(argv[1])) )
         exit(0)
 

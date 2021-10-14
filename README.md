@@ -190,11 +190,12 @@ To see some useful and lovely glyphs, try this:
     ugrep drawing
     ugrep combining
 
-## Prerequisite: UnicodeData.txt
+## UnicodeData.txt
 
-You must have a copy of
+If your system has the file
 [UnicodeData.txt](https://unicode.org/Public/UNIDATA/UnicodeData.txt)
-installed.
+installed, ugrep will use it instead of the copy cached inside the script. 
+You can install it in several ways.
 
 **Easiest**: On Ubuntu and Debian GNU/Linux, simply `apt install unicode-data`.
 

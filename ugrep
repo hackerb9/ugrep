@@ -35,7 +35,7 @@ ugrep: find unicode characters based on their names or codepoints
 Usage: 
     ugrep [-wcx] <character ...> | <codepoint ...> | <character name>
 
-    	-w:	matches only whole words, e.g., ugrep -w pi
+    	-w:	matches only whole words, e.g., ugrep -w pi
     	-c:	show each character in a string, e.g., ugrep -c "(ﾟ∀ﾟ)"
 	-x:	show example usage
 
@@ -98,7 +98,7 @@ def examples():
     ⊻	U+22BB	XOR
     ⌧	U+2327	X IN A RECTANGLE BOX (clear key)
 
-# Show every single Unicode character!
+# Show every single Unicode character. (Slow! Use 'fonttable' instead).
     $ ugrep 0..10FFFF  |  less"""
     )
 
@@ -215,7 +215,7 @@ def printmatches(s):
             c=chr(int(g["hex"], 16))
             if not isprint(category): c="\ufffd" # "Replacement Character"
             if iscombining(category): print('\u25cc', end='') # "Dotted circle"
-            print(c, end='\t')
+            print("   " + c, end='\t')
             print ("U+" + g["hex"], end='\t')
             print(g["name"], end='')
             if (len(g["alias"]) and isdifferent(g["name"], g["alias"])):

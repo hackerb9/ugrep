@@ -35,8 +35,9 @@ ugrep: find unicode characters based on their names or codepoints
 Usage: 
     ugrep [-wcx] <character ...> | <codepoint ...> | <character name>
 
-    	-w:	matches only whole words, e.g., ugrep -w pi
+    	-w:	matches only whole words, e.g., ugrep -w pi
     	-c:	show each character in a string, e.g., ugrep -c "(ﾟ∀ﾟ)"
+    	-l:	long listing, show fonts containing each character
 	-x:	show example usage
 
     <character> is a single character, e.g.:  ugrep ☙
@@ -102,13 +103,29 @@ def examples():
     $ ugrep 0..10FFFF  |  less"""
     )
 
+# Global flags
+lflag = False                   # -l: long listing format
+
 # Main
 def main():
-    global argv
+    global argv, lflag
+
+    # TODO: Switch to getargs
 
     if len(argv) == 1:
         usage()
         exit(1)
+
+    if argv[1]=='-l':
+        argv=argv[1:]
+        lflag=True
+        debugprint("Long listing enabled")
+
+    if argv[1]=='-w':
+        argv=argv[1:]
+        for i in range(1,len(argv)):
+            argv[i]="\\b"+argv[i]+"\\b"
+        debugprint(argv)
 
     if argv[1]=='-h' or argv[1]=='--help':
         usage()
@@ -117,12 +134,6 @@ def main():
     if argv[1]=='-x' or argv[1]=='--examples' or argv[1]=='--example':
         examples()
         exit(0)
-
-    if argv[1]=='-w':
-        argv=argv[1:]
-        for i in range(1,len(argv)):
-            argv[i]="\\b"+argv[i]+"\\b"
-        debugprint(argv)
 
     # Load the Unicode Data into the global ucd variable.
     loaducd()
@@ -160,12 +171,13 @@ def main():
     printmatches(s)
 
 
+import os
+
 def showonecharacter(c):
     s=makeregexcodepoint(c)
     compileit(s)
     printmatches(s)
-
-
+              
 def compileit(s):
     "Compile the regular expresion in s, or die trying."
     global ucd, argv
@@ -221,6 +233,11 @@ def printmatches(s):
             if (len(g["alias"]) and isdifferent(g["name"], g["alias"])):
                 print (" (" + g["alias"].lower() + ")", end='')
             print()
+            if lflag:
+                print("Long listing of " + s)
+                os.system("fc-match -s :charset=" + g["hex"])
+
+
 
 def isdifferent(a, b):
     """Given two strings A & B, determine if B is different enough from A

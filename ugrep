@@ -232,11 +232,10 @@ def printmatches(s):
             print(g["name"], end='')
             if (len(g["alias"]) and isdifferent(g["name"], g["alias"])):
                 print (" (" + g["alias"].lower() + ")", end='')
-            print()
+            print("", flush=True)
+            # If -l, show list of installed fonts which contain the glyph.
             if lflag:
-                print("Long listing of " + s)
-                os.system("fc-match -s :charset=" + g["hex"])
-
+                os.system("fc-list -f '\t\t%{fullname}\n' :charset=" + g["hex"])
 
 
 def isdifferent(a, b):

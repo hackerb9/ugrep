@@ -218,6 +218,7 @@ def printmatches(s):
     category=""
     for m in finditer(s, ucd):
         if m:
+            print("   ", end='') 	# Indent for MacOS
             g=m.groupdict()
             debugprint(g)
             if g["hex"] == None: g["hex"]=g["hextwo"]
@@ -227,7 +228,7 @@ def printmatches(s):
             c=chr(int(g["hex"], 16))
             if not isprint(category): c="\ufffd" # "Replacement Character"
             if iscombining(category): print('\u25cc', end='') # "Dotted circle"
-            print("   " + c, end='\t')
+            print(c, end='\t')
             print ("U+" + g["hex"], end='\t')
             print(g["name"], end='')
             if (len(g["alias"]) and isdifferent(g["name"], g["alias"])):

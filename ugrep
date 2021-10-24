@@ -236,7 +236,33 @@ def printmatches(s):
             print("", flush=True)
             # If -l, show list of installed fonts which contain the glyph.
             if lflag:
-                os.system("fc-list -f '\t\t%{fullname[0]}\n' :charset=" + g["hex"])
+                show_fonts(g["hex"])
+
+
+def show_fonts(x):
+    """Given a hexadecimal string representing a Unicode code point, 
+       list every installed font that defines a glyph at that code point."""
+    
+    try:
+        from PIL import Image, ImageDraw, ImageFont, ImageEnhance
+    except:
+        print("Oops, PIL is not installed\n")
+        pass
+    else:
+        Image=None
+
+    from PIL import Image
+
+    if Image:
+        image = Image.new("LA", (100,200), (255,0) )
+        font = ImageFont.truetype('/usr/share/fonts/truetype/unifont/unifont.ttf', 20)
+        draw = ImageDraw.Draw(image)
+        draw.text( (5,0), chr(int(x,16)), (255,255), font)
+        image=image.crop(image.getbbox())
+        image.save('output.png')
+
+    os.system("fc-list -f '\t\t%{fullname[0]}\n' :charset=" + x)
+
 
 
 def isdifferent(a, b):

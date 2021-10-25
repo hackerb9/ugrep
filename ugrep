@@ -33,7 +33,7 @@ def usage():
     print("""\
 ugrep: find unicode characters based on their names or codepoints
 Usage: 
-    ugrep [-wcx] <character ...> | <codepoint ...> | <character name>
+    ugrep [-wclx] <character ...> | <codepoint ...> | <character name>
 
     	-w:	matches only whole words, e.g., ugrep -w pi
     	-c:	show each character in a string, e.g., ugrep -c "(ﾟ∀ﾟ)"
@@ -240,8 +240,7 @@ def printmatches(s):
             print("", flush=True)
             # If -l, show list of installed fonts which contain the glyph.
             if lflag:
-                os.system("fc-list -f '\t\t%{fullname[0]}\n' :charset=" + g["hex"])
-
+                os.system("fc-list -f '\t\t%{family[0]}\n' :charset=" + g["hex"] + " | sort -u")
 
 def isdifferent(a, b):
     """Given two strings A & B, determine if B is different enough from A

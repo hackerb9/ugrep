@@ -242,10 +242,10 @@ def printmatches(s):
             print("", flush=True)
             # If -l, show list of installed fonts which contain the glyph.
             if lflag:
-                show_fonts(g["hex"])
+                show_fonts(g["hex"], category)
 
 
-def show_fonts(x):
+def show_fonts(x, category):
     """Given a hexadecimal string representing a Unicode code point, 
        list every installed font that defines a glyph at that code point."""
     
@@ -273,6 +273,10 @@ def show_fonts(x):
         width=40; height=20
         background="Gray10"; foreground="Gray90"
         codepoint=chr(int(x,16))
+
+        # If it's a combining character, add a dotted circle for it combine with
+        if iscombining(category): codepoint='\u25cc'+codepoint
+
         command=[ "convert",
                   "-size",
                   "%(width)sx%(height)s" % locals(),

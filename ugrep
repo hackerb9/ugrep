@@ -265,6 +265,9 @@ def show_fonts(x):
         if (family == oldfamily and style == oldstyle): continue
         oldfamily=family; oldstyle=style
             
+        # Don't print the style if it is just "Regular"
+        if style == "Regular": style = ""
+
         print("\t\t%(family)s %(style)s\r" % locals(), end='')
 
         width=40; height=20

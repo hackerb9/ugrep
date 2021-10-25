@@ -244,7 +244,6 @@ def printmatches(s):
             if lflag:
                 show_fonts(g["hex"], category)
 
-
 def show_fonts(x, category):
     """Given a hexadecimal string representing a Unicode code point, 
        list every installed font that defines a glyph at that code point."""
@@ -270,7 +269,7 @@ def show_fonts(x, category):
 
         print("\t\t%(family)s %(style)s\r" % locals(), end='')
 
-        width=40; height=20
+        width=40; height=40
         background="Gray10"; foreground="Gray90"
         codepoint=chr(int(x,16))
 
@@ -285,7 +284,11 @@ def show_fonts(x, category):
                   "-font", "%(filename)s" % locals(),
                   "-gravity", "east",
                   "label:" + codepoint,
+                  "+dither",  
+                  "-colors", "4",
                   "sixel:-" ]
+        debugprint(command)
+
         try: output=run(command, capture_output=True)
         except KeyboardInterrupt: print(""); exit(1) 		# Cancel on ^C
         except FileNotFoundError: print(""); continue           # No ImageMagick

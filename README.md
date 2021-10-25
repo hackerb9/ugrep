@@ -15,6 +15,9 @@ glyphs to decorate your text. 🙶❡✯🟔❢🙷
 You can also use it for the reverse operation to lookup a single
 character (or a string of them) you've pasted into the terminal.
 
+As a bonus, it can also show what fonts are installed that can render
+a particular unicode character.
+
 ## Installation
 
 It's just a Python 3 shell script. Download it to `/usr/local/bin` or `~/bin`
@@ -54,6 +57,13 @@ and make it executable.
 	be specified.
 
 	    ugrep -c "(ﾟ∀ﾟ)"
+
+* List fonts for a character: **ugrep** [**-l**] _character_
+
+	After showing the character, list installed fonts that have that
+    glyph:
+
+	    ugrep -l ohm
 
 ### Examples:
 
@@ -167,6 +177,32 @@ how many heart emojis Unicode has. 😜)
 	    📾	U+1F4FE	PORTABLE STEREO
 	    📿	U+1F4FF	PRAYER BEADS
 
+* List which installed fonts have the "mho" glyph defined:
+
+	    $ ugrep -l mho 
+		℧    U+2127  INVERTED OHM SIGN (mho)
+					 DejaVu Math TeX Gyre
+					 DejaVu Sans Book
+					 DejaVu Serif Book
+					 EB Garamond 12
+					 FreeMono
+					 FreeSans
+					 FreeSerif
+					 MathJax_AMS
+					 Noto Sans Mono
+					 Noto Sans
+					 Noto Serif
+					 OpenSymbol
+					 Symbola
+					 TakaoPGothic
+
+  Note that for this to work, you'll need a machine that has
+  FontConfig installed. (Most GNU/Linux machines should already be set).
+  
+  Additionally, the requested character will be displayed in each of
+  the typefaces if your terminal supports sixel graphics (e.g., `xterm
+  -ti vt340`) and you have ImageMagick installed.
+
 * View _all_ Unicode characters:
 
 	    $ ugrep 0..10FFFF  |  less		# ugrep ".?" is equivalent.
@@ -277,11 +313,19 @@ that data.
 
 ## Bugs, Misfeatures, and Workarounds
 
-* Xterm (as of version 349) seems to be able to only show one font at
-  a time, which means a single font must have all the glyphs you want
-  shown! Technically, you can have a second font for "wide" CJK, but
-  that's still not enough. The author (hackerb9) currently prefers
-  using the Neep font like so in `~/.Xresources`:
+## Bugs, Misfeatures, and Workarounds
+
+* The following is not a problem for people who are willing to use
+  vector fonts (truetype, opentype, postscript) that may be
+  antialiased. Xterm uses fontconfig for such people. 
+
+  Xterm (as of version 369) seems to be able to only show one bitmap
+  font at a time, which means a single font must have all the glyphs
+  you want shown. (Yes, you can have a second bitmap font for "wide"
+  CJK, but that's still not enough.)
+
+  The author (hackerb9) currently prefers using the Neep bitmap font
+  like so in `~/.Xresources`:
 
       ! Neep looks nice, has good unicode coverage. Requires xfonts-jmk.
       xterm*vt100.font        :       *neep-medium-r-normal--20*10646*

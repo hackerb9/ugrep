@@ -269,7 +269,7 @@ def show_fonts(x, category):
 
         print("\t\t%(family)s %(style)s\r" % locals(), end='')
 
-        width=40; height=40
+        width=4*10; height=20   # Presuming character cell of 10x20 Fix me XXXXX
         background="Gray10"; foreground="Gray90"
         codepoint=chr(int(x,16))
 

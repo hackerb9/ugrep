@@ -26,6 +26,8 @@ from sys import argv
 from pprint import pprint 
 from os.path import expanduser, expandvars, basename
 from sys import stderr
+from subprocess import getoutput, run
+from posix import write
 
 debug=False
 
@@ -247,25 +249,50 @@ def show_fonts(x):
     """Given a hexadecimal string representing a Unicode code point, 
        list every installed font that defines a glyph at that code point."""
     
-    try:
-        from PIL import Image, ImageDraw, ImageFont, ImageEnhance
-    except:
-        print("Oops, PIL is not installed\n")
-        pass
-    else:
-        Image=None
+    try: fonts = getoutput("fc-list -f '%{family[0]}\t%{style[0]}\t%{file}\n' :charset=" + x + " | sort -u")
+    except KeyboardInterrupt: print(""); exit(1) 		# Cancel on ^C
+    except FileNotFoundError: print(""); return                 # No FontConfig
 
-    from PIL import Image
+    debugprint(fonts)
+    
+    oldfamily=""; oldstyle=""
+    for f in fonts.splitlines():
+        try: (family, style, filename) = f.split('\t')
+        except: continue
 
-    if Image:
-        image = Image.new("LA", (100,200), (255,0) )
-        font = ImageFont.truetype('/usr/share/fonts/truetype/unifont/unifont.ttf', 20)
-        draw = ImageDraw.Draw(image)
-        draw.text( (5,0), chr(int(x,16)), (255,255), font)
-        image=image.crop(image.getbbox())
-        image.save('output.png')
+        # Don't print same font twice (if installed in more than one
+        # location or if multiple point sizes of a bitmap font).
+        if (family == oldfamily and style == oldstyle): continue
+        oldfamily=family; oldstyle=style
+            
+        print("\t\t%(family)s %(style)s\r" % locals(), end='')
 
-    os.system("fc-list -f '\t\t%{family[0]}\n' :charset=" + g["hex"] + " | sort -u")
+        width=40; height=20
+        background="Gray10"; foreground="Gray90"
+        codepoint=chr(int(x,16))
+        command=[ "convert",
+                  "-size",
+                  "%(width)sx%(height)s" % locals(),
+                  "-background", "%(background)s" % locals(),
+                  "-fill", "%(foreground)s" % locals(),
+                  "-font", "%(filename)s" % locals(),
+                  "-gravity", "east",
+                  "label:" + codepoint,
+                  "sixel:-" ]
+        try: output=run(command, capture_output=True)
+        except KeyboardInterrupt: print(""); exit(1) 		# Cancel on ^C
+        except FileNotFoundError: print(""); continue           # No ImageMagick
+        
+        if output.returncode != 0:
+            # Oops, font did not render.
+            print("", flush=True)
+            continue
+
+        # Work around ImageMagick bug by deleting graphics newline (-) at end.
+        output.stdout.replace(b'-\x1b\\', b'\x1b\\') 
+
+        write(1, output.stdout) 		# Print raw bytes
+        print("", end='', flush=True)
 
 
 def isdifferent(a, b):

@@ -323,6 +323,8 @@ def get_cell_size():
 def get_term_colors():
     # Inquire from the terminal what its character cell size is.
     # Returns a tuple (background, foreground) in pixels. 
+    # fg = read -r -p $'\033]10;?\007' -d$'\007'
+    # bg = read -r -p $'\033]11;?\007' -d$'\007'
     return ("gray10","gray90")
 
 def isdifferent(a, b):

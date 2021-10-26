@@ -300,16 +300,36 @@ that data.
 
 ## Bugs, Misfeatures, and Workarounds
 
-## Bugs, Misfeatures, and Workarounds
+* Should use parseargs module to parse arguments correctly now that we
+  have more than a couple. 
 
-* The following is not a problem for people who are willing to use
-  vector fonts (truetype, opentype, postscript) that may be
-  antialiased. Xterm uses fontconfig for such people. 
+* The -l option for rendering a character in all possible fonts does
+  not probe the terminal for foreground and background color. 
+  
+  It also does not accurately calculate the character cell size as it
+  is currently using the pixel size from termios TIOCGWINSZ (get
+  window size ioctl). Some terminals include the window manager
+  frippery (title bar, scrollbar, resize widget) in their window size,
+  so calculating the character cell size by dividing by rows or
+  columns, will be inaccurate causing double-spacing between lines.
 
-  Xterm (as of version 369) seems to be able to only show one bitmap
-  font at a time, which means a single font must have all the glyphs
-  you want shown. (Yes, you can have a second bitmap font for "wide"
-  CJK, but that's still not enough.)
+  The solution is to use XTerm escape sequences, same as in
+  [lsix](https://github.com/hackerb9/lsix). 
+
+* There should be an option to show fonts in a larger size. For
+  example, if the terminal is in Double-High mode, then use 2x
+  resolution.
+
+* [Note: The following is not a problem for people who are willing to
+  use vector fonts (truetype, opentype, postscript) that may be
+  antialiased. Xterm uses fontconfig just fine.]
+
+  <details>
+
+  For bitmap fonts, Xterm (as of version 369) seems to be able to only
+  use one font at a time, which means a single font must have all the
+  glyphs you want shown. (Yes, you can have a second bitmap font for
+  "wide" CJK, but that's still not enough.)
 
   The author (hackerb9) currently prefers using the Neep bitmap font
   like so in `~/.Xresources`:
@@ -326,10 +346,13 @@ that data.
   be installed on Debian GNU/Linux systems with `apt install
   xfonts-jmk`.
 
+
 * Mlterm appears to have the same single font limitation as Xterm.
   Also, it right aligns text that has even a single character in a
   right-to-left alphabet, such as Arabic, so the output from ugrep
   will look a little funny.
+
+  </details>
 
 * Gnome-terminal uses `font-config`, so it has very nice Unicode
   support and can easily zoom in with Ctrl-+⃣ and Ctrl--⃣.

@@ -324,6 +324,9 @@ def get_cell_size():
     if x==0 or y==0 or rows==0 or cols==0: return (10, 20)
 
     from math import floor
+
+    debugprint("rows: %(rows)s\tcols: %(cols)s\tx: %(x)s\ty: %(y)s" % locals())
+    debugprint("charcell w: %d\th: %d" % (floor(x/cols), floor(y/rows) ))
     return( floor(x/cols), floor(y/rows) )
 
 def get_term_colors():

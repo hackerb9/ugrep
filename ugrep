@@ -21,6 +21,8 @@
 # GPL ≥3 (see LICENSE file)
 # B9 September 2018
 
+debug=False
+
 from re import *
 from sys import argv
 from pprint import pprint 
@@ -28,8 +30,15 @@ from os.path import expanduser, expandvars, basename
 from sys import stderr
 from subprocess import getoutput, run
 from posix import write
+import termios
 
-debug=False
+def cleanup():
+    termios.tcflush(1, termios.TCOFLUSH) 	# Discard stdout
+    print(chr(0x1b)+"\\", flush=True)           # String Terminator for sixels
+
+import atexit
+atexit.register(cleanup)
+
 
 def usage():
     print("""\
@@ -249,8 +258,8 @@ def show_fonts(x, category):
        list every installed font that defines a glyph at that code point."""
     
     try: fonts = getoutput("fc-list -f '%{family[0]}\t%{style[0]}\t%{file}\n' :charset=" + x + " | sort -u")
-    except KeyboardInterrupt: print(""); exit(1) 		# Cancel on ^C
-    except FileNotFoundError: print(""); return                 # No FontConfig
+    except FileNotFoundError: print(""); return 	# No FontConfig
+    except KeyboardInterrupt: exit(1) 			# Exit on ^C
 
     debugprint(fonts)
     
@@ -270,11 +279,11 @@ def show_fonts(x, category):
         print("\t\t%(family)s %(style)s\r" % locals(), end='')
 
         (width, height) = get_cell_size() # Character cell font size
-        width=4*width
+        width=4*width                     # Three space indent
         background="Gray10"; foreground="Gray90"
         codepoint=chr(int(x,16))
 
-        # If it's a combining character, add a dotted circle for it combine with
+        # If it's a combining character, add a dotted circle to combine with
         if iscombining(category): codepoint='\u25cc'+codepoint
 
         command=[ "convert",
@@ -291,9 +300,9 @@ def show_fonts(x, category):
         debugprint(command)
 
         try: output=run(command, capture_output=True)
-        except KeyboardInterrupt: print(""); exit(1) 		# Cancel on ^C
-        except FileNotFoundError: print(""); continue           # No ImageMagick
-        
+        except FileNotFoundError: print(""); continue          # No ImageMagick
+        except KeyboardInterrupt: exit(1)                      # Exit on ^C
+
         if output.returncode != 0:
             # Oops, font did not render.
             print("", flush=True)
@@ -302,8 +311,13 @@ def show_fonts(x, category):
         # Work around ImageMagick bug by deleting graphics newline (-) at end.
         output.stdout.replace(b'-\x1b\\', b'\x1b\\') 
 
-        write(1, output.stdout) 		# Print raw bytes
-        print("", end='', flush=True)
+        try: write(1, output.stdout) 		# Print raw bytes
+        except KeyboardInterrupt: exit(1)       # Exit on ^C
+
+        # Bug: XTerm(369) behaviour adds an extra newline after sixel
+        # graphics. There is not supposed to be one. If you're getting
+        # double-spaced lines, that could be why.
+#        print("", end='', flush=True)
 
 def get_cell_size():
     # Inquire from the terminal what its character cell size is.
@@ -316,6 +330,9 @@ def get_cell_size():
 
     # Beware of the stupid output order: y x x y.   --Egmont Koblinger
     (rows, cols, x, y) = buf;
+
+    # VT340 on serial line has x and y set to zero.
+    if x==0 or y==0 or row==0 or cols==0: return (10, 20)
 
     from math import floor
     return( floor(x/cols), floor(y/rows) )

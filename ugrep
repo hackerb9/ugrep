@@ -321,7 +321,7 @@ def get_cell_size():
     (rows, cols, x, y) = buf;
 
     # VT340 on serial line has x and y set to zero.
-    if x==0 or y==0 or row==0 or cols==0: return (10, 20)
+    if x==0 or y==0 or rows==0 or cols==0: return (10, 20)
 
     from math import floor
     return( floor(x/cols), floor(y/rows) )

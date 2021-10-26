@@ -15,8 +15,9 @@ glyphs to decorate your text. 🙶❡✯🟔❢🙷
 You can also use it for the reverse operation to lookup a single
 character (or a string of them) you've pasted into the terminal.
 
-As a bonus, it can also show what fonts are installed that can render
-a particular unicode character.
+As a bonus, it can list which fonts are installed that contain a
+particular unicode character and, using sixels, will show a rendering
+in each font.
 
 ## Installation
 

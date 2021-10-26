@@ -32,14 +32,6 @@ from subprocess import getoutput, run
 from posix import write
 import termios
 
-def cleanup():
-    termios.tcflush(1, termios.TCOFLUSH) 	# Discard stdout
-    print(chr(0x1b)+"\\", flush=True)           # String Terminator for sixels
-
-import atexit
-atexit.register(cleanup)
-
-
 def usage():
     print("""\
 ugrep: find unicode characters based on their names or codepoints
@@ -312,12 +304,9 @@ def show_fonts(x, category):
         output.stdout.replace(b'-\x1b\\', b'\x1b\\') 
 
         try: write(1, output.stdout) 		# Print raw bytes
-        except KeyboardInterrupt: exit(1)       # Exit on ^C
+        except KeyboardInterrupt:		# Catch ^C
+            exit(1)                             # Sixels stopped by cleanup()
 
-        # Bug: XTerm(369) behaviour adds an extra newline after sixel
-        # graphics. There is not supposed to be one. If you're getting
-        # double-spaced lines, that could be why.
-#        print("", end='', flush=True)
 
 def get_cell_size():
     # Inquire from the terminal what its character cell size is.
@@ -338,6 +327,7 @@ def get_cell_size():
     return( floor(x/cols), floor(y/rows) )
 
 def get_term_colors():
+    # XXX not implemented yet
     # Inquire from the terminal what its character cell size is.
     # Returns a tuple (background, foreground) in pixels. 
     # fg = read -r -p $'\033]10;?\007' -d$'\007'
@@ -609,12 +599,23 @@ def debugprint(*args, **kwargs):
 
 
 
+def cleanup():
+    termios.tcflush(1, termios.TCOFLUSH) 	# Discard stdout
+    print(chr(0x1b)+"\\")           # String Terminator for sixels
+
+import atexit
+atexit.register(cleanup)
+
 ### Run the main routine
 try:
     main()
 except BrokenPipeError:
     # Ignore non-error errors. For example: 'ugrep -w pi | head'
     True
+except KeyboardInterrupt:		# Catch ^C
+    cleanup()
+
+atexit.unregister(cleanup)      # Normal exit, no need to cleanup.
 
 
 # Implementation notes:

@@ -597,14 +597,20 @@ def debugprint(*args, **kwargs):
     if (debug):
         err(*args, **kwargs)
 
-
-
 def cleanup():
+    termios.tcdrain(2) 	# Wait for stderr to be printed
     termios.tcflush(1, termios.TCOFLUSH) 	# Discard stdout
     print(chr(0x1b)+"\\")           # String Terminator for sixels
 
 import atexit
 atexit.register(cleanup)
+
+
+# VT340 is Latin-1 ISO8859-1 encoding.
+# Python3 defaults to dying horribly on simple things like print('\u2020')
+import sys
+sys.stdout.reconfigure(errors='replace') 	# Print a ? instead of dying.
+
 
 ### Run the main routine
 try:

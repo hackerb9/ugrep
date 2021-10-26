@@ -177,7 +177,7 @@ how many heart emojis Unicode has. 😜)
 	    📾	U+1F4FE	PORTABLE STEREO
 	    📿	U+1F4FF	PRAYER BEADS
 
-* List which installed fonts have the "mho" glyph defined:
+* List which installed fonts have the "swash ampersand" glyph defined:
 
 <a href="https://raw.githubusercontent.com/hackerb9/ugrep/master/README.md.d/list-fonts.png">
 <img title="ugrep -l swash amp" alt-text="Example of ugrep listing fonts" align="right" src="README.md.d/list-fonts.png" width="50%">

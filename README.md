@@ -179,9 +179,9 @@ how many heart emojis Unicode has. 😜)
 
 * List which installed fonts have the "swash ampersand" glyph defined:
 
-<a href="https://raw.githubusercontent.com/hackerb9/ugrep/master/README.md.d/list-fonts.png">
-<img title="ugrep -l swash amp" alt-text="Example of ugrep listing fonts" align="right" src="README.md.d/list-fonts.png" width="50%">
-</a>
+  <a href="https://raw.githubusercontent.com/hackerb9/ugrep/master/README.md.d/list-fonts.png">
+  <img title="ugrep -l swash amp" alt-text="Example of ugrep listing fonts" align="right" src="README.md.d/list-fonts.png" width="50%">
+  </a>
 
   Note that for this to work, you'll need a machine that has
   FontConfig installed. (Most GNU/Linux machines should already be set).

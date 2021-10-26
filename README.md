@@ -179,29 +179,16 @@ how many heart emojis Unicode has. 😜)
 
 * List which installed fonts have the "mho" glyph defined:
 
-	    $ ugrep -l mho 
-		℧    U+2127  INVERTED OHM SIGN (mho)
-					 DejaVu Math TeX Gyre
-					 DejaVu Sans Book
-					 DejaVu Serif Book
-					 EB Garamond 12
-					 FreeMono
-					 FreeSans
-					 FreeSerif
-					 MathJax_AMS
-					 Noto Sans Mono
-					 Noto Sans
-					 Noto Serif
-					 OpenSymbol
-					 Symbola
-					 TakaoPGothic
+<a href="https://raw.githubusercontent.com/hackerb9/ugrep/master/README.md.d/list-fonts.png">
+<img title="ugrep -l swash amp" alt-text="Example of ugrep listing fonts" align="right" src="README.md.d/list-fonts.png" width="50%">
+</a>
 
   Note that for this to work, you'll need a machine that has
   FontConfig installed. (Most GNU/Linux machines should already be set).
   
   Additionally, the requested character will be displayed in each of
-  the typefaces if your terminal supports sixel graphics (e.g., `xterm
-  -ti vt340`) and you have ImageMagick installed.
+  the typefaces only if your terminal supports sixel graphics (e.g.,
+  `xterm -ti vt340`) and you have ImageMagick installed.
 
 * View _all_ Unicode characters:
 

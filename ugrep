@@ -121,17 +121,25 @@ def main():
     parser = argparse.ArgumentParser(
         description='find unicode characters based on their names or number.')
     parser.add_argument(
-        'character', metavar='char', nargs='+', type=str,
+        'characters', metavar='chars', nargs='+', type=str,
         help='a character/codepoint to show')
     parser.add_argument(
-        '-w', flag=True;
-        help='the file where the sum should be written')
+        '-w', wflag=True;
+        help='matches only whole words, e.g., ugrep -w pi')
+    parser.add_argument(
+        '-c', cflag=True;
+        help='show each character in a string, e.g., ugrep -c "(ﾟ∀ﾟ)"')
+    parser.add_argument(
+        '-l', lflag=True;
+        help='long listing, show fonts containing each character')
+    parser.add_argument(
+        '-x', lflag=True;
+        help='show example usage')
+
     args = parser.parse_args()
-    args.log.write('%s' % sum(args.integers))
+    args.log.write('%s' % args.characters)
     args.log.close()
      
-
-
 
     if len(argv) == 1:
         usage()

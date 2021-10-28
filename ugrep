@@ -31,6 +31,7 @@ from sys import stderr
 from subprocess import getoutput, run
 from posix import write
 import termios
+import argparse
 
 def usage():
     print("""\
@@ -117,6 +118,20 @@ def main():
     loaducd()
     
     # TODO: Switch to getargs
+    parser = argparse.ArgumentParser(
+        description='find unicode characters based on their names or number.')
+    parser.add_argument(
+        'character', metavar='char', nargs='+', type=str,
+        help='a character/codepoint to show')
+    parser.add_argument(
+        '-w', flag=True;
+        help='the file where the sum should be written')
+    args = parser.parse_args()
+    args.log.write('%s' % sum(args.integers))
+    args.log.close()
+     
+
+
 
     if len(argv) == 1:
         usage()

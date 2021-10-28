@@ -117,29 +117,26 @@ def main():
     # Load the Unicode Data into the global ucd variable.
     loaducd()
     
-    # TODO: Switch to getargs
     parser = argparse.ArgumentParser(
-        description='find unicode characters based on their names or number.')
+        description='find Unicode characters by name, number, or example.')
     parser.add_argument(
-        'characters', metavar='chars', nargs='+', type=str,
-        help='a character/codepoint to show')
-    parser.add_argument(
-        '-w', wflag=True;
+        'characters', metavar='Character Name | Codepoint | Character', 
+        nargs='+', type=str,
+        help='which Unicode character to show specified by name, codepoint or by literal example')
+    parser.add_argument('-w', '--word-regexp', action="store_true",
         help='matches only whole words, e.g., ugrep -w pi')
-    parser.add_argument(
-        '-c', cflag=True;
+    parser.add_argument('-c', '--char-by-char', action="store_true",
         help='show each character in a string, e.g., ugrep -c "(ﾟ∀ﾟ)"')
-    parser.add_argument(
-        '-l', lflag=True;
+    parser.add_argument('-l', '--list-fonts', action="store_true",
         help='long listing, show fonts containing each character')
-    parser.add_argument(
-        '-x', lflag=True;
+    parser.add_argument('-x', '--examples',  action="store_true",
         help='show example usage')
 
     args = parser.parse_args()
     args.log.write('%s' % args.characters)
     args.log.close()
      
+    print(args.characters)
 
     if len(argv) == 1:
         usage()

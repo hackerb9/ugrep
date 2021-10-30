@@ -14,7 +14,7 @@
 # * If you have FontConfig installed, then you can use -l to see which
 #   fonts contain a certain character.
 #
-# * If you have ImageMagick installed and your terminalcan display
+# * If you have ImageMagick installed and your terminal can display
 #   sixels, then -l will also show a rendering of the character in
 #   each font.
 

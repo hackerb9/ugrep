@@ -296,7 +296,7 @@ def show_fonts(x, category):
         print("\t\t%(family)s %(style)s\r" % locals(), end='')
 
         (width, height) = get_cell_size() # Character cell font size
-        width=4*width                     # Three space indent
+        width=15*width                    # Leave one space before font name.
 
         if args.font_scale:
             debugprint("Font scaling factor: %d" % (args.font_scale[0]))

@@ -628,7 +628,7 @@ def cleanup():
     termios.tcdrain(2) 	# Wait for stderr to be printed
     if isatty(1):
         termios.tcflush(1, termios.TCOFLUSH) 	# Discard stdout
-    print(chr(0x1b)+"\\", end='')               # String Terminator for sixels
+    print(chr(0x1b)+"\\")                       # String Terminator for sixels
 
 import atexit
 atexit.register(cleanup)

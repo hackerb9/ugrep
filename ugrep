@@ -122,12 +122,20 @@ def main():
         usage()                 # ArgParse's usage is ugly, use our own.
         exit(1)
 
+    if argv[1]=='-h' or argv[1]=='--help':
+        usage()
+        exit(0)
+
+    if argv[1]=='-x' or argv[1]=='--examples' or argv[1]=='--example':
+        examples()
+        exit(0)
+
     parser = argparse.ArgumentParser(
         description='find Unicode characters by name, number, or example.')
     parser.add_argument(
         'characters', metavar='Character Name | Codepoint | Character', 
         nargs='+', type=str,
-        help='which Unicode character to show specified by name, codepoint or by literal example')
+        help='which character to show specified by name, codepoint or literal example')
     parser.add_argument('-w', '--word-regexp', action="store_true",
         help='matches only whole words, e.g., ugrep -w pi')
     parser.add_argument('-c', '--char-by-char', action="store_true",
@@ -138,14 +146,6 @@ def main():
         help='show example usage')
 
     args = parser.parse_args()
-
-    if argv[1]=='-h' or argv[1]=='--help':
-        usage()
-        exit(0)
-
-    if argv[1]=='-x' or argv[1]=='--examples' or argv[1]=='--example':
-        examples()
-        exit(0)
 
     if len(argv)>1 and argv[1]=='-w':
         argv=argv[1:]
@@ -174,25 +174,25 @@ def main():
         showonecharacter( hex(ord(args.characters[0][0])) )
         exit(0)
 
-    if len(argv) == 1:
-        usage()
-        exit(1)
+#    if len(argv) == 1:
+#        usage()
+#        exit(1)
 
     # Do brace expansion on argv if our system doesn't have it.
     braceexpansion()
 
     # Is first arg a hexadecimal number? E.g., 26A0, 0xdeadbeef, U+FACE
     # Then *also* look up that code point.
-    if match(r"(?i)^(U\+?|0x)?[0-9A-F]+$", argv[1]):
+    if match(r"(?i)^(U\+?|0x)?[0-9A-F]+$", args.characters[0]):
         # Loop to allow people to do things like "ugrep 23b{0..9}"
-        for arg in argv[1:]:
+        for arg in args.characters:
             if match(r"(?i)^(U\+?|0x)?[0-9A-F]+$", arg):
                 showonecharacter(arg)
             else:
                 break
 
     # Now, look up the entire argv[] as a character name or alias. 
-    s=makeregexcharname()
+    s=makeregexcharname(args.characters)
     printmatches(s)
 
 
@@ -205,7 +205,7 @@ def showonecharacter(c):
               
 def compileit(s):
     "Compile the regular expresion in s, or die trying."
-    global ucd, argv
+    global ucd, args
 
     if debug:
         debugprint(s)
@@ -215,7 +215,7 @@ def compileit(s):
     try:
         s=compile(s)
     except error as e:
-        err("Error parsing regex: '%s'" % ".*".join(argv[1:]))
+        err("Error parsing regex: '%s'" % ".*".join(args.characters))
         err(e)
         exit(3)
 
@@ -450,7 +450,7 @@ def loaducd():
     return ucd
 
 
-def makeregexcharname():
+def makeregexcharname(words):
     "Create a regular expression to search for a character name"
 
     # Format of ucd: each character is on a separate line.
@@ -471,17 +471,16 @@ def makeregexcharname():
     # combine and quote the command line arguments so we can use them in
     # verbose regex. Also, allow the user to use ^ and $, just like in awk
     # to refer to the beginning and end of the field instead of line.
-    global argv
-    argv=["("+x+")" for x in argv]    # wrap in parens to fix | (alternation) 
-    args=".*".join(argv[1:])          # search terms can have junk between
-    args=sub(r"(\s)", r"\\\1", args)  # quote whitespace for verbose regex
-    args=sub(r"^\(\^", r"(?<=;)(", args) # ^ matches semicolon before field 
-    args=sub(r"\$\)$", r"(?=;))", args)  # $ matches semicolon after field 
+    words=["("+x+")" for x in words]       # wrap in parens to fix alternation
+    arghs=".*".join(words)                 # search terms can have junk between
+    arghs=sub(r"(\s)", r"\\\1", arghs)     # quote whitespace for verbose regex
+    arghs=sub(r"^\(\^", r"(?<=;)(", arghs) # ^ matches semicolon before field 
+    arghs=sub(r"\$\)$", r"(?=;))", arghs)  # $ matches semicolon after field 
 
     # s is a search regex for field 2 (name) based on the command line arguments
     s=r"""^
         (?P<hex>[^;]*);             # first field is hexadecimal codepoint
-        (?P<name>[^;]*"""+args+"""[^;]*); # field 2 (charactername) matches?
+        (?P<name>[^;]*"""+arghs+"""[^;]*); # field 2 (charactername) matches?
         (?P<category>[^;]*);        # third field is general category 
         ([^;]*;){7}                 # skip next 7 fields
         (?P<alias>[^;]*)            # field 11 is comment/alias
@@ -494,7 +493,7 @@ def makeregexcharname():
         (?P<desctwo>[^;]*);           # second field is charactername
         (?P<categorytwo>[^;]*);       # third field is general category 
         ([^;]*;){7}                   # skip next 7 fields
-        (?P<aliastwo>[^;]*("""+args+""")[^;]*) # field 11 (alias) matches?
+        (?P<aliastwo>[^;]*("""+arghs+""")[^;]*) # field 11 (alias) matches?
         (;[^;]*){4}$                  # line ends with four more fields
     """
 
@@ -536,7 +535,7 @@ def braceexpansion():
     shell, like GNU Bash that expands braces on the command line. 
 
     It also fills in the gap until shells understand hexadecimal
-    ranges. For example, the following is ignored by bash-4.4, but we
+    ranges. For example, the following is ignored by bash-5.1, but we
     want to accept it in ugrep.
 
     23b{8..f}	-->	23b8 23b9 23ba 23bb 23bc 23bd 23be 23bf

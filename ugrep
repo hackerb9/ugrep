@@ -31,6 +31,7 @@ from sys import stderr
 from subprocess import getoutput, run
 from posix import write
 import termios
+from os import isatty
 import argparse
 
 def usage():
@@ -101,6 +102,11 @@ def examples():
 
 # Regex ^ and $ work, mostly
     $ ugrep ^x				
+    ⊻	U+22BB	XOR
+    ⌧	U+2327	X IN A RECTANGLE BOX (clear key)
+
+# Use -l to see which fonts are installed that can render a certain character
+    $ ugrep -l 
     ⊻	U+22BB	XOR
     ⌧	U+2327	X IN A RECTANGLE BOX (clear key)
 
@@ -322,7 +328,8 @@ def get_cell_size():
     # First, try termios. It's simple but doesn't work everywhere.
     import array, fcntl, termios
     buf = array.array('H', [0, 0, 0, 0])
-    fcntl.ioctl(1, termios.TIOCGWINSZ, buf)
+    if isatty(1):
+        fcntl.ioctl(1, termios.TIOCGWINSZ, buf)
 
     # Beware of the stupid output order: y x x y.   --Egmont Koblinger
     (rows, cols, x, y) = buf;
@@ -603,7 +610,8 @@ def debugprint(*args, **kwargs):
 
 def cleanup():
     termios.tcdrain(2) 	# Wait for stderr to be printed
-    termios.tcflush(1, termios.TCOFLUSH) 	# Discard stdout
+    if isatty(1):
+        termios.tcflush(1, termios.TCOFLUSH) 	# Discard stdout
     print(chr(0x1b)+"\\", end='')               # String Terminator for sixels
 
 import atexit

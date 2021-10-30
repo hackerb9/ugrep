@@ -127,12 +127,10 @@ def examples():
     $ ugrep 0..10FFFF  |  less"""
     )
 
-# Global flags
-#lflag = False                   # -l: long listing format
 
 # Main
 def main():
-    global argv, args #, lflag
+    global argv, args
 
     # Load the Unicode Data into the global ucd variable.
     loaducd()

@@ -37,19 +37,20 @@ def usage():
     print("""\
 ugrep: find unicode characters based on their names or codepoints
 Usage: 
-    ugrep [-wclx] <character ...> | <codepoint ...> | <character name>
+    ugrep [-wlx] <character> | <codepoint ...> | <character name>
+    ugrep -c <character string ...>
 
     	-w:	matches only whole words, e.g., ugrep -w pi
     	-c:	show each character in a string, e.g., ugrep -c "(ﾟ∀ﾟ)"
-    	-l:	long listing, show fonts containing each character
+    	-l:	list fonts containing each character
 	-x:	show example usage
 
-    <character> is a single character, e.g.:  ugrep ☙
-    <codepoint> is one or more hexadecimal unicode character numbers, 
-		optionally prefixed by "U+" or "0x".e.g.: ugrep U+1F639.
-    		Ranges are allowed with two dots: ugrep 23b0..f
-    <character name> is a regular expression, see examples in ugrep --examples.
-    <character string> is one or more characters. e.g., ugrep -c "( ͡° ͜ʖ ͡°)"
+           <character> A single character, e.g.:  ugrep ☙
+           <codepoint> One or more hexadecimal unicode character numbers, 
+		       optionally prefixed by "U+" or "0x".e.g.: ugrep U+1F639
+    		       Ranges are allowed with two dots: ugrep 23b0..f
+      <character name> A Unicode name (as a regex), e.g.: ugrep alchemical symbol
+    <character string> One or more characters. e.g.: ugrep -c "( ͡° ͜ʖ ͡°)"
 
     Try 'ugrep --examples' to see more examples of usage.
 """
@@ -117,6 +118,10 @@ def main():
     # Load the Unicode Data into the global ucd variable.
     loaducd()
     
+    if len(argv) == 1:
+        usage()                 # ArgParse's usage is ugly, use our own.
+        exit(1)
+
     parser = argparse.ArgumentParser(
         description='find Unicode characters by name, number, or example.')
     parser.add_argument(
@@ -133,14 +138,6 @@ def main():
         help='show example usage')
 
     args = parser.parse_args()
-#    args.log.write('%s' % args.characters)
-#    args.log.close()
-     
-    print(args.characters)
-
-    if len(argv) == 1:
-        usage()
-        exit(1)
 
     if argv[1]=='-h' or argv[1]=='--help':
         usage()
@@ -162,18 +159,19 @@ def main():
 #        debugprint("Long listing enabled")
 
     # Is it -c followed by a string of characters?
-    if args.char_by_char and len(args.characters[0])>1:
-        # Look up each character in the string.
+    if args.char_by_char:
+        # For each string s, look up each character in the string.
         for s in args.characters:
             for i in range(len(s)):
                 for j in range(0,len(s[i])):
                     showonecharacter( hex(ord(s[i][j])) )
-            if s is not args.characters[-1]: print("")
+            if s is not args.characters[-1]:
+                print("")       # Space between words, if multiple args 
         exit(0)
 
     # Is it a single character? Then only show that one character.
-    if  len(argv)==2 and len(argv[1])==1:
-        showonecharacter( hex(ord(argv[1])) )
+    if  len(args.characters)==1 and len(args.characters[0])==1:
+        showonecharacter( hex(ord(args.characters[0][0])) )
         exit(0)
 
     if len(argv) == 1:

@@ -179,7 +179,7 @@ def main():
 #        exit(1)
 
     # Do brace expansion on argv if our system doesn't have it.
-    braceexpansion()
+    args.characters = braceexpansion(args.characters)
 
     # Is first arg a hexadecimal number? E.g., 26A0, 0xdeadbeef, U+FACE
     # Then *also* look up that code point.
@@ -525,7 +525,7 @@ def makeregexcodepoint(cp):
 
 
 
-def braceexpansion():
+def braceexpansion(oldargv):
     """Look for ranges "{a..z}" in argv[] and expand by inserting new elements.
 
     {0..7} 	-->	0 1 2 3 4 5 6 7
@@ -549,16 +549,21 @@ def braceexpansion():
     * Should check for invalid ranges and ignore them instead of barfing.
     * Checks for and ignores prefix of U+ or 0x
 
+    Future thoughts:
+
     * Presumes both arguments are hexadecimal, this makes things weird where 
       {01..10} is expanded by Bash to ten numbers, but
-      {01..0f} is expanded by this program to fifteen!
+      {01..10} is expanded by this program to sixteen!
     
     * Because of that inconsistency, maybe this isn't such a good idea.
       Perhaps we should make people have to prefix hex with U+ or 0x?
+      Yuck. No. This is just too handy to make cumbersome. 
 
+    * A better solution would be to NOT use braces:
+      'ugrep 23{01..10}' might be ten or sixteen characters.
+      'ugrep 2301..10' is always sixteen characters.
     """
 
-    global argv
     s=r"""(?mix)
 	  (?P<prefix>[^{]*)
 	  {?                   # Literal open curly brace (optional)
@@ -571,9 +576,9 @@ def braceexpansion():
 	  (?P<suffix>[^}]*)
     """
     s=compile(s)
-    newargv=[argv[0]]
+    newargv=[]
 
-    for arg in argv[1:]:
+    for arg in oldargv:
         m=search(s, arg)
         if not m:
             newargv.append(arg)
@@ -598,9 +603,7 @@ def braceexpansion():
             for i in range(start, end+1):
                 hexits=hex(i)[2:].zfill(z)
                 newargv.append( prefix + hexits + g["suffix"] )
-
-    argv=newargv
-    return(0)
+    return(newargv)
 
 
 def eprint(*args, **kwargs):

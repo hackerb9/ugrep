@@ -42,14 +42,14 @@ Usage:
 
     	-w:	matches only whole words, e.g., ugrep -w pi
     	-c:	show each character in a string, e.g., ugrep -c "(ﾟ∀ﾟ)"
-    	-l:	list fonts containing each character
+    	-l:	list installed fonts that include matching characters
 	-x:	show example usage
 
            <character> A single character, e.g.:  ugrep ☙
            <codepoint> One or more hexadecimal unicode character numbers, 
 		       optionally prefixed by "U+" or "0x".e.g.: ugrep U+1F639
     		       Ranges are allowed with two dots: ugrep 23b0..f
-      <character name> A Unicode name (as a regex), e.g.: ugrep alchemical symbol
+      <character name> A Unicode name (as a regex), e.g.: ugrep alchemical
     <character string> One or more characters. e.g.: ugrep -c "( ͡° ͜ʖ ͡°)"
 
     Try 'ugrep --examples' to see more examples of usage.

@@ -36,14 +36,12 @@
 debug=False
 
 from re import *
-from sys import argv
-from pprint import pprint 
+from sys import argv, stderr
 from os.path import expanduser, expandvars, basename
-from sys import stderr
+from os import isatty
 from subprocess import getoutput, run
 from posix import write
 import termios
-from os import isatty
 import argparse
 
 def usage():
@@ -202,8 +200,6 @@ def main():
     printmatches(s)
 
 
-import os
-
 def showonecharacter(c):
     s=makeregexcodepoint(c)
     compileit(s)
@@ -224,7 +220,6 @@ def compileit(s):
         err("Error parsing regex: '%s'" % ".*".join(args.characters))
         err(e)
         exit(3)
-
 
 
 def isprint(c):

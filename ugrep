@@ -2,10 +2,19 @@
 # ugrep: find unicode characters based on their names or number.
 # 	 Essentially grep for the Unicode table.
 
-# PREREQUISITES: You must have a copy of UnicodeData.txt installed.
-# On Debian GNU/Linux, this can be done by `apt install unicode-data`.
-# Or, you can download it by hand from the Unicode Consortium and
-# place it in `~/.local/share/unicode/UnicodeData.txt`.
+# PREREQUISITES: None.
+# * But you may wish to have a newer copy of UnicodeData.txt installed.
+#   On Debian GNU/Linux, this can be done by `apt install unicode-data`.
+#   Or, you can download it by hand from the Unicode Consortium and
+#   place it in `~/.local/share/unicode/UnicodeData.txt`.
+#
+# * If you have FontConfig installed, then you can use -l to see which
+#   fonts contain a certain character. 
+#
+# * If you have ImageMagick installed and a terminal that can display
+#   sixels, then -l will also show a rendering of the character in
+#   each font.
+
 
 # Fun things to try:
 
@@ -19,7 +28,7 @@
 # ugrep 2300..ff
 
 # GPL ≥3 (see LICENSE file)
-# B9 September 2018
+# B9 September 2018 — October 2021
 
 debug=False
 
@@ -571,7 +580,7 @@ def rangeexpansion(oldargv):
         if not m:
             newargv.append(arg)
         else:
-            debugprint("Doing brace expansion on " + arg)
+            debugprint("Doing range expansion on " + arg)
             g=m.groupdict()
             prefix=g["prefix"]
             start=g["start"].strip("{}") # Python doesn't do lazy regexps?

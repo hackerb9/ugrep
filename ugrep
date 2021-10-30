@@ -108,11 +108,11 @@ def examples():
     )
 
 # Global flags
-lflag = False                   # -l: long listing format
+#lflag = False                   # -l: long listing format
 
 # Main
 def main():
-    global argv, lflag
+    global argv, args #, lflag
 
     # Load the Unicode Data into the global ucd variable.
     loaducd()
@@ -133,8 +133,8 @@ def main():
         help='show example usage')
 
     args = parser.parse_args()
-    args.log.write('%s' % args.characters)
-    args.log.close()
+#    args.log.write('%s' % args.characters)
+#    args.log.close()
      
     print(args.characters)
 
@@ -156,19 +156,19 @@ def main():
             argv[i]="\\b"+argv[i]+"\\b"
         debugprint(argv)
 
-    if len(argv)>1 and argv[1]=='-l':
-        argv=argv[1:]
-        lflag=True
-        debugprint("Long listing enabled")
+#    if len(argv)>1 and argv[1]=='-l':
+#        argv=argv[1:]
+#        lflag=True
+#        debugprint("Long listing enabled")
 
     # Is it -c followed by a string of characters?
-    if len(argv)>1 and argv[1]=='-c':
+    if args.char_by_char and len(args.characters[0])>1:
         # Look up each character in the string.
-        argv=argv[1:]
-        for i in range(1,len(argv)):
-            for j in range(0,len(argv[i])):
-                showonecharacter( hex(ord(argv[i][j])) )
-            if (i<len(argv)-1): print("")
+        for s in args.characters:
+            for i in range(len(s)):
+                for j in range(0,len(s[i])):
+                    showonecharacter( hex(ord(s[i][j])) )
+            if s is not args.characters[-1]: print("")
         exit(0)
 
     # Is it a single character? Then only show that one character.
@@ -262,8 +262,8 @@ def printmatches(s):
                 print (" (" + g["alias"].lower() + ")", end='')
             print("", flush=True)
             # If -l, show list of installed fonts which contain the glyph.
-            if lflag:
-                show_fonts(g["hex"], category)
+            if args.list_fonts:  show_fonts( g["hex"], category )
+
 
 def show_fonts(x, category):
     """Given a hexadecimal string representing a Unicode code point, 
@@ -623,7 +623,7 @@ def debugprint(*args, **kwargs):
 def cleanup():
     termios.tcdrain(2) 	# Wait for stderr to be printed
     termios.tcflush(1, termios.TCOFLUSH) 	# Discard stdout
-    print(chr(0x1b)+"\\")           # String Terminator for sixels
+    print(chr(0x1b)+"\\", end='')               # String Terminator for sixels
 
 import atexit
 atexit.register(cleanup)

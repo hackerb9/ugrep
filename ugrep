@@ -147,16 +147,9 @@ def main():
 
     args = parser.parse_args()
 
-    if len(argv)>1 and argv[1]=='-w':
-        argv=argv[1:]
-        for i in range(1,len(argv)):
-            argv[i]="\\b"+argv[i]+"\\b"
-        debugprint(argv)
-
-#    if len(argv)>1 and argv[1]=='-l':
-#        argv=argv[1:]
-#        lflag=True
-#        debugprint("Long listing enabled")
+    # If -w, then wrap each argument with \b (regexp word breaks)
+    if args.word_regexp:
+        args.characters = [ "\\b"+s+"\\b" for s in args.characters ]
 
     # Is it -c followed by a string of characters?
     if args.char_by_char:
@@ -174,11 +167,7 @@ def main():
         showonecharacter( hex(ord(args.characters[0][0])) )
         exit(0)
 
-#    if len(argv) == 1:
-#        usage()
-#        exit(1)
-
-    # Do range expansion on argv if our system doesn't have it.
+    # Do range expansion on argv. (e.g., 2301..f)
     args.characters = rangeexpansion(args.characters)
 
     # Is first arg a hexadecimal number? E.g., 26A0, 0xdeadbeef, U+FACE
@@ -527,6 +516,7 @@ def makeregexcodepoint(cp):
 
 def rangeexpansion(oldargv):
     """Look for ranges "a..z" in oldargv[] and expand by inserting new elements.
+    The new argv is returned to the caller. 
 
     0..7 	-->	0 1 2 3 4 5 6 7
     abc0..7 	--> 	abc0 abc1 abc2 abc3 abc4 abc5 abc6 abc7

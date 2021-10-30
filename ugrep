@@ -128,7 +128,7 @@ def examples():
 
 # Main
 def main():
-    global argv, args
+    global argv, args, debug
 
     # Load the Unicode Data into the global ucd variable.
     loaducd()
@@ -159,8 +159,14 @@ def main():
         help='long listing, show fonts containing each character')
     parser.add_argument('-x', '--examples',  action="store_true",
         help='show example usage')
+    parser.add_argument('--font-scale', nargs=1, action="store", type=int, 
+                        help='increase size of font rendered by --list-fonts')
+    parser.add_argument('--debug', action="store_true",  
+                        help='internal debugging')
 
     args = parser.parse_args()
+
+    if args.debug: debug=True
 
     # If -w, then wrap each argument with \b (regexp word breaks)
     if args.word_regexp:
@@ -291,7 +297,11 @@ def show_fonts(x, category):
 
         (width, height) = get_cell_size() # Character cell font size
         width=4*width                     # Three space indent
-        background="Gray10"; foreground="Gray90"
+
+        if args.font_scale:
+            debugprint("Font scaling factor: %d" % (args.font_scale[0]))
+            height = height * args.font_scale[0]
+        (background, foreground) = get_term_colors()
         codepoint=chr(int(x,16))
 
         # If it's a combining character, add a dotted circle to combine with

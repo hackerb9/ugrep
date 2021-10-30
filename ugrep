@@ -178,8 +178,8 @@ def main():
 #        usage()
 #        exit(1)
 
-    # Do brace expansion on argv if our system doesn't have it.
-    args.characters = braceexpansion(args.characters)
+    # Do range expansion on argv if our system doesn't have it.
+    args.characters = rangeexpansion(args.characters)
 
     # Is first arg a hexadecimal number? E.g., 26A0, 0xdeadbeef, U+FACE
     # Then *also* look up that code point.
@@ -525,43 +525,34 @@ def makeregexcodepoint(cp):
 
 
 
-def braceexpansion(oldargv):
-    """Look for ranges "{a..z}" in argv[] and expand by inserting new elements.
+def rangeexpansion(oldargv):
+    """Look for ranges "a..z" in oldargv[] and expand by inserting new elements.
 
-    {0..7} 	-->	0 1 2 3 4 5 6 7
-    abc{0..7} 	--> 	abc0 abc1 abc2 abc3 abc4 abc5 abc6 abc7
-
-    This is mostly useful for people who do not run a modern UNIX
-    shell, like GNU Bash that expands braces on the command line. 
-
-    It also fills in the gap until shells understand hexadecimal
-    ranges. For example, the following is ignored by bash-5.1, but we
-    want to accept it in ugrep.
-
-    23b{8..f}	-->	23b8 23b9 23ba 23bb 23bc 23bd 23be 23bf
+    0..7 	-->	0 1 2 3 4 5 6 7
+    abc0..7 	--> 	abc0 abc1 abc2 abc3 abc4 abc5 abc6 abc7
+    23b8..f	-->	23b8 23b9 23ba 23bb 23bc 23bd 23be 23bf
 
     Notes:
+
+    * Does check for and correctly ignores prefix of U+ or 0x.
+    * Should check for invalid ranges and ignore them instead of barfing.
+
+    Design notes:
+
+    * Although similar to shell brace expansion, and ugrep even
+      accepts braces, we never suggest to the user to try that. The
+      problem is that shell brace expansion is decimal, whereas ugrep
+      is working in hexadecimal.
+
+      ugrep '23{01..10}'  -> sixteen characters, cumbersome.
+      ugrep  23{01..10}   -> ten characters sometimes (e.g., using bash)
+      ugrep 2301..10	  -> always sixteen characters (recommended).
 
     * In Bash, if start or end begin with a "0", then it zfills to
       that width. For this program, the 0 is optional as it always
       uses the largest width of the two ends E.g., 23{0..ff} -> 2300, 2301,...
-    * Does not handle nested braces nor alternation with a comma.
-    * Should check for invalid ranges and ignore them instead of barfing.
-    * Checks for and ignores prefix of U+ or 0x
 
-    Future thoughts:
-
-    * Presumes both arguments are hexadecimal, this makes things weird where 
-      {01..10} is expanded by Bash to ten numbers, but
-      {01..10} is expanded by this program to sixteen!
-    
-    * Because of that inconsistency, maybe this isn't such a good idea.
-      Perhaps we should make people have to prefix hex with U+ or 0x?
-      Yuck. No. This is just too handy to make cumbersome. 
-
-    * A better solution would be to NOT use braces:
-      'ugrep 23{01..10}' might be ten or sixteen characters.
-      'ugrep 2301..10' is always sixteen characters.
+      There is no confusion without braces: 230..ff -> 230, 231, ... 
     """
 
     s=r"""(?mix)

@@ -3,14 +3,14 @@
 # 	 Essentially grep for the Unicode table.
 
 # PREREQUISITE: 
-
-# * You'll need a copy of UnicodeData.txt installed. On Debian
-#   GNU/Linux, this can be done by `apt install unicode-data`. Or, you
-#   can download it by hand from the Unicode Consortium and place it
-#   in `~/.local/share/unicode/UnicodeData.txt`.
+#
+# * You'll need a copy of UnicodeData.txt installed. 
+#   On Debian GNU/Linux, this can be done by `apt install unicode-data`.
+#   Or, you can download it by hand from the Unicode Consortium and place
+#   it in `~/.local/share/unicode/UnicodeData.txt`.
 
 # ADDED FUNCTIONALITY: 
-
+#
 # * If you have FontConfig installed, then you can use -l to see which
 #   fonts contain a certain character.
 #

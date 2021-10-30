@@ -118,9 +118,10 @@ def examples():
     ⌧	U+2327	X IN A RECTANGLE BOX (clear key)
 
 # Use -l to see which fonts are installed that can render a certain character
-    $ ugrep -l 
-    ⊻	U+22BB	XOR
-    ⌧	U+2327	X IN A RECTANGLE BOX (clear key)
+    $ ugrep -l math left tortoise
+    ⟬    U+27EC  MATHEMATICAL LEFT WHITE TORTOISE SHELL BRACKET
+                 Symbola 
+                 Unifont 
 
 # Show every single Unicode character. (Slow! Use 'fonttable' instead).
     $ ugrep 0..10FFFF  |  less"""

@@ -160,13 +160,10 @@ def main():
     # XXX Argh. argparse gives an error on 'ugrep -L foo' but works for 'ugrep foo -L'.
     parser.add_argument('-L', '--list-fonts-scale', metavar='scaling', dest='fonts_scale',
                         nargs='?', const=2, default=1, type=float,
-        help='list fonts, scaling the characters to be larger')
+        help='list fonts, scaling the characters to be from 2 to 8x larger')
     parser.add_argument('-x', '--examples',  action="store_true",
         help='show example usage')
-    parser.add_argument('--font-scale', nargs=1, action="store", type=int, 
-                        help='increase size of font rendered by --list-fonts')
-    parser.add_argument('--debug', action="store_true",  
-                        help='internal debugging')
+    parser.add_argument('--debug', action="store_true", help='internal debugging')
 
     args = parser.parse_args()
 
@@ -313,17 +310,19 @@ def show_fonts(x, category):
 
         (background, foreground) = get_term_colors()
         (width, height) = get_cell_size() # Character cell font size
-        height=args.fonts_scale*height 	  # Maybe increase size of font rendering 
-        width=15*width                    # Leave one space before font name.
-
-        if args.font_scale:
-            debugprint("Font scaling factor: %d" % (args.font_scale[0]))
-            height = height * args.font_scale[0]
+        height=args.fonts_scale*height 	  # Increase size of font (maybe).
+        width=16*width                    # Sixteen spaces before font name.
+        debugprint("Font scaling factor: %g" % (args.fonts_scale))
+        debugprint("Font canvas size: %g x %g" % (width, height))
 
         codepoint=chr(int(x,16))
 
         # If it's a combining character, add a dotted circle to combine with
         if iscombining(category): codepoint='\u25cc'+codepoint
+
+        # Add a space after the character to separate it from the font name
+        # and to give room for italic characters to lean right.
+        space=["-xc:%(background)s" % locals()]
 
         command=[ "convert",
                   "-size",
@@ -671,7 +670,7 @@ except BrokenPipeError:
 except KeyboardInterrupt:		# Catch ^C
     cleanup()
 
-atexit.unregister(cleanup)      # Normal exit, no need to cleanup.
+atexit.unregister(cleanup, '')      # Normal exit, no need to cleanup.
 
 
 # Implementation notes:

@@ -302,20 +302,14 @@ def show_fonts(x, category):
         if style == "Regular": style = ""
 
         esc=chr(0x1b)
-        if args.fonts_scale == 1:
+        if args.fonts_scale < 2:
             print("\t\t%(family)s %(style)s\r" % locals(), end='')
         else:
-            print("\n", end='')
-            print("\t", end='')
-            s="%(family)s %(style)s\r" % locals()
-            print(esc + '#3', end='')
-            print(s, end='')
-            print("\n", end='')
-            print(esc + '#4', end='')
-            print("\t", end='')
-            print(esc + '#5', end='')
-            print(s, end='')
-            print('\r' + esc + '[2F');      # Previous line
+            s="\t%(family)s %(style)s\r" % locals()
+            print(esc + '#3' + s) 		# Double-height & width, top half
+            print(esc + '#4' + s)               # Double-height & width, bottom half
+            print(esc + '#5', end='')           # Single-width.
+            print('\r' + esc + '[2F', end='');  # Move up two lines for drawing sixels
 
         (background, foreground) = get_term_colors()
         (width, height) = get_cell_size() # Character cell font size
@@ -648,14 +642,18 @@ def debugprint(*args, **kwargs):
     if (debug):
         err(*args, **kwargs)
 
-def cleanup():
+def cleanup(end=None):
+    if end == None : end = '\n'
     termios.tcdrain(2) 	# Wait for stderr to be printed
     if isatty(1):
         termios.tcflush(1, termios.TCOFLUSH) 	# Discard stdout
-    print(chr(0x1b)+"\\")                       # String Terminator for sixels
+    esc=chr(0x1b)
+    print(esc+"\\", end=end)    		# String Terminator for sixels
+    print(esc+"#5", end=end)    		# Single width, single height characters
+
 
 import atexit
-atexit.register(cleanup)
+atexit.register(cleanup, '')
 
 
 # VT340 is Latin-1 ISO8859-1 encoding.

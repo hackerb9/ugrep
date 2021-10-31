@@ -159,13 +159,17 @@ def main():
         help='list fonts that include a glyph for a given character')
     # XXX Argh. argparse gives an error on 'ugrep -L foo' but works for 'ugrep foo -L'.
     parser.add_argument('-L', '--list-fonts-scale', metavar='scaling', dest='fonts_scale',
-                        nargs='?', const=2, default=1, type=float,
+                        nargs='?', const=2, default=None, type=float,
         help='list fonts, scaling the characters to be from 2 to 8x larger')
     parser.add_argument('-x', '--examples',  action="store_true",
         help='show example usage')
     parser.add_argument('--debug', action="store_true", help='internal debugging')
 
     args = parser.parse_args()
+
+    # -l (list fonts), defaults to a scaling of 1x
+    if args.list_fonts:
+        args.fonts_scale = 1
 
     # if -L is like -l (list fonts), but with larger images.
     if args.fonts_scale:
@@ -302,16 +306,20 @@ def show_fonts(x, category):
         if args.fonts_scale < 2:
             print("\t\t%(family)s %(style)s\r" % locals(), end='')
         else:
+            # Print double-size
             s="\t%(family)s %(style)s\r" % locals()
-            print(esc + '#3' + s) 		# Double-height & width, top half
-            print(esc + '#4' + s)               # Double-height & width, bottom half
-            print(esc + '#5', end='')           # Single-width.
-            print('\r' + esc + '[2F', end='');  # Move up two lines for drawing sixels
+            print(esc + '#3' + s)     # Double-height & width, top half
+            print(esc + '#4' + s)     # Double-height & width, bottom half
+            print(esc + '#5', end='') # Single-width.
+            print('\r' + esc + '[2F', end='');  # Up 2 lines for drawing sixels
 
         (background, foreground) = get_term_colors()
         (width, height) = get_cell_size() # Character cell font size
         height=args.fonts_scale*height 	  # Increase size of font (maybe).
-        width=16*width                    # Sixteen spaces before font name.
+        if args.fonts_scale < 2:
+            width=(16-1)*width  	# Leave one space before fontname
+        else:
+            width=(16-2)*width  	# One double-wide space
         debugprint("Font scaling factor: %g" % (args.fonts_scale))
         debugprint("Font canvas size: %g x %g" % (width, height))
 
@@ -320,18 +328,22 @@ def show_fonts(x, category):
         # If it's a combining character, add a dotted circle to combine with
         if iscombining(category): codepoint='\u25cc'+codepoint
 
-        # Add a space after the character to separate it from the font name
-        # and to give room for italic characters to lean right.
-        space=["-xc:%(background)s" % locals()]
+#convert -size 150x40 xc:Gray10 -fill Gray90 \( -background none -font Bitstream-Charter-Italic label:f -trim \) -gravity east -compose over -composite  sixel:-
 
         command=[ "convert",
                   "-size",
                   "%(width)sx%(height)s" % locals(),
-                  "-background", "%(background)s" % locals(),
+                  "xc:" + "%(background)s" % locals(),
                   "-fill", "%(foreground)s" % locals(),
+                  "(", 
+                  "-background", "none",
                   "-font", "%(filename)s" % locals(),
-                  "-gravity", "east",
                   "label:" + codepoint,
+                  "-trim",
+                  ")",
+                  "-gravity", "east",
+                  "-compose", "over",
+                  "-composite",
                   "+dither",  
                   "-colors", "4",
                   "sixel:-" ]
@@ -643,7 +655,8 @@ def debugprint(*args, **kwargs):
 
 def cleanup(end=None):
     if end == None : end = '\n'
-    termios.tcdrain(2) 	# Wait for stderr to be printed
+    if isatty(2):
+        termios.tcdrain(2) 	# Wait for stderr to be printed
     if isatty(1):
         termios.tcflush(1, termios.TCOFLUSH) 	# Discard stdout
     esc=chr(0x1b)
@@ -670,7 +683,7 @@ except BrokenPipeError:
 except KeyboardInterrupt:		# Catch ^C
     cleanup()
 
-atexit.unregister(cleanup, '')      # Normal exit, no need to cleanup.
+atexit.unregister(cleanup)      # Normal exit, no need to cleanup.
 
 
 # Implementation notes:

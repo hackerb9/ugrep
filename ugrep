@@ -3,14 +3,14 @@
 # 	 Essentially grep for the Unicode table.
 
 # PREREQUISITE: 
-
-# * You'll need a copy of UnicodeData.txt installed. On Debian
-#   GNU/Linux, this can be done by `apt install unicode-data`. Or, you
-#   can download it by hand from the Unicode Consortium and place it
-#   in `~/.local/share/unicode/UnicodeData.txt`.
+#
+# * You'll need a copy of UnicodeData.txt installed. 
+#   On Debian GNU/Linux, this can be done by `apt install unicode-data`.
+#   Or, you can download it by hand from the Unicode Consortium and place
+#   it in `~/.local/share/unicode/UnicodeData.txt`.
 
 # ADDED FUNCTIONALITY: 
-
+#
 # * If you have FontConfig installed, then you can use -l to see which
 #   fonts contain a certain character.
 #
@@ -36,14 +36,12 @@
 debug=False
 
 from re import *
-from sys import argv
-from pprint import pprint 
+from sys import argv, stderr
 from os.path import expanduser, expandvars, basename
-from sys import stderr
+from os import isatty
 from subprocess import getoutput, run
 from posix import write
 import termios
-from os import isatty
 import argparse
 
 def usage():
@@ -127,12 +125,10 @@ def examples():
     $ ugrep 0..10FFFF  |  less"""
     )
 
-# Global flags
-#lflag = False                   # -l: long listing format
 
 # Main
 def main():
-    global argv, args #, lflag
+    global argv, args, debug
 
     # Load the Unicode Data into the global ucd variable.
     loaducd()
@@ -167,12 +163,18 @@ def main():
         help='list fonts, scaling the characters to be larger')
     parser.add_argument('-x', '--examples',  action="store_true",
         help='show example usage')
+    parser.add_argument('--font-scale', nargs=1, action="store", type=int, 
+                        help='increase size of font rendered by --list-fonts')
+    parser.add_argument('--debug', action="store_true",  
+                        help='internal debugging')
 
     args = parser.parse_args()
 
     # if -L is like -l (list fonts), but with larger images.
     if args.fonts_scale:
         args.list_fonts = True;
+
+    if args.debug: debug=True
 
     # If -w, then wrap each argument with \b (regexp word breaks)
     if args.word_regexp:
@@ -212,8 +214,6 @@ def main():
     printmatches(s)
 
 
-import os
-
 def showonecharacter(c):
     s=makeregexcodepoint(c)
     compileit(s)
@@ -234,7 +234,6 @@ def compileit(s):
         err("Error parsing regex: '%s'" % ".*".join(args.characters))
         err(e)
         exit(3)
-
 
 
 def isprint(c):
@@ -321,7 +320,11 @@ def show_fonts(x, category):
         (background, foreground) = get_term_colors()
         (width, height) = get_cell_size() # Character cell font size
         height=args.fonts_scale*height 	  # Maybe increase size of font rendering 
-        width=15*width                    # One space between sixel image and fontname
+        width=15*width                    # Leave one space before font name.
+
+        if args.font_scale:
+            debugprint("Font scaling factor: %d" % (args.font_scale[0]))
+            height = height * args.font_scale[0]
 
         codepoint=chr(int(x,16))
 
@@ -649,7 +652,7 @@ def cleanup():
     termios.tcdrain(2) 	# Wait for stderr to be printed
     if isatty(1):
         termios.tcflush(1, termios.TCOFLUSH) 	# Discard stdout
-    print(chr(0x1b)+"\\", end='')               # String Terminator for sixels
+    print(chr(0x1b)+"\\")                       # String Terminator for sixels
 
 import atexit
 atexit.register(cleanup)

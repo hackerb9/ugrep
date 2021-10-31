@@ -305,14 +305,14 @@ def show_fonts(x, category):
         if args.fonts_scale == 1:
             print("\t\t%(family)s %(style)s\r" % locals(), end='')
         else:
-#            print("\n", end='')
-            print("\t\t", end='')
+            print("\n", end='')
+            print("\t", end='')
             s="%(family)s %(style)s\r" % locals()
             print(esc + '#3', end='')
             print(s, end='')
             print("\n", end='')
             print(esc + '#4', end='')
-            print("\t\t", end='')
+            print("\t", end='')
             print(esc + '#5', end='')
             print(s, end='')
             print('\r' + esc + '[2F');      # Previous line

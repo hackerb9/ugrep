@@ -305,9 +305,9 @@ def show_fonts(x, category):
             
 
         if args.fonts_scale < 2:
-            print("\t\t" + famstr, end='')
+            print("\t\t" + famstr, end='') 	# Usual case is normal text.
         else:
-            # Print double-size text
+            # Print double-size text (-L flag)
             esc=chr(0x1b)
             famstr="\t" + famstr
             print(esc + '#3' + famstr)         # Top half double-height & width
@@ -320,7 +320,7 @@ def show_fonts(x, category):
         if args.fonts_scale < 2:
             width=(16-1)*width  	# Leave one space before fontname
         else:
-            width=(16-2)*width  	# One double-wide space
+            width=(16-2)*width  	# Leave one double-wide space
         debugprint("Font scaling factor: %g" % (args.fonts_scale))
         debugprint("Font canvas size: %g x %g" % (width, height))
 
@@ -328,8 +328,6 @@ def show_fonts(x, category):
 
         # If it's a combining character, add a dotted circle to combine with
         if iscombining(category): codepoint='\u25cc'+codepoint
-
-#convert -size 150x40 xc:Gray10 -fill Gray90 \( -background none -font Bitstream-Charter-Italic label:f -trim \) -gravity east -compose over -composite  sixel:-
 
         command=[ "convert",
                   "-size",
@@ -654,19 +652,19 @@ def debugprint(*args, **kwargs):
     if (debug):
         err(*args, **kwargs)
 
-def cleanup(end=None):
-    if end == None : end = '\n'
+def cleanup():
     if isatty(2):
-        termios.tcdrain(2) 	# Wait for stderr to be printed
+        termios.tcdrain(2) 		# Wait for stderr to be printed
     if isatty(1):
         termios.tcflush(1, termios.TCOFLUSH) 	# Discard stdout
     esc=chr(0x1b)
-    print(esc+"\\", end=end)    		# String Terminator for sixels
-    print(esc+"#5", end=end)    		# Single width, single height characters
+    print(esc+"\\", end='')		# String Terminator for sixels
+    print(esc+"#5", end='')		# Single width, single height characters
+    print("\r" + esc + "[J", end='')	# Clear to end of screen (XXXTERMINFO)
 
 
 import atexit
-atexit.register(cleanup, '')
+atexit.register(cleanup)        	# When exiting, cleanup sixels
 
 
 # VT340 is Latin-1 ISO8859-1 encoding.

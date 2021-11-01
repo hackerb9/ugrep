@@ -308,11 +308,7 @@ def show_fonts(x, category):
             print("\t\t" + famstr, end='') 	# Usual case is normal text.
         else:
             # Print double-size text (-L flag)
-            esc=chr(0x1b)
-            famstr="\t" + famstr
-            print(esc + '#3' + famstr)         # Top half double-height & width
-            print(esc + '#4' + famstr, end='') # Bottom half
-            print('\r' + esc + '[F', end='');  # Up 1 line for drawing sixels
+            print_double_size('\t' + famstr)
 
         (background, foreground) = get_term_colors()
         (width, height) = get_cell_size() # Character cell font size
@@ -365,6 +361,19 @@ def show_fonts(x, category):
             exit(1)                             # Sixels stopped by cleanup()
 
 
+def get_rows_cols():
+    # Return number of (rows, columns) in current terminal window
+    # First, try termios. It's simple but doesn't work everywhere.
+    import array, fcntl, termios
+    buf = array.array('H', [0, 0, 0, 0])
+    if isatty(1):
+        fcntl.ioctl(1, termios.TIOCGWINSZ, buf)
+    # Beware of the stupid output order: y x x y.   --Egmont Koblinger
+    (rows, cols, x, y) = buf;
+    if rows==0: rows=24
+    if cols==0: cols=80
+    return (rows,cols)
+
 def get_cell_size():
     # Inquire from the terminal what its character cell size is.
     # Returns a tuple (width, height) in pixels. 
@@ -377,9 +386,12 @@ def get_cell_size():
 
     # Beware of the stupid output order: y x x y.   --Egmont Koblinger
     (rows, cols, x, y) = buf;
+    if rows==0: rows=24
+    if cols==0: cols=80
 
     # VT340 on serial line has x and y set to zero.
-    if x==0 or y==0 or rows==0 or cols==0: return (10, 20)
+    if x==0: x=800
+    if y==0: y=480
 
     from math import floor
 
@@ -394,6 +406,19 @@ def get_term_colors():
     # fg = read -r -p $'\033]10;?\007' -d$'\007'
     # bg = read -r -p $'\033]11;?\007' -d$'\007'
     return ("gray10","gray90")
+
+def print_double_size(famstr):
+    esc=chr(0x1b)
+    (rows, cols) = get_rows_cols()
+    if len(famstr.expandtabs()) > int(cols/2):
+        famstr = famstr.expandtabs()[:int(cols/2)]
+    print(esc + '#3' + famstr)         # Top half double-height & width
+    print(esc + '#4' + famstr, end='') # Bottom half
+
+    # Should use terminfo for this since VT100 and VT340 differ.
+    print('\r' + esc + '[A', end='');  # Up 1 line for drawing sixels
+    # print('\r' + esc + '[F', end='');  # VT100
+
 
 def isdifferent(a, b):
     """Given two strings A & B, determine if B is different enough from A

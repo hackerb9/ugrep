@@ -319,7 +319,13 @@ def show_fonts(x, category):
             print("\t\t" + famstr, end='') 	# Usual case is normal text.
         else:
             # Print double-size text (-L flag)
+            if args.fonts_scale >= 4: print("") 	# Down 1 line for text
+            if args.fonts_scale >= 8: print("") 	# Down 1 line for text
             print_double_size('\t' + famstr)
+            if args.fonts_scale >= 4: 
+                print('\r' + chr(0x1b) + '[A', end='');  # Return up 1 line
+            if args.fonts_scale >= 8: 
+                print('\r' + chr(0x1b) + '[A', end='');  # Return up 1 line
 
         (background, foreground) = get_term_colors()
         (width, height) = get_cell_size() # Character cell font size
@@ -426,10 +432,9 @@ def print_double_size(famstr):
         famstr = famstr.expandtabs()[:int(cols/2)]
     print(esc + '#3' + famstr)         # Top half double-height & width
     print(esc + '#4' + famstr, end='') # Bottom half
-
-    # Should use terminfo for this since VT100 and VT340 differ.
     print('\r' + esc + '[A', end='');  # Up 1 line for drawing sixels
-    #print('\r' + esc + '[F', end='');  # VT100
+
+    # Note: Should use terminfo for this since VT100 and VT340 differ.
 
 def isdifferent(a, b):
     """Given two strings A & B, determine if B is different enough from A

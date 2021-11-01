@@ -367,6 +367,8 @@ def show_fonts(x, category):
 
         if output.returncode != 0:
             # Oops, font did not render.
+            if args.fonts_scale >= 2:
+                print("", flush=True)
             print("", flush=True)
             continue
 

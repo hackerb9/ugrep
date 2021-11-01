@@ -157,6 +157,8 @@ def main():
         help='show each character in a string, e.g., ugrep -c "(ﾟ∀ﾟ)"')
     parser.add_argument('-l', '--list-fonts', action="store_true",
         help='list fonts that include a glyph for a given character')
+    parser.add_argument('-ll', '--list-fonts-long', action="store_true",
+        help='list all fonts, including variants like italic, bold, etc.')
     # XXX Argh. argparse gives an error on 'ugrep -L foo' but works for 'ugrep foo -L'.
     parser.add_argument('-L', '--list-fonts-scale', metavar='scaling', dest='fonts_scale',
                         nargs='?', const=2, default=None, type=float,
@@ -167,8 +169,12 @@ def main():
 
     args = parser.parse_args()
 
+    # -ll (list_fonts_long) same as -l but shows all font variants
+    if args.list_fonts_long:
+        args.list_fonts = True
+
     # -l (list fonts), defaults to a scaling of 1x
-    if args.list_fonts:
+    if args.list_fonts and not args.fonts_scale:
         args.fonts_scale = 1
 
     # if -L is like -l (list fonts), but with larger images.
@@ -287,7 +293,8 @@ def show_fonts(x, category):
     except FileNotFoundError: print(""); return 	# No FontConfig
     except KeyboardInterrupt: exit(1) 			# Exit on ^C
 
-    debugprint(fonts)
+    
+    #   debugprint(fonts)		# List of every matching font.
     
     oldfam=""
     for f in fonts.splitlines():
@@ -296,6 +303,10 @@ def show_fonts(x, category):
 
         # Don't print the style if it is just "Regular"
         if style == "Regular": style = ""
+
+        # If we're not doing a long listing, then skip variant styles
+        if not args.list_fonts_long:
+            if style != "": continue
 
         # Don't print same font twice (if installed in more than one
         # location or if multiple point sizes of a bitmap font).
@@ -356,6 +367,8 @@ def show_fonts(x, category):
         # Work around ImageMagick bug by deleting graphics newline (-) at end.
         output.stdout.replace(b'-\x1b\\', b'\x1b\\') 
 
+        print("", flush=True, end='')   # Send any pending output to stdout
+
         try: write(1, output.stdout) 		# Print raw bytes
         except KeyboardInterrupt:		# Catch ^C
             exit(1)                             # Sixels stopped by cleanup()
@@ -366,9 +379,8 @@ def get_rows_cols():
     # First, try termios. It's simple but doesn't work everywhere.
     import array, fcntl, termios
     buf = array.array('H', [0, 0, 0, 0])
-    if isatty(1):
-        fcntl.ioctl(1, termios.TIOCGWINSZ, buf)
-    # Beware of the stupid output order: y x x y.   --Egmont Koblinger
+    if isatty(0):
+        fcntl.ioctl(0, termios.TIOCGWINSZ, buf)
     (rows, cols, x, y) = buf;
     if rows==0: rows=24
     if cols==0: cols=80
@@ -381,8 +393,8 @@ def get_cell_size():
     # First, try termios. It's simple but doesn't work everywhere.
     import array, fcntl, termios
     buf = array.array('H', [0, 0, 0, 0])
-    if isatty(1):
-        fcntl.ioctl(1, termios.TIOCGWINSZ, buf)
+    if isatty(0):
+        fcntl.ioctl(0, termios.TIOCGWINSZ, buf)
 
     # Beware of the stupid output order: y x x y.   --Egmont Koblinger
     (rows, cols, x, y) = buf;
@@ -417,8 +429,7 @@ def print_double_size(famstr):
 
     # Should use terminfo for this since VT100 and VT340 differ.
     print('\r' + esc + '[A', end='');  # Up 1 line for drawing sixels
-    # print('\r' + esc + '[F', end='');  # VT100
-
+    #print('\r' + esc + '[F', end='');  # VT100
 
 def isdifferent(a, b):
     """Given two strings A & B, determine if B is different enough from A
@@ -683,10 +694,11 @@ def cleanup():
     if isatty(1):
         termios.tcflush(1, termios.TCOFLUSH) 	# Discard stdout
     esc=chr(0x1b)
-    print(esc+"\\", end='')		# String Terminator for sixels (ST)
-    print(esc+"#5", end='')		# Single width line (DECSWL)
-    print("\r" + esc + "[J", end='')	# Erase to end of display (ED)
+    eprint(esc+"\\", end='')		# String Terminator for sixels (ST)
+    eprint(esc+"#5", end='')		# Single width line (DECSWL)
+    eprint("\r" + esc + "[J", end='')	# Erase to end of display (ED)
 
+######################################################################
 
 import atexit
 atexit.register(cleanup)        	# When exiting, cleanup sixels

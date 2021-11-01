@@ -658,9 +658,9 @@ def cleanup():
     if isatty(1):
         termios.tcflush(1, termios.TCOFLUSH) 	# Discard stdout
     esc=chr(0x1b)
-    print(esc+"\\", end='')		# String Terminator for sixels
-    print(esc+"#5", end='')		# Single width, single height characters
-    print("\r" + esc + "[J", end='')	# Clear to end of screen (XXXTERMINFO)
+    print(esc+"\\", end='')		# String Terminator for sixels (ST)
+    print(esc+"#5", end='')		# Single width line (DECSWL)
+    print("\r" + esc + "[J", end='')	# Erase to end of display (ED)
 
 
 import atexit

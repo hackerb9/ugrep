@@ -305,7 +305,7 @@ def show_fonts(x, category):
             
 
         if args.fonts_scale < 2:
-            print("\t\t" + s, end='')
+            print("\t\t" + famstr, end='')
         else:
             # Print double-size text
             esc=chr(0x1b)

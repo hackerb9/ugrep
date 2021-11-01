@@ -163,6 +163,8 @@ def main():
     parser.add_argument('-L', '--list-fonts-scale', metavar='scaling', dest='fonts_scale',
                         nargs='?', const=2, default=None, type=float,
         help='list fonts, scaling the characters to be from 2 to 8x larger')
+    parser.add_argument('--never-double-size', action="store_true",
+        help="Don't use double-size terminal text even when font scale >= 2")
     parser.add_argument('-x', '--examples',  action="store_true",
         help='show example usage')
     parser.add_argument('--debug', action="store_true", help='internal debugging')
@@ -308,79 +310,125 @@ def show_fonts(x, category):
         if not args.list_fonts_long:
             if style != "": continue
 
-        # Don't print same font twice (if installed in more than one
-        # location or if multiple point sizes of a bitmap font).
+        # Don't print same font twice (e.g., if installed in more than one
+        # location or if there are multiple point sizes of a bitmap font).
         famstr="%(family)s %(style)s\r" % locals()
         if (famstr == oldfam): continue
         oldfam=famstr; oldstyle=style
-            
+        
+        # Text positioning is hairy due to variable text and font size
+        if args.fonts_scale <2: 	# The usual case:
+            double_size=False
+        else:                           # Alternately, with double size text: 
+            double_size=True
 
-        if args.fonts_scale < 2:
-            print("\t\t" + famstr, end='') 	# Usual case is normal text.
+        # Some terminals cannot handle double-size text
+        if args.never_double_size:
+            double_size=False
+
+        if not double_size:
+            famstr = '\t\t' + famstr	# 	Two tabs, sixteen spaces
         else:
-            # Print double-size text (-L flag)
-            if args.fonts_scale >= 4: print("") 	# Down 1 line for text
-            if args.fonts_scale >= 8: print("") 	# Down 1 line for text
-            print_double_size('\t' + famstr)
-            if args.fonts_scale >= 4: 
-                print('\r' + chr(0x1b) + '[A', end='');  # Return up 1 line
-            if args.fonts_scale >= 8: 
-                print('\r' + chr(0x1b) + '[A', end='');  # Return up 1 line
+            famstr = '\t' + famstr      # 	One double-size tab
 
-        (background, foreground) = get_term_colors()
-        (width, height) = get_cell_size() # Character cell font size
-        height=args.fonts_scale*height 	  # Increase size of font (maybe).
-        if args.fonts_scale < 2:
-            width=(16-1)*width  	# Leave one space before fontname
-        else:
-            width=(16-2)*width  	# Leave one double-wide space
-        debugprint("Font scaling factor: %g" % (args.fonts_scale))
-        debugprint("Font canvas size: %g x %g" % (width, height))
+        if isatty(1):
+            # Writing to a screen? Truncate text if it would wrap.
+            (rows, cols) = get_rows_cols()
+            if double_size: cols = int(cols/2)
+            if len(famstr.expandtabs()) > cols:
+                famstr = famstr.expandtabs()[:cols]
 
-        codepoint=chr(int(x,16))
+        if sixel_capable(): 
+            # If terminal can show sixel graphics, do the following:
+            # 1. If fonts_scale >=2, double the size of the text of the fontname
+            # 2. Position the font name based on the fontscale
+            # 3. Render a sixel image of the glyph in the font
 
-        # If it's a combining character, add a dotted circle to combine with
-        if iscombining(category): codepoint='\u25cc'+codepoint
+            esc=chr(0x1b)
+            previous_line = esc + '[A' 	# XXX ought to use terminfo CUU
 
-        command=[ "convert",
-                  "-size",
-                  "%(width)sx%(height)s" % locals(),
-                  "xc:" + "%(background)s" % locals(),
-                  "-fill", "%(foreground)s" % locals(),
-                  "(", 
-                  "-background", "none",
-                  "-font", "%(filename)s" % locals(),
-                  "label:" + codepoint,
-                  "-trim",
-                  ")",
-                  "-gravity", "east",
-                  "-compose", "over",
-                  "-composite",
-                  "+dither",  
-                  "-colors", "4",
-                  "sixel:-" ]
-        debugprint(command)
+            # Escape sequence to print double size text (DECDHL)
+            if double_size:
+                famstr = esc + '#3' + famstr + '\n' \
+                    + esc + '#4' + famstr + previous_line
 
-        try: output=run(command, capture_output=True)
-        except FileNotFoundError: print(""); continue          # No ImageMagick
-        except KeyboardInterrupt: exit(1)                      # Exit on ^C
+            # Align text lower for 4x, 8x sized font glyphs
+            if double_size and args.fonts_scale >= 4:
+                famstr = '\n' + famstr + previous_line
+            if double_size and args.fonts_scale >=8:
+                famstr = '\n' + famstr + previous_line
 
-        if output.returncode != 0:
-            # Oops, font did not render.
-            if args.fonts_scale >= 2:
+        print(famstr, end='')
+
+        if not sixel_capable():
+            print("")           # stdout is not a tty, so  send a newline
+
+	# If stdout is a terminal, show the glyph as sixels
+        if sixel_capable():
+            (background, foreground) = get_term_colors()
+            (width, height) = get_cell_size()   # Character cell font size
+            height = args.fonts_scale * height  # Increase size of font (maybe).
+            if not double_size:
+                width=(16-1)*width 	# Leave one space before fontname
+            else:
+                width=(16-2)*width  	# Leave one double-wide space
+            debugprint("Font scaling factor: %g" % (args.fonts_scale))
+            debugprint("Font canvas size: %g x %g" % (width, height))
+
+            codepoint=chr(int(x,16))
+
+            # If it's a combining character, add a dotted circle to combine with
+            if iscombining(category): codepoint='\u25cc'+codepoint
+
+            command=[ "convert",
+                      "-size",
+                      "%(width)sx%(height)s" % locals(),
+                      "xc:" + "%(background)s" % locals(),
+                      "-fill", "%(foreground)s" % locals(),
+                      "(", 
+                      "-background", "none",
+                      "-font", "%(filename)s" % locals(),
+                      "label:" + codepoint,
+                      "-trim",
+                      ")",
+                      "-gravity", "east",
+                      "-compose", "over",
+                      "-composite",
+                      "+dither",  
+                      "-colors", "4", 	# Faster sixels by reducing colors
+                      "sixel:-" ]
+            debugprint(command)
+
+            try: output=run(command, capture_output=True)
+            except FileNotFoundError: print(""); continue 	# No ImageMagick
+            except KeyboardInterrupt: exit(1)                   # Exit on ^C
+            except ValueError: print(""); continue          # Can't handle NULL
+
+            if output.returncode != 0:
+                # Oops, font did not render.
+                if double_size: print("")
                 print("", flush=True)
-            print("", flush=True)
-            continue
+                continue
 
-        # Work around ImageMagick bug by deleting graphics newline (-) at end.
-        output.stdout.replace(b'-\x1b\\', b'\x1b\\') 
+            # Workaround ImageMagick bug by deleting graphics newline (-) at end
+            output.stdout.replace(b'-\x1b\\', b'\x1b\\') 
 
-        print("", flush=True, end='')   # Send any pending output to stdout
+            print("", flush=True, end='')   # Send any pending output to stdout
 
-        try: write(1, output.stdout) 		# Print raw bytes
-        except KeyboardInterrupt:		# Catch ^C
-            exit(1)                             # Sixels stopped by cleanup()
+            try: write(1, output.stdout) 	# Print raw bytes
+            except KeyboardInterrupt:		# Catch ^C
+                exit(1)                         # Sixels stopped by cleanup()
 
+def sixel_capable():
+    # Return true if the terminal can show sixel graphics
+
+    # If stdin or stdout is not a terminal, don't send sixels
+    if not isatty(0) or not isatty(1):
+        return False
+
+    # XXXX TODO: check DA to see if "4" (sixels) are supported
+
+    return True
 
 def get_rows_cols():
     # Return number of (rows, columns) in current terminal window

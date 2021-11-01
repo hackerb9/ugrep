@@ -289,29 +289,30 @@ def show_fonts(x, category):
 
     debugprint(fonts)
     
-    oldfamily=""; oldstyle=""
+    oldfam=""
     for f in fonts.splitlines():
         try: (family, style, filename) = f.split('\t')
         except: continue
 
-        # Don't print same font twice (if installed in more than one
-        # location or if multiple point sizes of a bitmap font).
-        if (family == oldfamily and style == oldstyle): continue
-        oldfamily=family; oldstyle=style
-            
         # Don't print the style if it is just "Regular"
         if style == "Regular": style = ""
 
-        esc=chr(0x1b)
+        # Don't print same font twice (if installed in more than one
+        # location or if multiple point sizes of a bitmap font).
+        famstr="%(family)s %(style)s\r" % locals()
+        if (famstr == oldfam): continue
+        oldfam=famstr; oldstyle=style
+            
+
         if args.fonts_scale < 2:
-            print("\t\t%(family)s %(style)s\r" % locals(), end='')
+            print("\t\t" + s, end='')
         else:
-            # Print double-size
-            s="\t%(family)s %(style)s\r" % locals()
-            print(esc + '#3' + s)     # Double-height & width, top half
-            print(esc + '#4' + s)     # Double-height & width, bottom half
-            print(esc + '#5', end='') # Single-width.
-            print('\r' + esc + '[2F', end='');  # Up 2 lines for drawing sixels
+            # Print double-size text
+            esc=chr(0x1b)
+            famstr="\t" + famstr
+            print(esc + '#3' + famstr)         # Top half double-height & width
+            print(esc + '#4' + famstr, end='') # Bottom half
+            print('\r' + esc + '[F', end='');  # Up 1 line for drawing sixels
 
         (background, foreground) = get_term_colors()
         (width, height) = get_cell_size() # Character cell font size

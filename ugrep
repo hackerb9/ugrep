@@ -54,6 +54,8 @@ Usage:
     	-w:	matches only whole words, e.g., ugrep -w pi
     	-c:	show each character in a string, e.g., ugrep -c "(ﾟ∀ﾟ)"
     	-l:	list installed fonts that include matching characters
+       -ll:	like -l, but also includes style variants (bold, italic,...) 	
+  -L scale:	scale font examples for -l; useful range 2 to 8
 	-x:	show typical usage examples
 
            <character> A single character, e.g.:  ugrep ☙
@@ -120,6 +122,10 @@ def examples():
     ⟬    U+27EC  MATHEMATICAL LEFT WHITE TORTOISE SHELL BRACKET
                  Symbola 
                  Unifont 
+
+# Use -L n to scale the font examples n-times larger; implies -l
+    $ ugrep -L2 antimony
+    [ Cannot show example here ]
 
 # Show every single Unicode character. (Slow! Use 'fonttable' instead).
     $ ugrep 0..10FFFF  |  less"""

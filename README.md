@@ -66,7 +66,7 @@ and make it executable.
 
 	    ugrep -l mho
 
-* List fonts, scaled larger: **ugrep** [**-L**] _scale_ _character_
+* List fonts, scaled larger: **ugrep** [**-L** _scale_] _character_
 
 	After showing the character, list installed fonts that have that
     glyph and scale up the example glyphs in each font to be easier to

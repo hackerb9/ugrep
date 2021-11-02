@@ -61,10 +61,20 @@ and make it executable.
 
 * List fonts for a character: **ugrep** [**-l**] _character_
 
-	After showing the character, list installed fonts that have that
+	After showing the character, list installed fonts that contain a
     glyph:
 
-	    ugrep -l ohm
+	    ugrep -l mho
+
+* List fonts, scaled larger: **ugrep** [**-L**] _scale_ _character_
+
+	After showing the character, list installed fonts that have that
+    glyph and scale up the example glyphs in each font to be easier to
+    read:
+
+	    ugrep -L2 -w om
+
+    Useful scale values range from 2 to 8. 
 
 ### Examples:
 
@@ -144,7 +154,7 @@ how many heart emojis Unicode has. 😜)
 	    $ ugrep backslash
 	    \	U+005C	REVERSE SOLIDUS (backslash)
 
-* Browse through a range of Unicode characters:
+* Use **..** to browse through a range of Unicode characters:
 
 	    $ ugrep 26b3..b
 	    ⚳	U+26B3	CERES
@@ -178,7 +188,9 @@ how many heart emojis Unicode has. 😜)
 	    📾	U+1F4FE	PORTABLE STEREO
 	    📿	U+1F4FF	PRAYER BEADS
 
-* List which installed fonts have the "swash ampersand" glyph defined:
+* Use -l to list which installed fonts include a certain glyph:
+
+    ugrep -l swash amp
 
   <a href="https://raw.githubusercontent.com/hackerb9/ugrep/master/README.md.d/list-fonts.png">
   <img title="ugrep -l swash amp" alt-text="Example of ugrep listing fonts" align="right" src="README.md.d/list-fonts.png" width="50%">
@@ -191,6 +203,22 @@ how many heart emojis Unicode has. 😜)
   the typefaces only if your terminal supports sixel graphics (e.g.,
   `xterm -ti vt340`) and you have ImageMagick installed.
 
+* Use -L to scale up the font examples when listing fonts
+  <a href="https://raw.githubusercontent.com/hackerb9/ugrep/master/README.md.d/list-fonts-scale.png">
+    ugrep -L4 fdfd
+
+  <img title="ugrep screenshot" 
+       alt-text="Example of ugrep listing fonts at 4x scale" align="right" 
+       src="README.md.d/list-fonts-scale.png" width="50%">
+  </a>
+
+  Note that increasing the glyph size also increased the text size,
+  doubling it in both width and height. Not all terminals are capable
+  of this. If yours shows two lines of the same text in the usual
+  size, then the only option is to return your terminal to the
+  manufacturer and demand a refund for defective merchandise. (Well,
+  there may be one other option: try using `--never-double-size`.)
+
 * View _all_ Unicode characters:
 
 	    $ ugrep 0..10FFFF  |  less		# ugrep ".?" is equivalent.
@@ -199,6 +227,10 @@ how many heart emojis Unicode has. 😜)
 	Sometimes it's useful (or fun) to page through the Unicode
 	table and see what characters are defined in a region. (Tip:
 	search for a code point in `less` by pressing `/U\+A60F`).
+
+  Note that `ugrep` was not built for speed. Please use
+  [fonttable](https://github.com/hackerb9/fonttable) if you actually
+  wish to show every possible Unicode character in your terminal. 
 
 ### Fun things to try:
 

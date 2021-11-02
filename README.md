@@ -189,12 +189,11 @@ how many heart emojis Unicode has. 😜)
 	    📿	U+1F4FF	PRAYER BEADS
 
 * Use -l to list which installed fonts include a certain glyph:
-
-    ugrep -l swash amp
-
   <a href="https://raw.githubusercontent.com/hackerb9/ugrep/master/README.md.d/list-fonts.png">
   <img title="ugrep -l swash amp" alt-text="Example of ugrep listing fonts" align="right" src="README.md.d/list-fonts.png" width="50%">
   </a>
+
+      ugrep -l swash amp
 
   Note that for this to work, you'll need a machine that has
   FontConfig installed. (Most GNU/Linux machines should already be set).
@@ -204,13 +203,16 @@ how many heart emojis Unicode has. 😜)
   `xterm -ti vt340`) and you have ImageMagick installed.
 
 * Use -L to scale up the font examples when listing fonts
+  
   <a href="https://raw.githubusercontent.com/hackerb9/ugrep/master/README.md.d/list-fonts-scale.png">
-    ugrep -L4 fdfd
-
-  <img title="ugrep screenshot" 
-       alt-text="Example of ugrep listing fonts at 4x scale" align="right" 
-       src="README.md.d/list-fonts-scale.png" width="50%">
+  <img title="ugrep -L4 fdfd" 
+       alt-text="Example of ugrep listing fonts at 4x scale"
+       src="README.md.d/list-fonts-scale.png" width="100%">
   </a>
+  
+  ```
+  ugrep -L4 fdfd
+  ```
 
   Note that increasing the glyph size also increased the text size,
   doubling it in both width and height. Not all terminals are capable
@@ -248,10 +250,10 @@ To see some useful and lovely glyphs, try this:
 
 ## UnicodeData.txt
 
-If your system has the file
+Ugrep has a unicode table cached inside of it, but if your system has the file
 [UnicodeData.txt](https://unicode.org/Public/UNIDATA/UnicodeData.txt)
-installed, ugrep will use it instead of the copy cached inside the script. 
-You can install it in several ways.
+installed, ugrep will use it instead. You don't need it, but if you want to,
+you can install it in several ways.
 
 **Easiest**: On Ubuntu and Debian GNU/Linux, simply `apt install unicode-data`.
 
@@ -333,8 +335,8 @@ that data.
 
 ## Bugs, Misfeatures, and Workarounds
 
-* Should use parseargs module to parse arguments correctly now that we
-  have more than a couple. 
+* The usage message is getting long. 
+  We've already split the examples section into its own page with `-x`, but it now needs to split again.
 
 * The -l option for rendering a character in all possible fonts does
   not probe the terminal for foreground and background color. 
@@ -349,9 +351,6 @@ that data.
   The solution is to use XTerm escape sequences, same as in
   [lsix](https://github.com/hackerb9/lsix). 
 
-* There should be an option to show fonts in a larger size. For
-  example, if the terminal is in Double-High mode, then use 2x
-  resolution.
 
 * [Note: The following is not a problem for people who are willing to
   use vector fonts (truetype, opentype, postscript) that may be

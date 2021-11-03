@@ -127,8 +127,8 @@ def examples():
     $ ugrep -L2 antimony
     [ Cannot show example here ]
 
-# Show every single Unicode character. (Slow! Use 'fonttable' instead).
-    $ ugrep 0..10FFFF  |  less"""
+# Show every single Unicode character.
+    $ ugrep '.?'  |  less"""
     )
 
 

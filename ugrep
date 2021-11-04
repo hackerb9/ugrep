@@ -769,7 +769,8 @@ atexit.register(cleanup)        	# When exiting, cleanup sixels
 # VT340 is Latin-1 ISO8859-1 encoding.
 # Python3 defaults to dying horribly on simple things like print('\u2020')
 import sys
-sys.stdout.reconfigure(errors='replace') 	# Print a ? instead of dying.
+if sys.stdout:
+    sys.stdout.reconfigure(errors='replace') 	# Print a ? instead of dying.
 
 
 ### Run the main routine
@@ -777,12 +778,14 @@ try:
     main()
 except BrokenPipeError:
     # Ignore non-error errors. For example: 'ugrep -w pi | head'
-    True
+    sys.stdout = None;
+    cleanup()
 except KeyboardInterrupt:		# Catch ^C
     cleanup()
 
 atexit.unregister(cleanup)      # Normal exit, no need to cleanup.
 
+debugprint("Normal exit")
 
 # Implementation notes:
 

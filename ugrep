@@ -169,8 +169,10 @@ def main():
     parser.add_argument('-L', '--list-fonts-scale', metavar='scaling', dest='fonts_scale',
                         nargs='?', const=2, default=None, type=float,
         help='list fonts, scaling the characters to be from 2 to 8x larger')
-    parser.add_argument('--never-double-size', action="store_true",
+    parser.add_argument('--never-double-text', action="store_true",
         help="Don't use double-size terminal text even when font scale >= 2")
+    parser.add_argument('--pipe-sixels', action="store_true",
+        help="Allow sixel escape sequences when redirecting stdout")
     parser.add_argument('-x', '--examples',  action="store_true",
         help='show example usage')
     parser.add_argument('--debug', action="store_true", help='internal debugging')
@@ -264,7 +266,7 @@ def cp2int(cp):
 
 def int2cp(x):
     "Given an int, return it as a hexadecimal string in the format U+1D0DE)."
-    return( "U+%X" % (x) )
+    return( "U+%04X" % (x) )
 
 def getblock(x):
     """Given an integer representing a Unicode code point, return its
@@ -709,15 +711,15 @@ def show_fonts(x, category=None):
         
         # Text positioning is hairy due to variable text and font size
         if args.fonts_scale <2: 	# The usual case:
-            double_size=False
+            double_text=False
         else:                           # Alternately, with double size text: 
-            double_size=True
+            double_text=True
 
         # Some terminals cannot handle double-size text
-        if args.never_double_size:
-            double_size=False
+        if args.never_double_text or not isatty(1):
+            double_text=False
 
-        if not double_size:
+        if not double_text:
             famstr = '\t\t' + famstr	# 	Two tabs, sixteen spaces
         else:
             famstr = '\t' + famstr      # 	One double-size tab
@@ -725,7 +727,7 @@ def show_fonts(x, category=None):
         if isatty(1):
             # Writing to a screen? Truncate text if it would wrap.
             (rows, cols) = get_rows_cols()
-            if double_size: cols = int(cols/2)
+            if double_text: cols = int(cols/2)
             if len(famstr.expandtabs()) > cols:
                 famstr = famstr.expandtabs()[:cols]
 
@@ -739,14 +741,14 @@ def show_fonts(x, category=None):
             previous_line = esc + '[A' 	# XXX ought to use terminfo CUU
 
             # Escape sequence to print double size text (DECDHL)
-            if double_size:
+            if double_text:
                 famstr = esc + '#3' + famstr + '\n' \
                     + esc + '#4' + famstr + previous_line
 
             # Align text lower for 4x, 8x sized font glyphs
-            if double_size and args.fonts_scale >= 4:
+            if double_text and args.fonts_scale >= 4:
                 famstr = '\n' + famstr + previous_line
-            if double_size and args.fonts_scale >=8:
+            if double_text and args.fonts_scale >=8:
                 famstr = '\n' + famstr + previous_line
 
         print(famstr, end='')
@@ -759,7 +761,7 @@ def show_fonts(x, category=None):
             (background, foreground) = get_term_colors()
             (width, height) = get_cell_size()   # Character cell font size
             height = args.fonts_scale * height  # Increase size of font (maybe).
-            if not double_size:
+            if not double_text:
                 width=(16-1)*width 	# Leave one space before fontname
             else:
                 width=(16-2)*width  	# Leave one double-wide space
@@ -797,7 +799,7 @@ def show_fonts(x, category=None):
 
             if output.returncode != 0:
                 # Oops, font did not render.
-                if double_size: print("")
+                if double_text: print("")
                 print("", flush=True)
                 continue
 
@@ -814,7 +816,7 @@ def sixel_capable():
     # Return true if the terminal can show sixel graphics
 
     # If stdin or stdout is not a terminal, don't send sixels
-    if not isatty(0) or not isatty(1):
+    if not args.pipe_sixels and ( not isatty(0) or not isatty(1) ):
         return False
 
     # XXXX TODO: check DA to see if "4" (sixels) are supported
@@ -866,7 +868,7 @@ def get_term_colors():
     # bg = read -r -p $'\033]11;?\007' -d$'\007'
     return ("gray10","gray90")
 
-def print_double_size(famstr):
+def print_double_text(famstr):
     esc=chr(0x1b)
     (rows, cols) = get_rows_cols()
     if len(famstr.expandtabs()) > int(cols/2):

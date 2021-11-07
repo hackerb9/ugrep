@@ -226,8 +226,7 @@ def main():
                     # Print the character anyway and its CJK region
                     showcharacterblock(arg)
                     # If -l, show installed fonts which contain the glyph.
-                    if args.list_fonts:  
-                        show_fonts(arg)
+                    if args.list_fonts: show_fonts(arg)
             else:
                 break
 
@@ -245,7 +244,7 @@ def showcharacterblock(codepoint):
     """Prints a line showing which character block a hex number belongs in.
     If showonecharacter() fails, this can be used to at least print something,
     """
-    x=cp2hex(codepoint)         # Remove U+ or 0x prefix and return integer
+    x=cp2int(codepoint)         # Remove U+ or 0x prefix and return integer
 
     block=getblock(x)
     if block:
@@ -253,22 +252,18 @@ def showcharacterblock(codepoint):
         except ValueError: return
         print("   ", end='') 	# Indent for MacOS
         print(c, end='')
-        print('\t' + hex2cp(x) + '\t', end='')
+        print('\t' + int2cp(x) + '\t', end='')
         print('Block: [' + block + ']')
         
     
-def cp2hex(cp):
+def cp2int(cp):
     """Given a Unicode codepoint as a string (e.g., U+1D0DE)
-    convert the hexadecimal number to an integer and return it
+    convert the hexadecimal number to an integer and return it.
     """
-    # Normalize whatever they put in. 'U+1D0DE' to 1D0DE
-    cp=cp.lstrip("Uu+0Xx").upper().zfill(4)
-    return( int(cp, 16) )
+    return( int(cp.lstrip("Uu+0Xx"), 16) )
 
-def hex2cp(x):
-    """Given an integer, return it as a Unicode codepoint, a hexadecimal
-    string in the format U+1D0DE).
-    """
+def int2cp(x):
+    "Given an int, return it as a hexadecimal string in the format U+1D0DE)."
     return( "U+%X" % (x) )
 
 def getblock(x):

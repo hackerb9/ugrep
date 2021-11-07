@@ -254,17 +254,19 @@ def showcharacterblock(codepoint):
         print('Block: [' + block + ']')
         
     
-def cp2hex(codepoint):
+def cp2hex(cp):
     """Given a Unicode codepoint as a string (e.g., U+1D0DE)
     convert the hexadecimal number to an integer and return it
     """
-    return( int(codepoint, 16) )
+    # Normalize whatever they put in. 'U+1D0DE' to 1D0DE
+    cp=cp.lstrip("Uu+0Xx").upper().zfill(4)
+    return( int(cp, 16) )
 
-def hex2cp(codepoint):
+def hex2cp(x):
     """Given an integer, return it as a Unicode codepoint, a hexadecimal
     string in the format U+1D0DE).
     """
-    return( "U+%X" % (codepoint) )
+    return( "U+%X" % (x) )
 
 def getblock(x):
     """Given an integer representing a Unicode code point, return its
@@ -1027,8 +1029,7 @@ def makeregexcodepoint(cp):
     "Make a regular expression to search for a hexadecimal codepoint"
 
     # User specified a codepoint, e.g., "U+23fb" 
-
-    # Normalize whatever they put in to "23FB"
+    # Normalize whatever they put in into "23FB"
     cp=cp.lstrip("Uu+0Xx").upper().zfill(4)
 
     # s is a search regex for field 1 (hexadecimal)

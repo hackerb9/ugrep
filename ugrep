@@ -1090,14 +1090,10 @@ def rangeexpansion(oldargv):
 
     s=r"""(?mix)
 	  (U\\+?|0?x)?
-	  (?P<prefix>[^{]*)		# Portion before the { (optional)
-	  {?                   		# Literal open curly brace (optional)
-	  (U\\+?|0?x)?
     	  (?P<start>[0-9A-F]+)
 	  \.\.                 		# Literal two periods. MANDATORY.
 	  (U\\+?|0?x)?
 	  (?P<end>[0-9A-F]+)
-	  }?                   		# Literal close curly brace (optional)
     """
     s=compile(s)
     newargv=[]
@@ -1109,23 +1105,18 @@ def rangeexpansion(oldargv):
         else:
             debugprint("Doing range expansion on " + arg)
             g=m.groupdict()
-            start=g["start"].strip("{}") # Python doesn't do lazy regexps?
-            end=g["end"].strip("{}")     # So, we kludge this way.
-
-            if start == "":
-                # They left off the braces: 2390..f instead of 239{0..f}
-                start=prefix
-                prefix=""
+            start=g["start"]
+            end=g["end"]
             end=start[:-len(end)]+end
                 
-            debugprint("Found range from " + prefix + start + " to " + prefix + end)
+            debugprint("Found range from " + start + " to " + end)
             z=max(len(start), len(end))
             try:
                 start=int(start, 16)
                 end=int(end, 16)
                 for i in range(start, end+1):
                     hexits=hex(i)[2:].zfill(z)
-                    newargv.append( prefix + hexits + suffix )
+                    newargv.append( "U+" + hexits )
             except ValueError:
                 newargv.append(arg)
                 

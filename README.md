@@ -167,7 +167,7 @@ how many heart emojis Unicode has. 😜)
 	    ⚺	U+26BA	SEMISEXTILE
 	    ⚻	U+26BB	QUINCUNX
 
-	    $ ugrep 1f470..ff
+	    $ ugrep 1f470..ff  |  less
 	    👰	U+1F470	BRIDE WITH VEIL
 	    👱	U+1F471	PERSON WITH BLOND HAIR
 	    👲	U+1F472	MAN WITH GUA PI MAO
@@ -188,19 +188,25 @@ how many heart emojis Unicode has. 😜)
 	    📾	U+1F4FE	PORTABLE STEREO
 	    📿	U+1F4FF	PRAYER BEADS
 
-* Use -l to list which installed fonts include a certain glyph:
+  * Sometimes it's useful (or fun) to page through the Unicode table
+    and see what characters are defined in a region.
+
+  * Tip: pipe long output to `less` and search for a code point by
+    pressing `/U\+A60F`.
+
+* Use -l to list which installed fonts contain a certain glyph:
   <a href="https://raw.githubusercontent.com/hackerb9/ugrep/master/README.md.d/list-fonts.png">
   <img title="ugrep -l swash amp" alt-text="Example of ugrep listing fonts" align="right" src="README.md.d/list-fonts.png" width="50%">
   </a>
 
       ugrep -l swash amp
 
-  Note that for this to work, you'll need a machine that has
-  FontConfig installed. (Most GNU/Linux machines should already be set).
+  * Requires FontConfig. (Most GNU/Linux boxes should already be set).
   
-  Additionally, the requested character will be displayed in each of
-  the typefaces only if your terminal supports sixel graphics (e.g.,
-  `xterm -ti vt340`) and you have ImageMagick installed.
+  * The requested character may also be displayed in each of the
+    listed typefaces, but only if your terminal supports sixel
+    graphics (e.g., `xterm -ti vt340`) and you have ImageMagick
+    installed.
 
 * Use -L to scale up the font examples when listing fonts
   
@@ -214,25 +220,34 @@ how many heart emojis Unicode has. 😜)
   ugrep -L4 fdfd
   ```
 
-  Note that increasing the glyph size also increased the text size,
-  doubling it in both width and height. Not all terminals are capable
-  of this. If yours shows two lines of the same text in the usual
-  size, then the only option is to return your terminal to the
-  manufacturer and demand a refund for defective merchandise. (Well,
-  there may be one other option: try using `--never-double-size`.)
+  * Note: Increasing the glyph size also increased the text size. Not
+    all terminals are capable of "double height" text. If yours shows
+    two lines of the same text in the usual size, try using
+    `--never-double-text`.
 
-* View _all_ Unicode characters:
+* View _all_ characters defined by Unicode:
 
-	    $ ugrep 0..10FFFF  |  less		# ugrep ".?" is equivalent.
+	    $ ugrep .?  |  less
 	    ⋮	[ ... over 30,000 glyphs elided for brevity ... ]
 
-	Sometimes it's useful (or fun) to page through the Unicode
-	table and see what characters are defined in a region. (Tip:
-	search for a code point in `less` by pressing `/U\+A60F`).
+  * Want just Unicode glyphs without the description? Please use
+    [fonttable](https://github.com/hackerb9/fonttable). It shows all
+    defined Unicode characters by default.
 
-  Note that `ugrep` was not built for speed. Please use
-  [fonttable](https://github.com/hackerb9/fonttable) if you actually
-  wish to show every possible Unicode character in your terminal. 
+* To see characters _not_ defined by Unicode, specify the hexadecimal
+  codepoint (or range)
+
+        $ ugrep U+8000
+        耀	U+8000	Block: [CJK Unified Ideographs]
+
+  This is useful for the regions defined by other standards, for
+  example Unihan. 
+
+* Show all possible code points, defined in Unicode or not:
+
+		$ ugrep 0..10FFFF | less
+	    ⋮	[ ... over a million lines elided for brevity ... ]
+
 
 ### Fun things to try:
 
@@ -248,12 +263,12 @@ To see some useful and lovely glyphs, try this:
     ugrep drawing
     ugrep combining
 
-## UnicodeData.txt
+## Prerequisite: UnicodeData.txt
 
-Ugrep has a unicode table cached inside of it, but if your system has the file
+Ugrep requires the Unicode data file
 [UnicodeData.txt](https://unicode.org/Public/UNIDATA/UnicodeData.txt)
-installed, ugrep will use it instead. You don't need it, but if you want to,
-you can install it in several ways.
+which can be installed on your system, in your home, or in the current
+directory.
 
 **Easiest**: On Ubuntu and Debian GNU/Linux, simply `apt install unicode-data`.
 

@@ -227,7 +227,6 @@ def main():
                     showcharacterblock(arg)
                     # If -l, show installed fonts which contain the glyph.
                     if args.list_fonts:  
-                        print("show fonts for " + arg)
                         show_fonts(arg)
             else:
                 break

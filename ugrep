@@ -1077,18 +1077,27 @@ def rangeexpansion(oldargv):
 
       There is no confusion without braces: 230..ff -> 230, 231, ...
 
+    * Bash's shell expansion allows complicated forms which we will
+      not even attempt. For example, theoretically someone might want
+      to do: "2{0..F}00" for 2000, 2100, 2200, ... 2F00. 
+      Or, even: "{0..3}{0..F}00"
+
+      While that is reasonable, it is too much work and is currently
+      unsupported.
     """
 
+
+
     s=r"""(?mix)
-	  (?P<prefix>[^{]*)
-	  {?                   # Literal open curly brace (optional)
-	  (U\+?|0?x)?
-    	  (?P<start>.*)
-	  \.\.                 # Literal two periods. MANDATORY.
-	  (U\+?|0?x)?
-	  (?P<end>.*)
-	  }?                   # Literal close curly brace (optional)
-	  (?P<suffix>[^}]*)
+	  (U\\+?|0?x)?
+	  (?P<prefix>[^{]*)		# Portion before the { (optional)
+	  {?                   		# Literal open curly brace (optional)
+	  (U\\+?|0?x)?
+    	  (?P<start>[0-9A-F]+)
+	  \.\.                 		# Literal two periods. MANDATORY.
+	  (U\\+?|0?x)?
+	  (?P<end>[0-9A-F]+)
+	  }?                   		# Literal close curly brace (optional)
     """
     s=compile(s)
     newargv=[]
@@ -1100,24 +1109,23 @@ def rangeexpansion(oldargv):
         else:
             debugprint("Doing range expansion on " + arg)
             g=m.groupdict()
-            prefix=g["prefix"]
             start=g["start"].strip("{}") # Python doesn't do lazy regexps?
             end=g["end"].strip("{}")     # So, we kludge this way.
 
             if start == "":
                 # They left off the braces: 2390..f instead of 239{0..f}
                 start=prefix
-                end=prefix[:-len(end)]+end
                 prefix=""
+            end=start[:-len(end)]+end
                 
-            debugprint("Found range from " + start + " to " + end)
+            debugprint("Found range from " + prefix + start + " to " + prefix + end)
             z=max(len(start), len(end))
             try:
                 start=int(start, 16)
                 end=int(end, 16)
                 for i in range(start, end+1):
                     hexits=hex(i)[2:].zfill(z)
-                    newargv.append( prefix + hexits + g["suffix"] )
+                    newargv.append( prefix + hexits + suffix )
             except ValueError:
                 newargv.append(arg)
                 

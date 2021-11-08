@@ -220,7 +220,7 @@ def main():
     # Is first arg a hexadecimal number? E.g., 26A0, 0xdeadbeef, U+FACE
     # Then *also* look up that code point.
     if args.characters and match(r"(?i)^(U\+?|0x)?[0-9A-F]+$", args.characters[0]):
-        # Loop to allow people to do things like "ugrep 23b{0..9}"
+        # Loop to allow people to do things like "ugrep 23b0..9"
         for arg in args.characters:
             if match(r"(?i)^(U\+?|0x)?[0-9A-F]+$", arg):
                 # Show matches for in Unicode.txt for each hex codepoint  

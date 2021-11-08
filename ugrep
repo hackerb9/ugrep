@@ -219,7 +219,7 @@ def main():
 
     # Is first arg a hexadecimal number? E.g., 26A0, 0xdeadbeef, U+FACE
     # Then *also* look up that code point.
-    if match(r"(?i)^(U\+?|0x)?[0-9A-F]+$", args.characters[0]):
+    if args.characters and match(r"(?i)^(U\+?|0x)?[0-9A-F]+$", args.characters[0]):
         # Loop to allow people to do things like "ugrep 23b{0..9}"
         for arg in args.characters:
             if match(r"(?i)^(U\+?|0x)?[0-9A-F]+$", arg):
@@ -1064,32 +1064,16 @@ def rangeexpansion(oldargv):
 
     Design notes:
 
-    * Although similar to shell brace expansion when never suggest to
-      the user to try braces. The problem is that shell brace
-      expansion is decimal, whereas ugrep is working in hexadecimal.
-
-      ugrep '23{01..10}'  -> sixteen characters, cumbersome.
-      ugrep  23{01..10}   -> ten characters sometimes (e.g., using bash)
-      ugrep 2301..10	  -> always sixteen characters (recommended).
-
-    * In Bash, if start or end begin with a "0", then it zfills to
-      that width. For this program, the 0 is optional as it always
-      uses the largest width of the two ends E.g., 23{0..ff} -> 2300, 2301,...
-
-      There is no confusion without braces: 230..ff -> 230, 231, ...
-
+    * Although similar to shell brace expansion, the shell is
+      inadequate because it is decimal only.
     """
 
     s=r"""(?mix)
-	  (?P<prefix>[^{]*)
-	  {?                   # Literal open curly brace (optional)
 	  (U\+?|0?x)?
-    	  (?P<start>.*)
+    	  (?P<start>[0-9A-F]+)
 	  \.\.                 # Literal two periods. MANDATORY.
 	  (U\+?|0?x)?
-	  (?P<end>.*)
-	  }?                   # Literal close curly brace (optional)
-	  (?P<suffix>[^}]*)
+	  (?P<end>[0-9A-F]+)
     """
     s=compile(s)
     newargv=[]
@@ -1101,27 +1085,32 @@ def rangeexpansion(oldargv):
         else:
             debugprint("Doing range expansion on " + arg)
             g=m.groupdict()
-            prefix=g["prefix"]
-            start=g["start"].strip("{}") # Python doesn't do lazy regexps?
-            end=g["end"].strip("{}")     # So, we kludge this way.
+#            prefix=g["prefix"]
+            start=g["start"]
+            end=g["end"]
 
-            if start == "":
-                # They left off the braces: 2390..f instead of 239{0..f}
-                start=prefix
-                end=prefix[:-len(end)]+end
-                prefix=""
+#            if start == "":
+#                # They left off the braces: 2390..f instead of 239{0..f}
+#                start=prefix
+#                end=prefix[:-len(end)]+end
+#                prefix=""
                 
+            end=start[:-len(end)]+end
             debugprint("Found range from " + start + " to " + end)
             z=max(len(start), len(end))
             try:
                 start=int(start, 16)
                 end=int(end, 16)
+                if start > end: raise ValueError
+
                 for i in range(start, end+1):
                     hexits=hex(i)[2:].zfill(z)
-                    newargv.append( prefix + hexits + g["suffix"] )
+                    newargv.append( hexits )
+                    debugprint("   added: " + hexits)
+#                    newargv.append( prefix + hexits + g["suffix"] )
             except ValueError:
                 newargv.append(arg)
-                
+
     return(newargv)
 
 

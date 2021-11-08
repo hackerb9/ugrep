@@ -43,6 +43,7 @@ from subprocess import getoutput, run
 from posix import write
 import termios
 import argparse
+import math
 
 def usage():
     print("""\
@@ -1083,6 +1084,8 @@ def rangeexpansion(oldargv):
     * ugrep \{8000..0008}: ugrep counts DOWN from 8000 to 0008 (in hex).
     """
 
+
+
     s=r"""(?mix)
 	  (U\+?|0?x)?
     	  ((?P<preamble>[0-9A-F]*)(?P<brace>{))?
@@ -1123,10 +1126,7 @@ def rangeexpansion(oldargv):
                 start=int(start, 16)
                 end=int(end, 16)
                 increment=int(increment, 16)
-
-                import math
                 increment = int(math.copysign(increment, end-start))
-
                 # Range is inclusive
                 end = end + int(math.copysign(1, increment))
 

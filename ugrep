@@ -64,6 +64,7 @@ Usage:
 
        <codepoint> One or more hexadecimal numbers:	ugrep U+1F639
 		   Ranges are allowed with two dots:	ugrep 23b0..f
+	           Optional range increment: 	  ugrep 0..ffff..1000
 
   <character name> A Unicode name (as a regex), e.g.:	ugrep alchemical
 

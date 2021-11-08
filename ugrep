@@ -48,26 +48,27 @@ def usage():
     print("""\
 ugrep: find unicode characters based on their names or codepoints
 Usage: 
-    ugrep [-wlx] [-ll] [-L n] <character> | <codepoint ...> | <character name>
+    ugrep [-wlx] [-L n] <character> | <codepoint ...> | <character name>
     ugrep -c <character string ...>
 
-    	-w:	matches only whole words, e.g., ugrep -w pi
-    	-c:	show each character in a string, e.g., ugrep -c "(ﾟ∀ﾟ)"
-    	-l:	list installed fonts that include matching characters
-       -ll:	like -l, but also includes style variants (bold, italic,...) 	
-  -L scale:	scale font examples for -l; useful range 2 to 8
-	-x:	show typical usage examples
+              -w:  Match only whole words:		ugrep -w pi
+              -c:  Show each character in a string:	ugrep -c "(ﾟ∀ﾟ)"
+              -l:  List installed fonts that include matching characters.
+             	   -ll: Also includes style variants (bold, italic,...)
+        	   -L scale:  Scale font examples from 2 to 8x.
+              -x:  Show example usage.
 
-           <character> A single character, e.g.:  ugrep ☙
-           <codepoint> One or more hexadecimal unicode character numbers, 
-		       optionally prefixed by "U+" or "0x".e.g.: ugrep U+1F639
-    		       Ranges are allowed with two dots: ugrep 23b0..f
-      <character name> A Unicode name (as a regex), e.g.: ugrep alchemical
-    <character string> One or more characters. e.g.: ugrep -c "( ͡° ͜ʖ ͡°)"
+       <character> A single character; implies -c:	ugrep ☙
 
-    Try 'ugrep --examples' to see typical usage examples.
-"""
-    )
+       <codepoint> One or more hexadecimal numbers:	ugrep U+1F639
+		   Ranges are allowed with two dots:	ugrep 23b0..f
+
+  <character name> A Unicode name (as a regex), e.g.:	ugrep alchemical
+
+<character string> One or more characters. e.g.: 	ugrep -c "( ͡° ͜ʖ ͡°)"
+
+Try 'ugrep --examples' to see typical usage examples.
+""", end='' )
 
 def examples():
     print("""\
@@ -1054,7 +1055,7 @@ def rangeexpansion(oldargv):
 
     0..7 	-->	0 1 2 3 4 5 6 7
     abc0..7 	--> 	abc0 abc1 abc2 abc3 abc4 abc5 abc6 abc7
-    23b8..f	-->	23b8 23b9 23ba 23bb 23bc 23bd 23be 23bf
+    23b8..ff	-->	23b8 23b9 23ba 23bb ... 23fd 23fe 23ff
 
     Notes:
 

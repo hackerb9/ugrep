@@ -1062,25 +1062,31 @@ def rangeexpansion(oldargv):
     Design notes:
 
     * Ranges within curly braces '{' and '}' are minimally supported.
+    * Format: preamble{start..end..increment}postscript.
     * The shell's brace expansion is inadequate because it is decimal only.
     * ugrep {0..9}000: works because shell expands it.
     * ugrep {0..F}000: works because we expand it.
     * ugrep does not handle comma sequences, but the shell does.
     * ugrep {0..F}{0,4,8,C}00: works due to both shell and ugrep.
     * Braces can be tricky and sometimes must be quoted.
-    * ugrep {0..10}000: fails because the shell interprets it as decimal.
-    * ugrep "{0..10}000": works because it is quoted so ugrep interprets it.
-    * Do not expect nested braces to work.
+    * ugrep  {0..10}000: fails because the shell interprets it as decimal.
+    * ugrep \{0..10}000: works because it is quoted so ugrep interprets it.
+    * Multiple ranges and nested braces are not supported.
+    * Increment defaults to 1 or -1 as appropriate.
+    * A negative increment will only be assumed if it is obvious.
     """
 
     s=r"""(?mix)
 	  (U\+?|0?x)?
-    	  ((?P<preamble>[0-9A-F]+){)?
+    	  ((?P<preamble>[0-9A-F]*)(?P<brace>{))?
     	  (?P<start>[0-9A-F]+)
 	  \.\.                 # Literal two periods. MANDATORY.
 	  (U\+?|0?x)?
 	  (?P<end>[0-9A-F]+)
-    	  (}(?P<postscript>[0-9A-F]+))?
+	  (\.\.)?              # Literal two periods. OPTIONAL.
+	  (0?x)?
+	  (?P<increment>[-0-9A-F]+)?
+    	  (}(?P<postscript>[0-9A-F]*))?
     """
     s=compile(s)
     newargv=[]
@@ -1095,20 +1101,37 @@ def rangeexpansion(oldargv):
             preamble=g["preamble"]
             start=g["start"]
             end=g["end"]
+            increment=g["increment"]
             postscript=g["postscript"]
 
             if not preamble: preamble=""
             if not postscript: postscript=""
+            if not increment: increment="1"
 
-            end=start[:-len(end)]+end
-            debugprint("Found range from " + start + " to " + end)
-            z=max(len(start), len(end))
+            if not g["brace"]:
+                # Normally 10..8 means 10 11 12 13 14 15 16 17 18
+                end=start[:-len(end)]+end
+                z=max(len(start), len(end))
+            else:
+                # Inside braces 10..8 means 10 F E D C B A 9 8
+                z=1
+
             try:
                 start=int(start, 16)
                 end=int(end, 16)
-                if start > end: raise ValueError
+                increment=int(increment, 16)
 
-                for i in range(start, end+1):
+                import math
+                increment = int(math.copysign(increment, end-start))
+
+                if debug:
+                    if preamble or postscript:
+                        debugprint("Preamble: '%s', Postscript: '%s'" %
+                                   (preamble, postscript))
+                        debugprint("Found hex range %x to %x, increment %x" %
+                                   (start, end, increment))
+
+                for i in range(start, end+increment, increment):
                     hexits=preamble + hex(i)[2:].zfill(z) + postscript
                     newargv.append( hexits )
                     debugprint("   added: " + hexits)

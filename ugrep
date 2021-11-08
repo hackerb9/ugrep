@@ -1085,16 +1085,9 @@ def rangeexpansion(oldargv):
         else:
             debugprint("Doing range expansion on " + arg)
             g=m.groupdict()
-#            prefix=g["prefix"]
             start=g["start"]
             end=g["end"]
 
-#            if start == "":
-#                # They left off the braces: 2390..f instead of 239{0..f}
-#                start=prefix
-#                end=prefix[:-len(end)]+end
-#                prefix=""
-                
             end=start[:-len(end)]+end
             debugprint("Found range from " + start + " to " + end)
             z=max(len(start), len(end))
@@ -1107,7 +1100,6 @@ def rangeexpansion(oldargv):
                     hexits=hex(i)[2:].zfill(z)
                     newargv.append( hexits )
                     debugprint("   added: " + hexits)
-#                    newargv.append( prefix + hexits + g["suffix"] )
             except ValueError:
                 newargv.append(arg)
 

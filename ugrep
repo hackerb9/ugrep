@@ -1050,30 +1050,37 @@ def makeregexcodepoint(cp):
 
 
 def rangeexpansion(oldargv):
-    """Look for ranges "a..z" in oldargv[] and expand by inserting new elements.
-    The new argv is returned to the caller. 
+    """Look for ranges "a..z" or "a..z..i" in oldargv[] and expand by
+    inserting new elements. The new argv is returned to the caller.
 
     0..7 	-->	0 1 2 3 4 5 6 7
     abc0..7 	--> 	abc0 abc1 abc2 abc3 abc4 abc5 abc6 abc7
     23b8..ff	-->	23b8 23b9 23ba 23bb ... 23fd 23fe 23ff
+    7fff..8     -->     7fff 7ffe 7ffd 7ffc 7ffb 7ffa 7ff9 7ff8
+    0..FFFF..1000 --> 	0000 1000 2000 3000 ... D000 E000 F000
 
-    Optional U+ or 0x is allowed: U+0230..0x36
+    Optional U+ or 0x is allowed: U+0230..0xF.
+    Increment i defaults to +1 or -1 as appropriate.
+    Range is inclusive of both ends.
 
-    Design notes:
+    Design notes on curly brace expansion:
 
+    * TL;DR: Avoid curly braces due to quoting confusion with shell.
     * Ranges within curly braces '{' and '}' are minimally supported.
     * Format: preamble{start..end..increment}postscript.
+    * Multiple ranges and nested braces are not supported.
     * The shell's brace expansion is inadequate because it is decimal only.
     * ugrep {0..9}000: works because shell expands it.
     * ugrep {0..F}000: works because we expand it.
-    * ugrep does not handle comma sequences, but the shell does.
-    * ugrep {0..F}{0,4,8,C}00: works due to both shell and ugrep.
-    * Braces can be tricky and sometimes must be quoted.
     * ugrep  {0..10}000: fails because the shell interprets it as decimal.
     * ugrep \{0..10}000: works because it is quoted so ugrep interprets it.
-    * Multiple ranges and nested braces are not supported.
-    * Increment defaults to 1 or -1 as appropriate.
-    * A negative increment will only be assumed if it is obvious.
+    * ugrep does not handle comma sequences, but the shell does.
+    * ugrep {0..F}{0,4,8,C}00: works due to both shell and ugrep, but
+      ugrep 0..FFFF..400: works better as it is sorted correctly.
+    * Bash interprets an end number with fewer digits differently than ugrep!
+    * ugrep {8000..8}: Bash counts DOWN (!) from 8000 to 0008 (in decimal).
+    * ugrep \{8000..8}: ugrep counts up from 8000 to 8008
+    * ugrep \{8000..0008}: ugrep counts DOWN from 8000 to 0008 (in hex).
     """
 
     s=r"""(?mix)
@@ -1108,13 +1115,9 @@ def rangeexpansion(oldargv):
             if not postscript: postscript=""
             if not increment: increment="1"
 
-            if not g["brace"]:
-                # Normally 10..8 means 10 11 12 13 14 15 16 17 18
-                end=start[:-len(end)]+end
-                z=max(len(start), len(end))
-            else:
-                # Inside braces 10..8 means 10 F E D C B A 9 8
-                z=1
+            # 21b0..f is the same as 21b0..21bf
+            end=start[:-len(end)]+end
+            z=max(len(start), len(end))
 
             try:
                 start=int(start, 16)
@@ -1124,6 +1127,9 @@ def rangeexpansion(oldargv):
                 import math
                 increment = int(math.copysign(increment, end-start))
 
+                # Range is inclusive
+                end = end + int(math.copysign(1, increment))
+
                 if debug:
                     if preamble or postscript:
                         debugprint("Preamble: '%s', Postscript: '%s'" %
@@ -1131,7 +1137,7 @@ def rangeexpansion(oldargv):
                         debugprint("Found hex range %x to %x, increment %x" %
                                    (start, end, increment))
 
-                for i in range(start, end+increment, increment):
+                for i in range(start, end, increment):
                     hexits=preamble + hex(i)[2:].zfill(z) + postscript
                     newargv.append( hexits )
                     debugprint("   added: " + hexits)
@@ -1156,10 +1162,12 @@ def debugprint(*args, **kwargs):
         err(*args, **kwargs)
 
 def cleanup():
+    "Clean up mess before exiting due to an error"
     if isatty(2):
         termios.tcdrain(2) 		# Wait for stderr to be printed
     if isatty(1):
         termios.tcflush(1, termios.TCOFLUSH) 	# Discard stdout
+
     esc=chr(0x1b)
     eprint(esc+"\\", end='')		# String Terminator for sixels (ST)
     eprint(esc+"#5", end='')		# Single width line (DECSWL)

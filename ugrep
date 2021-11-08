@@ -43,7 +43,8 @@ from subprocess import getoutput, run
 from posix import write
 import termios
 import argparse
-import math
+from math import floor, copysign
+
 
 def usage():
     print("""\
@@ -856,8 +857,6 @@ def get_cell_size():
     if x==0: x=800
     if y==0: y=480
 
-    from math import floor
-
     debugprint("rows: %(rows)s\tcols: %(cols)s\tx: %(x)s\ty: %(y)s" % locals())
     debugprint("charcell w: %d\th: %d" % (floor(x/cols), floor(y/rows) ))
     return( floor(x/cols), floor(y/rows) )
@@ -1123,12 +1122,12 @@ def rangeexpansion(oldargv):
             z=max(len(start), len(end))
 
             try:
-                start=int(start, 16)
-                end=int(end, 16)
-                increment=int(increment, 16)
-                increment = int(math.copysign(increment, end-start))
+                start = int(start, 16)
+                end = int(end, 16)
+                increment = int(increment, 16)
+                increment = int(copysign(increment, end-start))
                 # Range is inclusive
-                end = end + int(math.copysign(1, increment))
+                end = end + int(copysign(1, increment))
 
                 if debug:
                     if preamble or postscript:

@@ -1057,23 +1057,30 @@ def rangeexpansion(oldargv):
     abc0..7 	--> 	abc0 abc1 abc2 abc3 abc4 abc5 abc6 abc7
     23b8..ff	-->	23b8 23b9 23ba 23bb ... 23fd 23fe 23ff
 
-    Notes:
-
-    * Does check for (and correctly ignores) prefix of U+ or 0x.
-    * Should check for invalid ranges and ignore them instead of barfing.
+    Optional U+ or 0x is allowed: U+0230..0x36
 
     Design notes:
 
-    * Although similar to shell brace expansion, the shell is
-      inadequate because it is decimal only.
+    * Ranges within curly braces '{' and '}' are minimally supported.
+    * The shell's brace expansion is inadequate because it is decimal only.
+    * ugrep {0..9}000: works because shell expands it.
+    * ugrep {0..F}000: works because we expand it.
+    * ugrep does not handle comma sequences, but the shell does.
+    * ugrep {0..F}{0,4,8,C}00: works due to both shell and ugrep.
+    * Braces can be tricky and sometimes must be quoted.
+    * ugrep {0..10}000: fails because the shell interprets it as decimal.
+    * ugrep "{0..10}000": works because it is quoted so ugrep interprets it.
+    * Do not expect nested braces to work.
     """
 
     s=r"""(?mix)
 	  (U\+?|0?x)?
+    	  ((?P<preamble>[0-9A-F]+){)?
     	  (?P<start>[0-9A-F]+)
 	  \.\.                 # Literal two periods. MANDATORY.
 	  (U\+?|0?x)?
 	  (?P<end>[0-9A-F]+)
+    	  (}(?P<postscript>[0-9A-F]+))?
     """
     s=compile(s)
     newargv=[]
@@ -1085,8 +1092,13 @@ def rangeexpansion(oldargv):
         else:
             debugprint("Doing range expansion on " + arg)
             g=m.groupdict()
+            preamble=g["preamble"]
             start=g["start"]
             end=g["end"]
+            postscript=g["postscript"]
+
+            if not preamble: preamble=""
+            if not postscript: postscript=""
 
             end=start[:-len(end)]+end
             debugprint("Found range from " + start + " to " + end)
@@ -1097,7 +1109,7 @@ def rangeexpansion(oldargv):
                 if start > end: raise ValueError
 
                 for i in range(start, end+1):
-                    hexits=hex(i)[2:].zfill(z)
+                    hexits=preamble + hex(i)[2:].zfill(z) + postscript
                     newargv.append( hexits )
                     debugprint("   added: " + hexits)
             except ValueError:

@@ -386,6 +386,17 @@ that data.
   [lsix](https://github.com/hackerb9/lsix). 
 
 
+* Brace expansion is confusing because of needing to be quoted from
+  the shell. It is supported for ranges (not sequences), but is not
+  currently documented because usage is tricky and the functionality
+  is not actually that helpful. For example, the following works:
+
+      ugrep {0..F}{0,4,8,C}00
+
+  but could be better written as:	
+
+      ugrep 0..FFFF..400
+
 * [Note: The following is not a problem for people who are willing to
   use vector fonts (truetype, opentype, postscript) that may be
   antialiased. Xterm uses fontconfig just fine.]

@@ -191,6 +191,25 @@ how many heart emojis Unicode has. 😜)
   * Sometimes it's useful (or fun) to page through the Unicode table
     and see what characters are defined in a region.
 
+  * Ranges can also have an optional increment:
+
+	$ ugrep 0..ffff..1000
+	   �    U+0000  <control> (null)
+	   က    U+1000  MYANMAR LETTER KA
+	        U+2000  EN QUAD
+	   　   U+3000  IDEOGRAPHIC SPACE
+	   䀀   U+4000  Block: [CJK Unified Ideographs Extension A]
+	   倀   U+5000  Block: [CJK Unified Ideographs]
+	   怀   U+6000  Block: [CJK Unified Ideographs]
+	   瀀   U+7000  Block: [CJK Unified Ideographs]
+	   耀   U+8000  Block: [CJK Unified Ideographs]
+	   退   U+9000  Block: [CJK Unified Ideographs]
+	   ꀀ   U+A000  YI SYLLABLE IT
+	   뀀   U+B000  Block: [Hangul Syllables]
+	   쀀   U+C000  Block: [Hangul Syllables]
+	   퀀   U+D000  Block: [Hangul Syllables]
+	   �    U+E000  <Private Use, First>
+	       U+F000  Block: [Private Use Area]
   * Tip: pipe long output to `less` and search for a code point by
     pressing `/U\+A60F`.
 

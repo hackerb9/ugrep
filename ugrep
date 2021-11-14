@@ -40,10 +40,17 @@ from sys import argv, stderr
 from os.path import expanduser, expandvars, basename
 from os import isatty
 from subprocess import getoutput, run
-from posix import write
-import termios
 import argparse
 from math import floor, copysign
+
+try:
+    from posix import write
+    import select
+    import termios 
+    import tty
+except ImportError:
+    print("Sorry, but your system isn't POSIX compatible", file=stderr)
+    exit( 1 )
 
 
 def usage():
@@ -812,7 +819,7 @@ def show_fonts(x, category=None):
 
             print("", flush=True, end='')   # Send any pending output to stdout
 
-            try: write(1, output.stdout) 	# Print raw bytes
+            try: write(1, output.stdout) 	# Print raw bytes to stdout
             except KeyboardInterrupt:		# Catch ^C
                 exit(1)                         # Sixels stopped by cleanup()
 
@@ -1172,6 +1179,76 @@ def cleanup():
     eprint(esc+"\\", end='')		# String Terminator for sixels (ST)
     eprint(esc+"#5", end='')		# Single width line (DECSWL)
     eprint("\r" + esc + "[J", end='')	# Erase to end of display (ED)
+
+from termios import *
+def terminal_query(seq, delimiter=None, timeout=0.25):
+    """
+    Given an escape SEQuence, and optionally a DELIMITER and a TIMEOUT,
+    print SEQ to stderr and read a response from stdin until the
+    character DELIMITER is read or TIMEOUT seconds is reached. 
+    Input that is read is returned to the calling function. 
+
+    If TIMEOUT is not specified, it default to 0.25.
+
+    If DELIMITER is not specified, it defaults to the last character of SEQ.
+    If neither DELIMITER nor SEQ are specified, then "" is immediately returned.
+
+    """
+    import copy, sys, select, tty
+
+    if not seq: seq=""
+    if not delimiter and len(seq)>0:
+        delimiter=seq[-1]
+
+    oldmode = tcgetattr(sys.stdin.fileno())
+    newmode = copy.deepcopy(oldmode)
+    # tcgetattr returns [iflag, oflag, cflag, lflag, ispeed, ospeed, cc]
+    [ iflag, oflag, cflag, lflag, ispeed, ospeed, cc ]  = newmode
+    iflag = iflag & ~(BRKINT | ICRNL | INPCK | ISTRIP | IXON)
+    lflag = lflag & ~(ECHO | ICANON)
+    cflag = cflag & ~(CSIZE | PARENB)
+    cc[VTIME] = 0               # Return immediately,
+    cc[VMIN] = 1                # after reading a single character
+    newmode = [ iflag, oflag, cflag, lflag, ispeed, ospeed, cc ]
+    from pprint import pprint as pp
+    print('old')
+    print(oldmode)
+    print('new')
+    print(newmode)
+
+
+    output=""
+    c = None
+    try:
+       #        tty.setcbreak(sys.stdin) # Read 1 char at a time, but allow ^C to cancel
+        pp(newmode)
+        tcsetattr(sys.stdin.fileno(), TCSANOW, newmode)
+
+        print(seq, file=stderr)
+        default=([sys.stdin], [], [])
+        while c != delimiter:
+            # select's signature: (read_list, write_list, exception_list, time)
+            (readable, dummy, dummy) = select.select(*default, timeout)
+            print ("timeout:", timeout, "read:", readable)
+                # Why does python3 read only one character in cbreak
+                # mode and then return nothing? Why does it work in raw mode?
+                # (I do not want raw as it disables ^C).
+
+            if readable:
+                c=readable[0].read(1)
+                output=output+c
+            else:
+                break
+            print('c is ', ord(c))
+    finally:
+        tcsetattr(sys.stdin.fileno(), TCSANOW, oldmode)
+
+    return(output)
+
+for c in terminal_query('\x1B[?2;1;0S'):
+    print(c)
+exit(42)
+
 
 ######################################################################
 

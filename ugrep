@@ -1189,59 +1189,82 @@ def terminal_query(seq, delimiter=None, timeout=0.25):
     Input that is read is returned to the calling function. 
 
     If TIMEOUT is not specified, it default to 0.25.
-
     If DELIMITER is not specified, it defaults to the last character of SEQ.
-    If neither DELIMITER nor SEQ are specified, then "" is immediately returned.
+
+    If neither DELIMITER nor SEQ are specified, then "" is returned.
 
     """
-    import copy, sys, select, tty
+    import sys, select, tty
+
+    ## See man termios(3) for details on tcgetattr
 
     if not seq: seq=""
     if not delimiter and len(seq)>0:
         delimiter=seq[-1]
 
     oldmode = tcgetattr(sys.stdin.fileno())
-    newmode = copy.deepcopy(oldmode)
+
     # tcgetattr returns [iflag, oflag, cflag, lflag, ispeed, ospeed, cc]
-    [ iflag, oflag, cflag, lflag, ispeed, ospeed, cc ]  = newmode
-    iflag = iflag & ~(BRKINT | ICRNL | INPCK | ISTRIP | IXON)
-    lflag = lflag & ~(ECHO | ICANON)
+    [ iflag, oflag, cflag, lflag, ispeed, ospeed, cc ]  = oldmode
+
+    ## CBREAK MODE: Read byte by byte.
+
+    ## Cbreak is like raw but allow ^C interrupt signal and does
+    ## not clear OPOST (print newlines as carriage return + newline)
+
+    # Do not transmogrify input in any way...
+    iflag = iflag & ~(INPCK | ISTRIP | IXON | ICRNL | INLCR | IGNCR)
+    # ... except do allow BREAK to flush queues and send SIGINT
+    iflag = (iflag & ~IGNBRK) | BRKINT
+
+    lflag = lflag & ~ICANON     # Noncanonical: read by bytes, not lines
+    lflag = lflag & ~ECHO       # Do not echo characters received
+
+    # Clear character size and disable parity checking
     cflag = cflag & ~(CSIZE | PARENB)
-    cc[VTIME] = 0               # Return immediately,
-    cc[VMIN] = 1                # after reading a single character
-    newmode = [ iflag, oflag, cflag, lflag, ispeed, ospeed, cc ]
-    from pprint import pprint as pp
-    print('old')
-    print(oldmode)
-    print('new')
-    print(newmode)
+    cflag = cflag | CS8        # Set 8-bit character size
+
+    ## Blocking read (MIN > 0, TIME == 0)
+    # read blocks until MIN bytes are available, and returns up to the
+    # number of bytes requested.
+    cc[VMIN] = 1                # Wait for only one byte
+    cc[VTIME] = 0
+    blockingread = [ iflag, oflag, cflag, lflag, ispeed, ospeed, cc ]
+
+    ## Read with timeout (MIN == 0, TIME > 0)
+    cc[VMIN] = 0                
+    cc[VTIME] = int(timeout*10) # Timeout is in tenths of a second 
+    readwithtimeout = [ iflag, oflag, cflag, lflag, ispeed, ospeed, cc ]
+
+    ## Polling read (MIN == 0, TIME == 0)
+    # Returns lesser of bytes available or bytes requested.
+    cc[VMIN] = 0
+    cc[VTIME] = 0
+    pollingread =  [ iflag, oflag, cflag, lflag, ispeed, ospeed, cc ]
+
+    print(blockingread)
+    print(pollingread)
 
 
-    output=""
-    c = None
+    output=""                   # String of output so far.
+    c = None                    # Currently read character.
     try:
-       #        tty.setcbreak(sys.stdin) # Read 1 char at a time, but allow ^C to cancel
-        pp(newmode)
-        tcsetattr(sys.stdin.fileno(), TCSANOW, newmode)
-
         print(seq, file=stderr)
-        default=([sys.stdin], [], [])
-        while c != delimiter:
-            # select's signature: (read_list, write_list, exception_list, time)
-            (readable, dummy, dummy) = select.select(*default, timeout)
-            print ("timeout:", timeout, "read:", readable)
-                # Why does python3 read only one character in cbreak
-                # mode and then return nothing? Why does it work in raw mode?
-                # (I do not want raw as it disables ^C).
 
-            if readable:
-                c=readable[0].read(1)
+        while c != delimiter:
+            tcsetattr(sys.stdin.fileno(), TCSANOW, pollingread)
+            if sys.stdin.read(1): # Why does this not work in python?
+                tcsetattr(sys.stdin, TCSANOW, blockingread)
+                c=sys.stdin.read(1)
                 output=output+c
             else:
                 break
-            print('c is ', ord(c))
     finally:
         tcsetattr(sys.stdin.fileno(), TCSANOW, oldmode)
+
+            
+    if output:
+        print(output)
 
     return(output)
 

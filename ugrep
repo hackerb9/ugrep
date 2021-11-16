@@ -33,7 +33,7 @@
 # GPL ≥3 (see LICENSE file)
 # B9 September 2018 – October 2021
 
-debug=False
+debug=True
 
 from re import *
 from sys import argv, stderr
@@ -1181,24 +1181,28 @@ def cleanup():
     eprint("\r" + esc + "[J", end='')	# Erase to end of display (ED)
 
 from termios import *
-def terminal_query(seq, delimiter=None, timeout=0.25):
+def terminal_query(seq, delimiter=None, timeout=0.2):
     """
     Given an escape SEQuence, and optionally a DELIMITER and a TIMEOUT,
     print SEQ to stderr and read a response from stdin until the
     character DELIMITER is read or TIMEOUT seconds is reached. 
     Input that is read is returned to the calling function. 
 
-    If TIMEOUT is not specified, it default to 0.25.
+    If TIMEOUT is not specified, it default to 0.2.
     If DELIMITER is not specified, it defaults to the last character of SEQ.
 
     If neither DELIMITER nor SEQ are specified, then "" is returned.
 
     """
-    import sys, select, tty
+    import sys, copy, posix
 
     ## See man termios(3) for details on tcgetattr
 
+    if not delimiter and not seq:
+        return ""
+
     if not seq: seq=""
+
     if not delimiter and len(seq)>0:
         delimiter=seq[-1]
 
@@ -1224,52 +1228,56 @@ def terminal_query(seq, delimiter=None, timeout=0.25):
     cflag = cflag & ~(CSIZE | PARENB)
     cflag = cflag | CS8        # Set 8-bit character size
 
-    ## Blocking read (MIN > 0, TIME == 0)
-    # read blocks until MIN bytes are available, and returns up to the
-    # number of bytes requested.
-    cc[VMIN] = 1                # Wait for only one byte
-    cc[VTIME] = 0
-    blockingread = [ iflag, oflag, cflag, lflag, ispeed, ospeed, cc ]
+    # ## Blocking read (MIN > 0, TIME == 0)
+    # # read blocks until MIN bytes are available, and returns up to the
+    # # number of bytes requested.
+    # cc[VMIN] = 1                # Wait for only one byte
+    # cc[VTIME] = 0
+    # blockingread = copy.deepcopy([ iflag, oflag, cflag, lflag, ispeed, ospeed, cc ])
 
     ## Read with timeout (MIN == 0, TIME > 0)
     cc[VMIN] = 0                
-    cc[VTIME] = int(timeout*10) # Timeout is in tenths of a second 
-    readwithtimeout = [ iflag, oflag, cflag, lflag, ispeed, ospeed, cc ]
+    cc[VTIME] = int(timeout*10+0.5) # Timeout is in tenths of a second 
+    readwithtimeout = copy.deepcopy([ iflag, oflag, cflag, lflag, ispeed, ospeed, cc ])
 
-    ## Polling read (MIN == 0, TIME == 0)
-    # Returns lesser of bytes available or bytes requested.
-    cc[VMIN] = 0
-    cc[VTIME] = 0
-    pollingread =  [ iflag, oflag, cflag, lflag, ispeed, ospeed, cc ]
-
-    print(blockingread)
-    print(pollingread)
-
+    # ## Polling read (MIN == 0, TIME == 0)
+    # # Returns lesser of bytes available or bytes requested.
+    # cc[VMIN] = 0
+    # cc[VTIME] = 0
+    # pollingread =  copy.deepcopy([ iflag, oflag, cflag, lflag, ispeed, ospeed, cc ])
 
     output=""                   # String of output so far.
     c = None                    # Currently read character.
+
     try:
-        print(seq, file=stderr)
+        print(seq, file=stderr, end='', flush=True) # Send Esc sequence to terminal
+
+        # Next read() should timeout if no byte becomes available.
+        tcsetattr(sys.stdin.fileno(), TCSANOW, readwithtimeout)
 
         while c != delimiter:
-            tcsetattr(sys.stdin.fileno(), TCSANOW, pollingread)
-            if sys.stdin.read(1): # Why does this not work in python?
-                tcsetattr(sys.stdin, TCSANOW, blockingread)
-                c=sys.stdin.read(1)
+            c = posix.read(sys.stdin.fileno(), 1).decode()
+            if c:
                 output=output+c
+                debugprint(c, delimiter)
             else:
                 break
     finally:
         tcsetattr(sys.stdin.fileno(), TCSANOW, oldmode)
 
-            
-    if output:
-        print(output)
+    if (debug):
+        if output:
+            print("Terminal query received: ", repr(output))
+
+        if (c == delimiter):
+            print("Exited on delimiter", repr(c))
+        else:
+            print("Exited after timeout", repr(c))
 
     return(output)
 
-for c in terminal_query('\x1B[?2;1;0S'):
-    print(c)
+for c in terminal_query('\x1B[?2;1;0S', delimiter='S', timeout=.2):
+    print(repr(c))
 exit(42)
 
 

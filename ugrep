@@ -1180,6 +1180,8 @@ def cleanup():
     eprint(esc+"#5", end='')		# Single width line (DECSWL)
     eprint("\r" + esc + "[J", end='')	# Erase to end of display (ED)
 
+
+## See man termios(3) for details on tcgetattr
 from termios import *
 def terminal_query(seq, delimiter=None, timeout=0.2):
     """
@@ -1196,13 +1198,12 @@ def terminal_query(seq, delimiter=None, timeout=0.2):
     """
     import sys, copy, posix
 
-    ## See man termios(3) for details on tcgetattr
-
     if not delimiter and not seq:
         return ""
 
-    if not seq: seq=""
+    if not seq: seq=""          # Allow simply reading from terminal.
 
+    # Responses usually end with the same character as the request.
     if not delimiter and len(seq)>0:
         delimiter=seq[-1]
 
@@ -1212,13 +1213,12 @@ def terminal_query(seq, delimiter=None, timeout=0.2):
     [ iflag, oflag, cflag, lflag, ispeed, ospeed, cc ]  = oldmode
 
     ## CBREAK MODE: Read byte by byte.
-
-    ## Cbreak is like raw but allow ^C interrupt signal and does
+    ## Cbreak is like Raw but allow ^C interrupt signal and does
     ## not clear OPOST (print newlines as carriage return + newline)
 
     # Do not transmogrify input in any way...
     iflag = iflag & ~(INPCK | ISTRIP | IXON | ICRNL | INLCR | IGNCR)
-    # ... except do allow BREAK to flush queues and send SIGINT
+    # ... except do allow BREAK (^C) to flush queues and send SIGINT
     iflag = (iflag & ~IGNBRK) | BRKINT
 
     lflag = lflag & ~ICANON     # Noncanonical: read by bytes, not lines
@@ -1228,51 +1228,40 @@ def terminal_query(seq, delimiter=None, timeout=0.2):
     cflag = cflag & ~(CSIZE | PARENB)
     cflag = cflag | CS8        # Set 8-bit character size
 
-    # ## Blocking read (MIN > 0, TIME == 0)
-    # # read blocks until MIN bytes are available, and returns up to the
-    # # number of bytes requested.
-    # cc[VMIN] = 1                # Wait for only one byte
-    # cc[VTIME] = 0
-    # blockingread = copy.deepcopy([ iflag, oflag, cflag, lflag, ispeed, ospeed, cc ])
-
-    ## Read with timeout (MIN == 0, TIME > 0)
+    ## Read with timeout (MIN == 0, TIME > 0)  See termios(3).
     cc[VMIN] = 0                
     cc[VTIME] = int(timeout*10+0.5) # Timeout is in tenths of a second 
     readwithtimeout = copy.deepcopy([ iflag, oflag, cflag, lflag, ispeed, ospeed, cc ])
 
-    # ## Polling read (MIN == 0, TIME == 0)
-    # # Returns lesser of bytes available or bytes requested.
-    # cc[VMIN] = 0
-    # cc[VTIME] = 0
-    # pollingread =  copy.deepcopy([ iflag, oflag, cflag, lflag, ispeed, ospeed, cc ])
-
     output=""                   # String of output so far.
     c = None                    # Currently read character.
-
     try:
-        print(seq, file=stderr, end='', flush=True) # Send Esc sequence to terminal
+        print(seq, file=stderr, end='', flush=True) # Send Esc seq to terminal
 
         # Next read() should timeout if no byte becomes available.
         tcsetattr(sys.stdin.fileno(), TCSANOW, readwithtimeout)
 
+        # Accumulate response in 'output' until delimiter or timeout
         while c != delimiter:
             c = posix.read(sys.stdin.fileno(), 1).decode()
             if c:
                 output=output+c
-                debugprint(c, delimiter)
+                debugprint("got", repr(c), "waiting for", repr(delimiter))
             else:
+                debugprint("read() returned 0 characters")
+                # Timeout
                 break
     finally:
         tcsetattr(sys.stdin.fileno(), TCSANOW, oldmode)
 
     if (debug):
         if output:
-            print("Terminal query received: ", repr(output))
+            debugprint("Terminal query received: ", repr(output))
 
         if (c == delimiter):
-            print("Exited on delimiter", repr(c))
+            debugprint("Exited on delimiter", repr(c))
         else:
-            print("Exited after timeout", repr(c))
+            debugprint("Exited after timeout", repr(c))
 
     return(output)
 

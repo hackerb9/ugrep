@@ -771,7 +771,7 @@ def show_fonts(x, category=None):
             print("")           # stdout is not a tty, so  send a newline
         else:
 	    # stdout is a terminal, show the glyph as sixels
-            (background, foreground) = get_term_colors()
+            (foreground, background) = get_term_colors()
             (width, height) = get_cell_size()   # Character cell font size
             height = args.fonts_scale * height  # Increase size of font (maybe).
             if not double_text:
@@ -830,7 +830,7 @@ def is_sixel_capable():
     global sixel_cached
 
     try:
-        return sixel_cached
+        if sixel_cached: return sixel_cached
     except NameError:
         sixel_cached=False
 
@@ -865,45 +865,87 @@ def get_cell_size():
     # Inquire from the terminal what its character cell size is.
     # Returns a tuple (width, height) in pixels. 
 
-    # First, try Esc seq to ask terminal what its char cell size is.
-#xxxx
+    global cell_cached
+    try:
+        if cell_cached: return cell_cached
+    except NameError:
+        cell_cached=None
 
-    # Second, try termios. It's simple but inaccurate & doesn't work everywhere.
+    # Ideally, we use an Esc seq to ask terminal what its char cell size is.
+    output = terminal_query_list('\x1B[16')
+    if output:
+        cell_cached = ( int(output[2]), int(output[1]) )
+        return cell_cached
+
+    # Didn't work, so try calculating cell size from geometry.
+    # We get geometry in three ways: 
+
+    # First, TIOCGWINSZ ioctl. It's simple but x,y are inaccurate.
     import array, fcntl, termios
     buf = array.array('H', [0, 0, 0, 0]) 	# H == unsigned int
     if isatty(0):
         fcntl.ioctl(0, termios.TIOCGWINSZ, buf)
-
     # Beware of the stupid output order: y x x y.   --Egmont Koblinger
     (rows, cols, x, y) = buf;
 
-    # If TIOCGWINSZ did not work, try using escape sequences.
-    if x==0 or y==0:
-        (x, y) = term_get_sixel_size()
+    # Second, XTSMGRAPHICS escape sequence gives the best x,y accuracy.
+    output = terminal_query_list('\x1B[?2;1;0S')
+    if output:
+        (x, y) = ( int(output[2]), int(output[3]) )
 
-
-
-
-
-
-    if rows==0: rows=24
-    if cols==0: cols=80
-
-    # VT340 on serial line has x and y set to zero.
+    else:
+        # Third, dtterm's x,y are (usually) better than TIOCGWINSZ.
+        output = terminal_query_list('\x1B[14t')
+        if output:
+            (x, y) = ( int(output[2]), int(output[1]) )
+    
+    # VT340 on serial line would still have x and y set to zero.
     if x==0: x=800
     if y==0: y=480
 
+    # TIOCGWINSZ is reliable for rows and cols, but just in case.
+    if rows==0: rows=24
+    if cols==0: cols=80
+
+    cell_cached = ( floor(x/cols), floor(y/rows) )
+
     debugprint("rows: %(rows)s\tcols: %(cols)s\tx: %(x)s\ty: %(y)s" % locals())
     debugprint("charcell w: %d\th: %d" % (floor(x/cols), floor(y/rows) ))
-    return( floor(x/cols), floor(y/rows) )
+    return cell_cached
 
 def get_term_colors():
-    # XXX not implemented yet
-    # Inquire from the terminal what its character cell size is.
-    # Returns a tuple (background, foreground) in pixels. 
+    """Returns a terminals colors as a tuple (foreground, background)"""
     # fg = read -r -p $'\033]10;?\007' -d$'\007'
     # bg = read -r -p $'\033]11;?\007' -d$'\007'
-    return ("gray10","gray90")
+
+    # Example output from esc sequence:
+    # read -r -p $'\033]11;?\007' -d$'\007'
+    # ^[]11;rgb:1a1a/1a1a/1a1a^G
+    
+    global colors_cached
+    try:
+        if colors_cached: return colors_cached
+    except NameError:
+        # Use VT340 colors by default if detection fails
+        colors_cached= ("gray75","gray48") 
+
+    output = terminal_query_list('\x1B]10;?\x1B\\')
+    if output:
+        # output is of the form: ['10', 'rgb:1abc/2def/3456']
+        # but we want just "#1abc2def3456
+        fg=output[1].replace('rgb:', '#').replace('/', '')
+
+        output = terminal_query_list('\x1B]11;?\x1B\\')
+        if output:
+            bg=output[1].replace('rgb:', '#').replace('/', '')
+
+            # Check for reverse video
+            output = terminal_query_list('\x1B[?5$p', delimiter='y')
+            
+            
+            colors_cached=(fg, bg)
+
+    return colors_cached
 
 def print_double_text(famstr):
     esc=chr(0x1b)
@@ -1292,8 +1334,11 @@ def terminal_query(seq, delimiter=None, timeout=0.2):
             debugprint("Exited after timeout", repr(c))
 
     return(output)
+
 def terminal_query_list(seq, delimiter=None, timeout=0.2):
-    """Same as terminal_query() above, but returns the results as a list"""
+    """Same as terminal_query() above, but returns the results as a list.
+    Also removes known extraneous parts, such as Esc [ at start or Esc \ at end.
+    """
 
     output=terminal_query(seq, delimiter, timeout)
 
@@ -1305,8 +1350,8 @@ def terminal_query_list(seq, delimiter=None, timeout=0.2):
     if not delimiter and seq and len(seq)>0:
         delimiter=seq[-1]
 
-    output = output.lstrip('\x1B[').lstrip('\x1B]').lstrip('\x1B')
-    output = output.rstrip(delimiter)
+    output = output.lstrip('\x1B[').lstrip('\x1B]').lstrip('\x1B').lstrip(';')
+    output = output.rstrip(delimiter).rstrip('\x1B\\')
     output = output.split(';')
 
     return output
@@ -1314,6 +1359,7 @@ def terminal_query_list(seq, delimiter=None, timeout=0.2):
 def term_get_geometry():
     "Return (width, height) of terminal in pixels"
     result=terminal_query('\x1B[?2;1;0S')
+#XXXX
     print(repr(result))
 
 ######################################################################

@@ -1320,7 +1320,7 @@ def terminal_query(seq, delimiter=None, timeout=0.2):
             c = posix.read(sys.stdin.fileno(), 1).decode()
             if c:
                 output=output+c
-                debugprint("got", repr(c), "waiting for", repr(delimiter))
+#                debugprint("got", repr(c), "waiting for", repr(delimiter))
             else:
                 debugprint("read() returned 0 characters")
                 # Timeout

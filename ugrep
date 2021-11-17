@@ -836,8 +836,8 @@ def is_sixel_capable():
     except NameError:
         sixel_cached=False
 
-    # If stdin or stderr is not a terminal, don't send sixels
-    if not args.pipe_sixels and ( not isatty(0) or not isatty(2) ):
+    # If stdin or stdout is not a terminal, don't send sixels
+    if not args.pipe_sixels and ( not isatty(0) or not isatty(1) ):
         sixel_cached=False
         return False
 
@@ -943,7 +943,7 @@ def get_term_colors():
         if output:
             bg=output[1].replace('rgb:', '#').replace('/', '')
 
-            # Check for reverse video (DECSCNM) e.g., $'\e[?5h' light background
+            # Check for reverse video (DECSCNM) i.e., $'\e[?5h' light background
             output = terminal_request_mode(5)
             if output == "set" or output == "permanently set":
                 colors_cached=(bg, fg) # Reversed video
@@ -1375,12 +1375,6 @@ def terminal_request_mode(n):
 
     output=output[1].strip('$')
     return status[int(output)]
-
-def term_get_geometry():
-    "Return (width, height) of terminal in pixels"
-    result=terminal_query('\x1B[?2;1;0S')
-#XXXX
-    print(repr(result))
 
 ######################################################################
 

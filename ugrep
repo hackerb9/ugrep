@@ -917,7 +917,7 @@ def get_cell_size():
 
 def get_term_colors():
     """Returns a terminals colors as a tuple (foreground, background)
-    BUG: Does not handle reversed video yet.
+    Handles reversed video by checking mode 5.
     """
     # fg = read -r -p $'\033]10;?\007' -d$'\007'
     # bg = read -r -p $'\033]11;?\007' -d$'\007'
@@ -946,9 +946,9 @@ def get_term_colors():
             # Check for reverse video (DECSCNM) e.g., $'\e[?5h' light background
             output = terminal_request_mode(5)
             if output == "set" or output == "permanently set":
-                colors_cached=(bg, fg)                
+                colors_cached=(bg, fg) # Reversed video
             else:
-                colors_cached=(fg, bg)
+                colors_cached=(fg, bg) # Normal (dark) background
 
     return colors_cached
 
@@ -1373,8 +1373,8 @@ def terminal_request_mode(n):
     output = terminal_query_list('\x1B[?'+str(n)+'$p', delimiter='y')
     if not output: return output
 
-    print(output)
-    return status[int(output[1])]
+    output=output[1].strip('$')
+    return status[int(output)]
 
 def term_get_geometry():
     "Return (width, height) of terminal in pixels"

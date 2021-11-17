@@ -943,11 +943,12 @@ def get_term_colors():
         if output:
             bg=output[1].replace('rgb:', '#').replace('/', '')
 
-            # Check for reverse video
-            output = terminal_query_list('\x1B[?5$p', delimiter='y')
-            
-            
-            colors_cached=(fg, bg)
+            # Check for reverse video (DECSCNM) e.g., $'\e[?5h' light background
+            output = terminal_request_mode(5)
+            if output == "set" or output == "permanently set":
+                colors_cached=(bg, fg)                
+            else:
+                colors_cached=(fg, bg)
 
     return colors_cached
 
@@ -1359,6 +1360,21 @@ def terminal_query_list(seq, delimiter=None, timeout=0.2):
     output = output.split(';')
 
     return output
+
+def terminal_request_mode(n):
+    """DECRQM: Request info on a mode by number.
+
+    Mode 3 is DECCOLM (132 column mode)
+    Mode 5 is DECSCNM (reverse video mode)
+    Mode 7 is DECAWM (autowrap mode)
+    Mode 80 is DECSDM (sixel display mode)"""
+
+    status=("not recognized" "set" "reset" "permanently set" "permanently reset")
+    output = terminal_query_list('\x1B[?'+str(n)+'$p', delimiter='y')
+    if not output: return output
+
+    print(output)
+    return status[int(output[1])]
 
 def term_get_geometry():
     "Return (width, height) of terminal in pixels"

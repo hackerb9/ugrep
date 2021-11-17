@@ -829,26 +829,24 @@ def show_fonts(x, category=None):
 
 def is_sixel_capable():
     "Return true if the terminal can show sixel graphics"
-    global sixel_cached
 
     try:
-        if sixel_cached: return sixel_cached
-    except NameError:
-        sixel_cached=False
+        if is_sixel_capable.cached: return is_sixel_capable.cached
+    except AttributeError:
+        is_sixel_capable.cached=False
 
     # If stdin or stdout is not a terminal, don't send sixels
     if not args.pipe_sixels and ( not isatty(0) or not isatty(1) ):
-        sixel_cached=False
+        is_sixel_capable.cached=False
         return False
 
     # check DA to see if sixels are supported
     results=terminal_query_list('\x1B[c')
-
     if "4" in results:
-        sixel_cached=True
+        is_sixel_capable.cached=True
         return True
 
-    sixel_cached=False
+    is_sixel_capable.cached=False
     return False
 
 def get_rows_cols():
@@ -864,20 +862,20 @@ def get_rows_cols():
     return (rows,cols)
 
 def get_cell_size():
-    # Inquire from the terminal what its character cell size is.
-    # Returns a tuple (width, height) in pixels. 
+    """Inquire from the terminal what its character cell size is.
+    Returns a tuple (width, height) in pixels. 
+    """
 
-    global cell_cached
     try:
-        if cell_cached: return cell_cached
-    except NameError:
-        cell_cached=None
+        if get_cell_size.cached: return get_cell_size.cached
+    except AttributeError:
+        get_cell_size.cached=None
 
     # Ideally, we use an Esc seq to ask terminal what its char cell size is.
     output = terminal_query_list('\x1B[16')
     if output:
-        cell_cached = ( int(output[2]), int(output[1]) )
-        return cell_cached
+        get_cell_size.cached = ( int(output[2]), int(output[1]) )
+        return get_cell_size.cached
 
     # Didn't work, so try calculating cell size from geometry.
     # We get geometry in three ways: 
@@ -909,11 +907,11 @@ def get_cell_size():
     if rows==0: rows=24
     if cols==0: cols=80
 
-    cell_cached = ( floor(x/cols), floor(y/rows) )
+    get_cell_size.cached = ( floor(x/cols), floor(y/rows) )
 
     debugprint("rows: %(rows)s\tcols: %(cols)s\tx: %(x)s\ty: %(y)s" % locals())
     debugprint("charcell w: %d\th: %d" % (floor(x/cols), floor(y/rows) ))
-    return cell_cached
+    return get_cell_size.cached
 
 def get_term_colors():
     """Returns a terminals colors as a tuple (foreground, background)
@@ -926,12 +924,11 @@ def get_term_colors():
     # read -r -p $'\033]11;?\007' -d$'\007'
     # ^[]11;rgb:1a1a/1a1a/1a1a^G
     
-    global colors_cached
     try:
-        if colors_cached: return colors_cached
-    except NameError:
+        if get_term_colors.cached: return get_term_colors.cached
+    except AttributeError:
         # Use VT340 colors by default if detection fails
-        colors_cached= ("gray48", "black") 
+        get_term_colors.cached= ("gray48", "black") 
 
     output = terminal_query_list('\x1B]10;?\x1B\\')
     if output:
@@ -946,11 +943,11 @@ def get_term_colors():
             # Check for reverse video (DECSCNM) i.e., $'\e[?5h' light background
             output = terminal_request_mode(5)
             if output == "set" or output == "permanently set":
-                colors_cached=(bg, fg) # Reversed video
+                get_term_colors.cached=(bg, fg) # Reversed video
             else:
-                colors_cached=(fg, bg) # Normal (dark) background
+                get_term_colors.cached=(fg, bg) # Normal (dark) background
 
-    return colors_cached
+    return get_term_colors.cached
 
 def print_double_text(famstr):
     esc=chr(0x1b)

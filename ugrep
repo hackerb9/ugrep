@@ -55,6 +55,30 @@ except ImportError:
     print("Sorry, but your system isn't POSIX compatible", file=stderr)
     exit( 1 )
 
+# Allow fancier terminfo formatting, if python3-blessed is installed.
+try:
+    import blessed
+    curses = blessed.terminal.Terminal(force_styling=True)
+    s=curses.bold_blink_dim_red_on_green
+    t=curses.bold_blink_white_on_red
+    esc=chr(0x1b)
+    for j in (3, 4):
+        i=0
+
+        print(esc+'#'+str(j),end='')
+        for c in "merry x-mas!":
+            if j==4:
+                print (s(c), end='')
+            else:
+                print (t(c), end='')
+            i=i+1
+        print()
+
+
+except ImportError:
+    pass
+
+
 
 def usage():
     print("""\
@@ -675,11 +699,13 @@ def printmatches(s):
             if g["name"] == None: g["name"]=g["desctwo"]
             category = g["category"] if g["category"] else g["categorytwo"]
             if g["alias"] == None: g["alias"]=g["aliastwo"]
-            c=chr(int(g["hex"], 16))
+            codepoint=int(g["hex"], 16)
+            c=chr(codepoint)
+            maybe_open_box(codepoint, g["name"], g["category"])
             if not isprint(category): c="\ufffd" # "Replacement Character"
             if iscombining(category): print('\u25cc', end='') # "Dotted circle"
             print(c, end='')
-            if should_box(int(g["hex"], 16)): print('\u20DE', end='') # "Enclosing box"
+            maybe_close_box(codepoint, g["name"], g["category"])
             print(end='\t')
             print ("U+" + g["hex"], end='\t')
             print(g["name"], end='')
@@ -692,11 +718,30 @@ def printmatches(s):
     # Return True if a match was found
     return foundone
 
-def should_box(x):
+def maybe_open_box(*args):
+    """Display the next character differently if it is whitespace or has
+    some unusual meaning. This is similar to the Unicode charts which
+    put some characters in dashed boxes.
+    """
+
+    if should_box(*args):
+        print("\b[", end='')
+#        if curses:
+#            print(curses.rev(), end='')
+
+def maybe_close_box(*args):
+    """Display the previous character differently and disable any
+    formatting changes (such as color) set by maybe_open_box."""
+
+    if should_box(*args):
+        print('\u20DE', end='') # "Enclosing box"
+#        if curses:
+#            print(curses.normal, end='')
+        print(']', end='')
+
+def should_box(x, name, category):
     """The "Dashed Box Convention, explained at https://www.unicode.org/
     versions/Unicode12.0.0/ch24.pdf#G8175. 
-
-    as described in Wikipedia.
     It was added to match Unicode's charts. Depending on the font,
     without the dashed box U+0602 is easily confusable with U+060E,
     U+1F1E6 looks the same as capital A, etc. 
@@ -752,7 +797,7 @@ def should_box(x):
     for y in ("0000-0020", "007F-00A0", "00AD", "034F", "0600-0605",
               "061C", "06DD", "070F", "08E2", "0CF1-0CF2", "0D4E",
               "0F0C", "1039", "115F-1160", "17B4-17B5", "17D2",
-              "180B-180E", "1A60", "1BAB", "1CF5-1CF6", "2000-200F",
+              "180B-180F", "1A60", "1BAB", "1CF5-1CF6", "2000-200F",
               "2011", "2028-202F", "205F-2064", "2066-206F", "2D7F",
               "2E3A-2E3B", "3000", "303E", "3164", "AAF6",
               "FE00-FE0F", "FEFF", "FFA0", "FFF9-FFFB", "10A3F",
@@ -762,23 +807,6 @@ def should_box(x):
               "1BCA0-1BCA3", "1D159", "1D173-1D17A", "1DA9B-1DA9F",
               "1DAA1-1DAAF", "1F1E6-1F1FF", "E0001", "E0020-E007F",
               "E0100-E01EF"):
-
-    """
-
-    for y in ("0000-0020", "007F-00A0", "00AD", "034F", "0600-0605",
-              "061C", "06DD", "070F", "08E2", "0CF1-0CF2", "0D4E",
-              "0F0C", "1039", "115F-1160", "17B4-17B5", "17D2",
-              "180B-180E", "1A60", "1BAB", "1CF5-1CF6", "2000-200F",
-              "2011", "2028-202F", "205F-2064", "2066-206F", "2D7F",
-              "2E3A-2E3B", "3000", "303E", "3164", "AAF6",
-              "FE00-FE0F", "FEFF", "FFA0", "FFF9-FFFB", "10A3F",
-              "11003-11004", "1107F", "110BD", "110CD", "111C2-111C3",
-              "11A3A", "11A47", "11A84-11A89", "11A99", "11D45-11D46",
-              "11D97", "13430-13438", "16F8F-16F92", "1BC9D",
-              "1BCA0-1BCA3", "1D159", "1D173-1D17A", "1DA9B-1DA9F",
-              "1DAA1-1DAAF", "1F1E6-1F1FF", "E0001", "E0020-E007F",
-              "E0100-E01EF"):
-
 
         try:
             (start, end) = y.split('-')
@@ -788,6 +816,11 @@ def should_box(x):
 
         if x>=int(start, 16) and x<=int(end, 16): return True
 
+    """
+
+    # Box up control codes, formatting codes, and non-zero width space.
+    if category == 'Cc' or category == 'Cf' or category.startswith('Z'):
+        return True
 
     return False
 
@@ -859,9 +892,13 @@ def show_fonts(x, category=None):
             # 3. Render a sixel image of the glyph in the font
 
             esc=chr(0x1b)
-            previous_line = esc + '[A' 	# XXX ought to use terminfo CUU
+            if curses:
+                previous_line=curses.cuu(1)
+            else:
+                previous_line = esc + '[A' 	# Just presume VT100
 
             # Escape sequence to print double size text (DECDHL)
+            # (Previous line is so we'll be positioned for sixels)
             if double_text:
                 famstr = esc + '#3' + famstr + '\n' \
                     + esc + '#4' + famstr + previous_line
@@ -1053,17 +1090,6 @@ def get_term_colors():
                 get_term_colors.cached=(fg, bg) # Normal (dark) background
 
     return get_term_colors.cached
-
-def print_double_text(famstr):
-    esc=chr(0x1b)
-    (rows, cols) = get_rows_cols()
-    if len(famstr.expandtabs()) > int(cols/2):
-        famstr = famstr.expandtabs()[:int(cols/2)]
-    print(esc + '#3' + famstr)         # Top half double-height & width
-    print(esc + '#4' + famstr, end='') # Bottom half
-    print('\r' + esc + '[A', end='');  # Up 1 line for drawing sixels
-
-    # Note: Should use terminfo for this since VT100 and VT340 differ.
 
 def isdifferent(a, b):
     """Given two strings A & B, determine if B is different enough from A

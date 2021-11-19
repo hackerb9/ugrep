@@ -678,7 +678,9 @@ def printmatches(s):
             c=chr(int(g["hex"], 16))
             if not isprint(category): c="\ufffd" # "Replacement Character"
             if iscombining(category): print('\u25cc', end='') # "Dotted circle"
-            print(c, end='\t')
+            print(c, end='')
+            if should_box(int(g["hex"], 16)): print('\u20DE', end='') # "Enclosing box"
+            print(end='\t')
             print ("U+" + g["hex"], end='\t')
             print(g["name"], end='')
             if (len(g["alias"]) and isdifferent(g["name"], g["alias"])):
@@ -690,21 +692,128 @@ def printmatches(s):
     # Return True if a match was found
     return foundone
 
+def should_box(x):
+    """The "Dashed Box Convention, explained at https://www.unicode.org/
+    versions/Unicode12.0.0/ch24.pdf#G8175. 
+
+    as described in Wikipedia.
+    It was added to match Unicode's charts. Depending on the font,
+    without the dashed box U+0602 is easily confusable with U+060E,
+    U+1F1E6 looks the same as capital A, etc. 
+
+    Which glyphs get the dashed box treatment seems somewhat
+    arbitrary. 
+
+    Certain character categories always do: Cc, Cf, Zs, Zl, Zp.
+    But other categories only sometimes do: Mn, Lo, Po, Pd.
+
+ "11A47", Mn doesn't work, but JOINER does
+ "034F", # 034F;COMBINING GRAPHEME JOINER;Mn;0;NSM;;;;;N;;;;;
+ "2D7F", Mn doesn't work, but " JOINER$" seems to work
+ "1107F", JOINER works
+1107F;BRAHMI NUMBER JOINER;Mn;9;NSM;;;;;N;;;;;
+
+ "0CF1-0CF2",
+ "0D4E", Lo does not work.
+ "0F0C", # Po does not work, noBreak does
+ "1039", Mn does not work
+ "115F-1160", Lo does not work
+ "17B4-17B5", Mn does not work
+ "17D2", Mn does not work
+ "180B-180E", Variation selector works
+ "1A60",
+ "1BAB",
+ "1CF5-1CF6",
+ "2011", Pd does not work, <noBreak> works
+ "2E3A-2E3B",Pd does not work.
+ "303E", So does not work
+ "3164", Lo does not work
+ "AAF6", Mn does not work
+ "FE00-FE0F", Mn does not work
+ "FFA0", Lo does not work
+ "10A3F", Mn does not work, VIRAMA almost does
+ "11003-11004", Lo does not work.
+ "111C2-111C3", Lo does not work
+ "11A3A", Lo does not work
+ "11A84-11A89", Lo does not work
+ "11A99", Mn does not work
+ "11D45-11D46",  Neither Mn nor Lo works
+ "11D97", Mn does not work, searchig Virama too lax.
+ "16F8F-16F92", Mn does not work
+ "1BC9D",  Mn does not work
+ "1D159", So does not work
+ "1DA9B-1DA9F", Mn does not work
+ "1DAA1-1DAAF", Mn does not work
+ "1F1E6-1F1FF", So does not work
+ "E0100-E01EF", Mn doesn't work, but "VARIATION SELECTOR-" does
+
+
+    # As of version 12.1 it's used on 
+    for y in ("0000-0020", "007F-00A0", "00AD", "034F", "0600-0605",
+              "061C", "06DD", "070F", "08E2", "0CF1-0CF2", "0D4E",
+              "0F0C", "1039", "115F-1160", "17B4-17B5", "17D2",
+              "180B-180E", "1A60", "1BAB", "1CF5-1CF6", "2000-200F",
+              "2011", "2028-202F", "205F-2064", "2066-206F", "2D7F",
+              "2E3A-2E3B", "3000", "303E", "3164", "AAF6",
+              "FE00-FE0F", "FEFF", "FFA0", "FFF9-FFFB", "10A3F",
+              "11003-11004", "1107F", "110BD", "110CD", "111C2-111C3",
+              "11A3A", "11A47", "11A84-11A89", "11A99", "11D45-11D46",
+              "11D97", "13430-13438", "16F8F-16F92", "1BC9D",
+              "1BCA0-1BCA3", "1D159", "1D173-1D17A", "1DA9B-1DA9F",
+              "1DAA1-1DAAF", "1F1E6-1F1FF", "E0001", "E0020-E007F",
+              "E0100-E01EF"):
+
+    """
+
+    for y in ("0000-0020", "007F-00A0", "00AD", "034F", "0600-0605",
+              "061C", "06DD", "070F", "08E2", "0CF1-0CF2", "0D4E",
+              "0F0C", "1039", "115F-1160", "17B4-17B5", "17D2",
+              "180B-180E", "1A60", "1BAB", "1CF5-1CF6", "2000-200F",
+              "2011", "2028-202F", "205F-2064", "2066-206F", "2D7F",
+              "2E3A-2E3B", "3000", "303E", "3164", "AAF6",
+              "FE00-FE0F", "FEFF", "FFA0", "FFF9-FFFB", "10A3F",
+              "11003-11004", "1107F", "110BD", "110CD", "111C2-111C3",
+              "11A3A", "11A47", "11A84-11A89", "11A99", "11D45-11D46",
+              "11D97", "13430-13438", "16F8F-16F92", "1BC9D",
+              "1BCA0-1BCA3", "1D159", "1D173-1D17A", "1DA9B-1DA9F",
+              "1DAA1-1DAAF", "1F1E6-1F1FF", "E0001", "E0020-E007F",
+              "E0100-E01EF"):
+
+
+        try:
+            (start, end) = y.split('-')
+        except ValueError:
+            start = y
+            end = start
+
+        if x>=int(start, 16) and x<=int(end, 16): return True
+
+
+    return False
+
 def show_fonts(x, category=None):
+
     """Given a hexadecimal string representing a Unicode code point, 
        list every installed font that defines a glyph at that code point."""
     
-    # Normalize whatever they put in. 'U+1D0DE' to 1D0DE
+    # Normalize whatever they put in. 'U+d0E' to '0D0E'
     x=x.lstrip("Uu+0Xx").upper().zfill(4)
 
-    try: fonts = getoutput("fc-list -f '%{family[0]}\t%{style[0]}\t%{file}\n' :charset=" + x + " | sort -u")
+#    try: fonts = getoutput("fc-list -f '%{family[0]}\t%{style[0]}\t%{file}\n' :charset=" + x + " | sort -u")
+
+    # Find fonts that contain x, remove dupes, and put back in original order.
+    # (Dupes often caused by multiple point sizes of a bitmap font). 
+    fclistcmd="fc-list :charset=" + x
+    fclistcmd+=" -f '%{family[0]}\t%{style[0]}\t%{file}\n'"
+    fclistcmd+=" | cat -n | sort -k2,3 -u | sort -n | cut -f2-"
+
+    try: fonts = getoutput(fclistcmd)
     except FileNotFoundError: print(""); return 	# No FontConfig
     except KeyboardInterrupt: exit(1) 			# Exit on ^C
 
     
     #   debugprint(fonts)		# List of every matching font.
     
-    oldfam=""
     for f in fonts.splitlines():
         try: (family, style, filename) = f.split('\t')
         except: continue
@@ -717,11 +826,7 @@ def show_fonts(x, category=None):
         if not args.list_fonts_long:
             if style != "": continue
 
-        # Don't print same font twice (e.g., if installed in more than one
-        # location or if there are multiple point sizes of a bitmap font).
         famstr="%(family)s %(style)s" % locals()
-        if (famstr == oldfam): continue
-        oldfam=famstr; oldstyle=style
         
         # Text positioning is hairy due to variable text and font size
         if args.fonts_scale <2: 	# The usual case:
@@ -814,14 +919,14 @@ def show_fonts(x, category=None):
 
             if output.returncode != 0:
                 # Oops, font did not render.
-                if double_text: print("")
+                if double_text: print("") 
                 print("", flush=True)
                 continue
 
             # Workaround ImageMagick bug by deleting graphics newline (-) at end
             output.stdout.replace(b'-\x1b\\', b'\x1b\\') 
 
-            print("", flush=True, end='')   # Send any pending output to stdout
+            print(flush=True, end='')   # Send any pending output to stdout
 
             try: write(1, output.stdout) 	# Print raw bytes to stdout
             except KeyboardInterrupt:		# Catch ^C
@@ -1129,6 +1234,7 @@ def makeregexcodepoint(cp):
 
 
 
+# XXXX TODO: This is slow for 0..10FFFF
 def rangeexpansion(oldargv):
     """Look for ranges "a..z" or "a..z..i" in oldargv[] and expand by
     inserting new elements. The new argv is returned to the caller.
@@ -1427,3 +1533,41 @@ debugprint("Normal exit")
 # Note: I do not use Python's `unicodedata` module because it is
 # insufficient. It allows one to search by character name only if the
 # precise name: `unicodedata.lookup("ROTATED HEAVY BLACK HEART BULLET")`.
+
+
+################################################################################
+# General_Category Values from Unicode TR 44, Table 10.                        #
+################################################################################
+# Abbr         Long                             Description                    #
+# Lu   Uppercase_Letter      an uppercase letter                               #
+# Ll   Lowercase_Letter      a lowercase letter                                #
+# Lt   Titlecase_Letter      a digraphic character, with first part uppercase  #
+# Lm   Modifier_Letter       a modifier letter                                 #
+# Lo   Other_Letter          other letters, including syllables and ideographs #
+# Mn   Nonspacing_Mark       a nonspacing combining mark (zero advance width)  #
+# Mc   Spacing_Mark          a spacing combining mark (positive advance width) #
+# Me   Enclosing_Mark        an enclosing combining mark                       #
+# Nd   Decimal_Number        a decimal digit                                   #
+# Nl   Letter_Number         a letterlike numeric character                    #
+# No   Other_Number          a numeric character of other type                 #
+# Pc   Connector_Punctuation a connecting punctuation mark, like a tie         #
+# Pd   Dash_Punctuation      a dash or hyphen punctuation mark                 #
+# Ps   Open_Punctuation      an opening punctuation mark (of a pair)           #
+# Pe   Close_Punctuation     a closing punctuation mark (of a pair)            #
+# Pi   Initial_Punctuation   an initial quotation mark                         #
+# Pf   Final_Punctuation     a final quotation mark                            #
+# Po   Other_Punctuation     a punctuation mark of other type                  #
+# Sm   Math_Symbol           a symbol of primarily mathematical use            #
+# Sc   Currency_Symbol       a currency sign                                   #
+# Sk   Modifier_Symbol       a non-letterlike modifier symbol                  #
+# So   Other_Symbol          a symbol of other type                            #
+# Zs   Space_Separator       a space character (of various non-zero widths)    #
+# Zl   Line_Separator        U+2028 LINE SEPARATOR only                        #
+# Zp   Paragraph_Separator   U+2029 PARAGRAPH SEPARATOR only                   #
+# Cc   Control               a C0 or C1 control code                           #
+# Cf   Format                a format control character                        #
+# Cs   Surrogate             a surrogate code point                            #
+# Co   Private_Use           a private-use character                           #
+# Cn   Unassigned            a reserved unassigned code point or noncharacter  #
+################################################################################
+

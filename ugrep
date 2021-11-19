@@ -685,11 +685,11 @@ def printmatches(s):
             if g["alias"] == None: g["alias"]=g["aliastwo"]
             codepoint=int(g["hex"], 16)
             c=chr(codepoint)
-            maybe_open_box(codepoint, g["name"], g["category"])
+            maybe_open_box(codepoint, g["name"], category)
             if not isprint(category): c="\ufffd" # "Replacement Character"
             if iscombining(category): print('\u25cc', end='') # "Dotted circle"
             print(c, end='')
-            maybe_close_box(codepoint, g["name"], g["category"])
+            maybe_close_box(codepoint, g["name"], category)
             print(end='\t')
             print ("U+" + g["hex"], end='\t')
             print(g["name"], end='')
@@ -718,7 +718,7 @@ def maybe_close_box(*args):
     formatting changes (such as color) set by maybe_open_box."""
 
     if should_box(*args):
-        print('\u20DE', end='') # "Enclosing box"
+#        print('\u20DE', end='') # "Enclosing box"
 #        if curses:
 #            print(curses.normal, end='')
         print(']', end='')
@@ -803,8 +803,9 @@ def should_box(x, name, category):
     """
 
     # Box up control codes, formatting codes, and non-zero width space.
-    if category == 'Cc' or category == 'Cf' or category.startswith('Z'):
-        return True
+    if category:
+        if category == 'Cc' or category == 'Cf' or category.startswith('Z'):
+            return True
 
     return False
 

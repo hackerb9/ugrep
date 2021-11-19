@@ -58,23 +58,7 @@ except ImportError:
 # Allow fancier terminfo formatting, if python3-blessed is installed.
 try:
     import blessed
-    curses = blessed.terminal.Terminal(force_styling=True)
-    s=curses.bold_blink_dim_red_on_green
-    t=curses.bold_blink_white_on_red
-    esc=chr(0x1b)
-    for j in (3, 4):
-        i=0
-
-        print(esc+'#'+str(j),end='')
-        for c in "merry x-mas!":
-            if j==4:
-                print (s(c), end='')
-            else:
-                print (t(c), end='')
-            i=i+1
-        print()
-
-
+    curses = blessed.terminal.Terminal()
 except ImportError:
     pass
 

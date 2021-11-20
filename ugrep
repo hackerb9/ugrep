@@ -899,8 +899,8 @@ def show_fonts(x, category=None):
             except FileNotFoundError: print(""); continue 	# No ImageMagick
             except KeyboardInterrupt: exit(1)                   # Exit on ^C
             except ValueError:                                  # Handle NULL
-                print()
-                if double_text: print() 
+                if double_text: print("") 
+                print("", flush=True)
                 continue
 
             if output.returncode != 0:

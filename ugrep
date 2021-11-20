@@ -690,8 +690,10 @@ def printmatches(s):
             maybe_open_box(codepoint, name, category)
             if not isprint(category): c="\ufffd" # "Replacement Character"
             if iscombining(category): print('\u25cc', end='') # "Dotted circle"
-            if curses and should_box(codepoint, name, category):
-                c=curses.black_on_yellow(c)
+            if should_box(codepoint, name, category):
+                try:
+                    c=curses.black_on_yellow(c)
+                except NameError: pass
             print(c, end='')
             maybe_close_box(codepoint, name, category)
             print(end='\t')
@@ -838,9 +840,9 @@ def show_fonts(x, category=None):
             # 3. Render a sixel image of the glyph in the font
 
             esc=chr(0x1b)
-            if curses:
+            try:
                 previous_line=curses.cuu(1)
-            else:
+            except NameError:
                 previous_line = esc + '[A' 	# Just presume VT100
 
             # Escape sequence to print double size text (DECDHL)

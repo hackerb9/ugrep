@@ -898,7 +898,10 @@ def show_fonts(x, category=None):
             try: output=run(command, capture_output=True)
             except FileNotFoundError: print(""); continue 	# No ImageMagick
             except KeyboardInterrupt: exit(1)                   # Exit on ^C
-            except ValueError: print(""); continue          # Can't handle NULL
+            except ValueError:                                  # Handle NULL
+                print()
+                if double_text: print() 
+                continue
 
             if output.returncode != 0:
                 # Oops, font did not render.
@@ -939,14 +942,22 @@ def is_sixel_capable():
 
 def get_rows_cols():
     # Return number of (rows, columns) in current terminal window
-    # First, try termios. It's simple but doesn't work everywhere.
+    # We use termios ioctl as it is dead simple.
+    #
+    # We cache rows/cols, but perhaps SIGWINCH ought to reset .cached = None.
+    try:
+        if get_rows_cols.cached: return get_rows_cols.cached
+    except AttributeError:
+        get_rows_cols.cached=None
+
     import array, fcntl, termios
-    buf = array.array('H', [0, 0, 0, 0])
+    buf = array.array('H', [0, 0, 0, 0])   	# H == unsigned int
     if isatty(0):
         fcntl.ioctl(0, termios.TIOCGWINSZ, buf)
-    (rows, cols, x, y) = buf;
+    (rows, cols, x, y) = buf
     if rows==0: rows=24
     if cols==0: cols=80
+    get_rows_cols.cached = (rows,cols)
     return (rows,cols)
 
 def get_cell_size():
@@ -954,6 +965,8 @@ def get_cell_size():
     Returns a tuple (width, height) in pixels. 
     """
 
+    # XXX Shoud we bother to catch SIGWINCH when the font changes?
+    #     (Probably not. User can just run ugrep again.)
     try:
         if get_cell_size.cached: return get_cell_size.cached
     except AttributeError:

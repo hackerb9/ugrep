@@ -762,7 +762,7 @@ def should_box(x, name, category):
     """
 
     # Do not box up the replacement character
-    if not isprint(category): return False
+    if category and not isprint(category): return False
 
     # Box up non-zero width space.
     if category and category.startswith('Z'):

@@ -800,7 +800,7 @@ def show_fonts(x, category=None):
         except: continue
 
         # Don't print the style if it is just "Regular"
-        if style == "Regular" or style == "Roman":
+        if style == "Regular" or style == "Roman" or style == "Book":
             style = ""
 
         # If we're not doing a long listing, then skip variant styles

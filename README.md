@@ -44,12 +44,14 @@ and make it executable.
 	is found in other terms, e.g., _thema_ found in _mathematical_, use
 	the **-w** option to limit the search to complete words.
 
-* Search by number: **ugrep** _codepoint_**[..**_codepoint_]
+* Search by number: **ugrep** _codepoint_**[..**_codepoint_**[..**_increment_**]]**
 
 	Look up a character (or a range of them) using Unicode code points in
 	hexadecimal. For example,
 
+	    ugrep 03c0
 	    ugrep 23b0..f
+		ugrep 0..10ffff..1000
 
 * Search by character: **ugrep** [**-c**] _character string_
 
@@ -61,16 +63,18 @@ and make it executable.
 
 * List fonts for a character: **ugrep** [**-l**] _character_
 
-	After showing the character, list installed fonts that contain a
-    glyph:
+	After showing the usual character information, list installed
+    fonts that contain that character and show an example in each:
 
 	    ugrep -l mho
 
-* List fonts, scaled larger: **ugrep** [**-L** _scale_] _character_
+	☝ *When `ssh`ed to another machine, `ugrep` shows the fonts
+    installed on the remote machine.*
 
-	After showing the character, list installed fonts that have that
-    glyph and scale up the example glyphs in each font to be easier to
-    read:
+* List fonts, scaled larger: **ugrep** [**-L** _scale_] _character_
+  
+	Same as `-l`, but scale up the example rendering in each font to
+    be easier to read:
 
 	    ugrep -L2 -w om
 
@@ -267,6 +271,8 @@ how many heart emojis Unicode has. 😜)
 		$ ugrep 0..10FFFF | less
 	    ⋮	[ ... over a million lines elided for brevity ... ]
 
+  ☝ This is currently very slow due to a bug in how `ugrep` is
+  implemented. 
 
 ### Fun things to try:
 
@@ -320,6 +326,41 @@ specifying it fully and exactly: `unicodedata.lookup("ROTATED HEAVY
 BLACK HEART BULLET")`.
 
 ## Future Work
+
+### Maybe use Unihan_Readings.txt
+
+Currently anything in the Unihan region just says "Block CJK", which
+is not very informative. But, if the user has `Unihan_Readings.txt`
+installed — which is the default if the user has done `apt install
+unicode-data) — it could actually be much more informative:
+
+Example data from Unihan_Readings for U+9B44 (魄): 
+
+	U+9B44	kCantonese	bok3 paak3 tok3
+	U+9B44	kDefinition	vigor; body; dark part of moon
+	U+9B44	kHangul	백:0N
+	U+9B44	kHanyuPinlu	pò(11)
+	U+9B44	kHanyuPinyin	74431.090:pò,bó,tuò
+	U+9B44	kJapaneseKun	TAMASHII
+	U+9B44	kJapaneseOn	HAKU BAKU
+	U+9B44	kKorean	PAYK
+	U+9B44	kMandarin	pò
+	U+9B44	kTGHZ2013	287.140:pò
+	U+9B44	kTang	*pæk
+	U+9B44	kVietnamese	phách
+	U+9B44	kXHC1983	0084.110:bó 0887.020:pò 1175.020:tuò
+
+See [UAX #38: Unicode Han Database](https://www.unicode.org/reports/tr38/tr38-31.html).
+
+Two levels of support:
+1. Show kDefinition if block name is *CJK*
+2. Search Unihan_Readings when searching for a word. Possible example:
+       $ ugrep mononoke
+	   魅	U+9B45	MONONOKE BAKEMONO SUDAMA (kind of forest demon, elf)
+
+Number 1 is not too hard, but number 2 may require a command line
+switch or something as searching through the Readings file may be
+slow. 
 
 ### Maybe use NamesList.txt
 

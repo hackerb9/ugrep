@@ -372,20 +372,6 @@ that data.
 * The usage message is getting long. 
   We've already split the examples section into its own page with `-x`, but it now needs to split again.
 
-* The -l option for rendering a character in all possible fonts does
-  not probe the terminal for foreground and background color. 
-  
-  It also does not accurately calculate the character cell size as it
-  is currently using the pixel size from termios TIOCGWINSZ (get
-  window size ioctl). Some terminals include the window manager
-  frippery (title bar, scrollbar, resize widget) in their window size,
-  so calculating the character cell size by dividing by rows or
-  columns, will be inaccurate causing double-spacing between lines.
-
-  The solution is to use XTerm escape sequences, same as in
-  [lsix](https://github.com/hackerb9/lsix). 
-
-
 * Brace expansion is confusing because of needing to be quoted from
   the shell. It is supported for ranges (not sequences), but is not
   currently documented because usage is tricky and the functionality

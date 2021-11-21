@@ -219,6 +219,10 @@ def main():
     if args.word_regexp:
         args.characters = [ "\\b"+s+"\\b" for s in args.characters ]
 
+    # Is it a single character? (ugrep 'A') Then only show that one character.
+    if  len(args.characters)==1 and len(args.characters[0])==1:
+        args.char_by_char = True 	# Pretend -c flag was given.
+
     # Is it -c followed by a string of characters?
     if args.char_by_char:
         # For each string s, look up each character in the string.
@@ -230,11 +234,6 @@ def main():
                 print("")       # Space between words, if multiple args 
         exit(0)
 
-    # Is it a single character? Then only show that one character.
-    if  len(args.characters)==1 and len(args.characters[0])==1:
-        showonecharacter( hex(ord(args.characters[0][0])) )
-        exit(0)
-
     # Do range expansion on argv. (e.g., 2301..f)
     args.characters = rangeexpansion(args.characters)
 
@@ -244,7 +243,7 @@ def main():
         # Loop to allow people to do things like "ugrep 23b0..9"
         for arg in args.characters:
             if match(r"(?i)^(U\+?|0x)?[0-9A-F]+$", arg):
-                # Show matches for in Unicode.txt for each hex codepoint  
+                # Show matches in Unicode.txt for each hex codepoint  
                 if not showonecharacter(arg):
                     # Hmm... it looked like hex, but it wasn't found.
                     # Print the character anyway and its CJK region

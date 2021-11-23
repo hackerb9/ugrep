@@ -1212,7 +1212,7 @@ def makeregexcharname(words):
 def makeregexcodepoint(cp):
     "Make a regular expression to search for a hexadecimal codepoint"
 
-    # User specified a codepoint, e.g., "U+23fb" 
+    # User specified a codepoint, e.g., "U+23fb", "0x23FB", "[0-9A-F]{2}"
     # Normalize whatever they put in into "23FB"
     debugprint("given codepoint was", cp)
     cp=cp.upper()

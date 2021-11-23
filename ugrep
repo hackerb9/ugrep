@@ -237,29 +237,25 @@ def main():
     # Do range expansion on argv. (e.g., 2301..f)
     args.characters = rangeexpansion(args.characters)
 
-    # Is first arg a hexadecimal number? E.g., 26A0, 0xdeadbeef, U+FACE
-    # Then *also* look up that code point.
-    if args.characters and match(r"(?i)^(U\+?|0x)?[0-9A-F]+$", args.characters[0]):
+    # First, try looking up each arg individually.
+    if args.characters:
         # Loop to allow people to do things like "ugrep 23b0..9"
         for arg in args.characters:
-            if match(r"(?i)^(U\+?|0x)?[0-9A-F]+$", arg):
-                # Show matches in Unicode.txt for each hex codepoint  
-                if not showonecharacter(arg):
-                    # Hmm... it looked like hex, but it wasn't found.
-                    # Print the character anyway and its CJK region
-                    showcharacterblock(arg)
-                    # If -l, show installed fonts which contain the glyph.
-                    if args.list_fonts: show_fonts(arg)
-            else:
-                break
-
+            # Show matches in Unicode.txt for each hex codepoint  
+            if not showonecharacter(arg):
+                # Hmm... it looked like hex, but it wasn't found.
+                # Print the character anyway and its CJK region
+                showcharacterblock(arg)
+                # If -l, show installed fonts which contain the glyph.
+                if args.list_fonts: show_fonts(arg)
     # Now, look up the entire argv[] as a character name or alias. 
-    s=makeregexcharname(args.characters)
-    printmatches(s)
+    if len(args.characters) > 1:
+        s=makeregexcharname(args.characters)
+        printmatches(s)
 
 
 def showonecharacter(c):
-    s=makeregexcodepoint(c)
+    s=makeregexeither(c)
     compileit(s)
     return printmatches(s)
               
@@ -267,7 +263,10 @@ def showcharacterblock(codepoint):
     """Prints a line showing which character block a hex number belongs in.
     If showonecharacter() fails, this can be used to at least print something,
     """
-    x=cp2int(codepoint)         # Remove U+ or 0x prefix and return integer
+    try:
+        x=cp2int(codepoint)         # Remove U+ or 0x prefix and return integer
+    except ValueError:
+        return
 
     block=getblock(x)
     if block:
@@ -282,6 +281,7 @@ def showcharacterblock(codepoint):
 def cp2int(cp):
     """Given a Unicode codepoint as a string (e.g., U+1D0DE)
     convert the hexadecimal number to an integer and return it.
+    Throws ValueError if cp is not convertible to an integer.
     """
     return( int(cp.lstrip("Uu+0Xx"), 16) )
 
@@ -679,10 +679,15 @@ def printmatches(s):
             g=m.groupdict()
             debugprint(g)
             if g["hex"] == None: g["hex"]=g["hextwo"]
+            if g["hex"] == None: g["hex"]=g["hexthree"]
             if g["name"] == None: g["name"]=g["desctwo"]
+            if g["name"] == None: g["name"]=g["namethree"]
             name=g["name"]
-            category = g["category"] if g["category"] else g["categorytwo"]
+            if g["category"] == None: g["category"] = g["categorytwo"]
+            if g["category"] == None: g["category"] = g["categorythree"]
+            category = g["category"]
             if g["alias"] == None: g["alias"]=g["aliastwo"]
+            if g["alias"] == None: g["alias"]=g["aliasthree"]
             alias=g["alias"]
             codepoint=int(g["hex"], 16)
             c=chr(codepoint)
@@ -1167,8 +1172,14 @@ def makeregexcharname(words):
     # combine and quote the command line arguments so we can use them in
     # verbose regex. Also, allow the user to use ^ and $, just like in awk
     # to refer to the beginning and end of the field instead of line.
-    words=["("+x+")" for x in words]       # wrap in parens to fix alternation
-    arghs=".*".join(words)                 # search terms can have junk between
+
+    if words is list:
+        words=["("+x+")" for x in words] # wrap in parens to fix alternation
+        arghs=".*".join(words)           # search terms can have junk between
+    else:
+        arghs="".join(words)
+    debugprint("arghs is", arghs)
+
     arghs=sub(r"(\s)", r"\\\1", arghs)     # quote whitespace for verbose regex
     arghs=sub(r"^\(\^", r"(?<=;)(", arghs) # ^ matches semicolon before field 
     arghs=sub(r"\$\)$", r"(?=;))", arghs)  # $ matches semicolon after field 
@@ -1196,8 +1207,6 @@ def makeregexcharname(words):
     s=s+"|"+r                   # Search for either name or alias
     s="(?mix)"+s                # multiline, case insensitive, verbose
 
-    debugprint("Complete search regex is " + s)
-
     return s
 
 def makeregexcodepoint(cp):
@@ -1205,18 +1214,39 @@ def makeregexcodepoint(cp):
 
     # User specified a codepoint, e.g., "U+23fb" 
     # Normalize whatever they put in into "23FB"
-    cp=cp.lstrip("Uu+0Xx").upper().zfill(4)
+    debugprint("given codepoint was", cp)
+    cp=cp.upper()
+    if cp.find('0X') == 0:  cp=cp.replace('0X', '')
+    cp='0*' + cp.lstrip("U+").zfill(4)
+    debugprint("codepoint we'll search for is", cp)
 
     # s is a search regex for field 1 (hexadecimal)
     s=r"""^
-        (?P<hex>"""+cp+""");		#first field is hex codepoint
-        (?P<name>[^;]*);		# second field is charactername
-        (?P<category>[^;]*);		# third field is category
-        ([^;]*;){7}			# skip next 7 fields
-        (?P<alias>[^;]*)            	# field 11 is comment/alias
+        (?P<hexthree>"""+cp+""");		#first field is hex codepoint
+        (?P<namethree>[^;]*);			# second field is charactername
+        (?P<categorythree>[^;]*);		# third field is category
+        ([^;]*;){7}				# skip next 7 fields
+        (?P<aliasthree>[^;]*)            	# field 11 is comment/alias # 
     """
     s="(?mix)"+s                     # multiline, case insensitive, verbose
     return(s)
+
+
+def makeregexeither(wordsorcp):
+    """Make a regular expression to search for a hexadecimal codepoint 
+     or for a character name / alias."""
+
+    s=makeregexcodepoint(wordsorcp)
+
+    if wordsorcp.upper().startswith('U+'):
+        # Do not return "EGYPTIAN HIEROGLYPH U006A" for U+00[0-9A-F]{,2} 
+        return s.replace('three>', '>')
+
+    r=makeregexcharname(wordsorcp).lstrip('(?mix)')
+
+    debugprint("Complete search regex is " + s + "|" + r)
+
+    return(s + "|" + r)
 
 
 

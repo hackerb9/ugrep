@@ -239,11 +239,11 @@ def main():
 
     # First, try looking up each arg individually.
     if args.characters:
-        # Loop to allow people to do things like "ugrep 23b0..9"
+        # Loop to allow input like "ugrep 23b{0..9}" (NB: slower than 23b[0-9])
         for arg in args.characters:
-            # Show matches in Unicode.txt for each hex codepoint  
+            # Show matches in Unicode.txt for each hex or name or alias  
             if not showonecharacter(arg):
-                # Hmm... it looked like hex, but it wasn't found.
+                # Hmm... it wasn't hex or name or alias.
                 # Print the character anyway and its CJK region
                 showcharacterblock(arg)
                 # If -l, show installed fonts which contain the glyph.

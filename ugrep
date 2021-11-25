@@ -1264,6 +1264,8 @@ def rangeexpansion(oldargv):
     Optional U+ or 0x is allowed: U+0230..0xF.
     Increment i defaults to +1 or -1 as appropriate.
     Range is inclusive of both ends.
+    Output prepends 0x at beginning to force hexadecimal lookup.
+	    (fdb..ff should not match OGHAM FEATHER MARK)
 
     Design notes on curly brace expansion:
 
@@ -1339,7 +1341,7 @@ def rangeexpansion(oldargv):
                                    (start, end, increment))
 
                 for i in range(start, end, increment):
-                    hexits=preamble + hex(i)[2:].zfill(z) + postscript
+                    hexits='0x' + preamble + hex(i)[2:].zfill(z) + postscript
                     newargv.append( hexits )
                     debugprint("   added: " + hexits)
             except ValueError:

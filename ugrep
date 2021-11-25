@@ -1194,7 +1194,7 @@ def makeregexcharname(words):
         words=["("+x+")" for x in words] # wrap in parens to fix alternation
         arghs=".*".join(words)           # search terms can have junk between
     else:
-        arghs="".join(words)
+        arghs="".join( "(" + words + ")" )
     debugprint("arghs is", arghs)
 
     arghs=sub(r"(\s)", r"\\\1", arghs)     # quote whitespace for verbose regex

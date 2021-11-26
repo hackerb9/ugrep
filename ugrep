@@ -248,8 +248,10 @@ def main():
                 for j in range(0,len(s[i])):
                     arg = hex(ord(s[i][j]))
                     if not showonecharacter( arg ):
-                        # Not Unicode, but could be CJK or other block
-                        showcharacterblock( arg )
+                        # Not Unicode, but could be CJK
+                        if not showcjk( arg ):
+                            # Not CJK, so print block name
+                            showcharacterblock( arg )
 
             if s is not args.characters[-1]:
                 print("")       # Space between words, if multiple args 
@@ -280,7 +282,43 @@ def showonecharacter(c):
     compileit(s)
     return printmatches(s)
               
+def showcjk(c):
+    """Prints a line for a codepoint c using the data from
+    Unihan_Readings.txt. If that file is not available or if the
+    codepoint is not in a CJK region, then return False."""
+
+    if c is str:
+        c = int(c, 16)
+
+    if not isunihan(c):
+        return False
+
+    if readings == None:
+        loadreadings()
+
+    
+
+    return False
+
+def isunihan(c):
+    """Given an integer codepoint c, return True if the c is within a CJK
+    Unified Ideographs block of Unicode that is defined by Unihan.
+
+    """
+    try:
+        x=cp2int(c)         # Remove U+ or 0x prefix and return integer
+    except ValueError:
+        return False
+
+    if getblock(x).find('Ideographs') != -1:
+        return True
+    else:
+        return False
+    
+    
+
 def showcharacterblock(codepoint):
+
     """Prints a line showing which character block a hex number belongs in.
     If showonecharacter() fails, this can be used to at least print something,
     """
@@ -1170,6 +1208,74 @@ def loaducd():
         debugprint("Number of Unicode chars: %d" % len(ucd.splitlines()))
 
     return ucd
+
+
+readings = None
+def loadreadings():
+    """Find the Unihan_Readings.txt file and load it up into the
+    'readings' global variable. Note that the file may be compressed
+    with gzip or bzip2. 
+
+    Unicode distributes it within a .zip file, but we do not yet
+    handle extracting it from a zip file.
+
+    """
+
+    global readings
+    compression=( "", ".bz2", ".gz" )
+
+    ucdplaces=( "~/.local/share/unicode/",
+                "/usr/local/share/unicode/",
+                "/usr/share/unicode/",
+                "" )
+    for f in ucdplaces:
+        if readings: break
+        f=f+"Unihan_Readings.txt"   	# Plain text file, not compressed.
+        f=expanduser(expandvars(f)) 	# Python's open() is silly
+        try:
+            readings=open(f).read()
+            debugprint("Found data file at " + f)
+        except FileNotFoundError:
+            debugprint("File not found at " + f)
+            continue
+
+    if readings == None:
+        try:
+            import bz2
+            for f in ucdplaces:
+                if readings: break
+                f=f+"Unihan_Readings.txt.bz2"	# bz2 compressed
+                f=expanduser(expandvars(f)) 	# Python's open() is silly
+                try:
+                    readings=bz2.open(f).read()
+                    debugprint("Found data file at " + f)
+                except FileNotFoundError:
+                    debugprint("File not found at " + f)
+                    continue
+        except ImportError:
+            debugprint("No python3 bzip2 library support.")
+            pass
+
+    # Sanity check: did we find the Unihan_Readings.txt file?
+    if readings == None:
+        eprint("""\
+    Could not find Unihan_Readings.txt in:
+
+%s
+    On most GNU/Linux systems your package manager can install it easily.
+    For example:  apt install unicode-data.
+
+    Alternately, you can grab it via wget like so:
+
+        mkdir -p ~/.local/share/unicode
+	cd ~/.local/share/unicode
+        wget ftp://ftp.unicode.org/Public/UNIDATA/Unihan.zip
+        unzip Unihan.zip
+""" %
+               ("".join(["    " + s + "Unihan_Readings.txt" + "\n" for s in ucdplaces])))
+        exit(2)
+
+    return readings
 
 
 def makeregexcharname(words):

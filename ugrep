@@ -342,6 +342,7 @@ def lookup_readings(cp):
     # Example entry from Unihan_Readings.txt:
     # U+2BAC3 kCantonese      e1
     # U+2BAC3 kDefinition     (Cant.) sarcastic interrogative
+
     r=r"\nU\+" + cp + "\t+" + "(?P<key>[^\t]+)" + "\t+" + "(?P<value>[^\t\n]+)"
     print(r)
     s=compile(bytes(r, 'utf-8'))

@@ -17,6 +17,9 @@
 # * If you have ImageMagick installed and your terminal can display
 #   sixels, then -l will also show a rendering of the character in
 #   each font.
+#
+# * If you have Unihan_Readings.txt then CJK ideographs will show definitions.
+#
 
 
 # Fun things to try:
@@ -249,7 +252,7 @@ def main():
                     arg = hex(ord(s[i][j]))
                     if not showonecharacter( arg ):
                         # Not Unicode, but could be CJK
-                        if not showcjk( arg ):
+                        if not showcjk( arg[2:] ):
                             # Not CJK, so print block name
                             showcharacterblock( arg )
 
@@ -282,40 +285,74 @@ def showonecharacter(c):
     compileit(s)
     return printmatches(s)
               
-def showcjk(c):
-    """Prints a line for a codepoint c using the data from
-    Unihan_Readings.txt. If that file is not available or if the
-    codepoint is not in a CJK region, then return False."""
+def showcjk(x):
+    """Prints a line for a codepoint x (hexadecimal string) using the data
+    from Unihan_Readings.txt. If that file is not available or if the
+    codepoint is not in a CJK region, then return False.
 
-    if c is str:
-        c = int(c, 16)
+    """
 
-    if not isunihan(c):
+    x=x.upper()             # "face" -> "FACE"
+    codepoint=cp2int(x)
+    c=chr(codepoint)
+    if not isunihan(codepoint):
         return False
 
     if readings == None:
         loadreadings()
 
-    
+    (definition, transliteration) = lookup_readings(x)
+
+    print("   ", end='') 	# Indent for MacOS
+    print(c, end='\t')
+    print ("U+" + x, end='\t')
+    print(definition, end='')
+    if transliteration:
+        print(" (", transliteration, ")", end='')
+    print("", flush=True) 
+
+# XXX
+
 
     return False
 
-def isunihan(c):
-    """Given an integer codepoint c, return True if the c is within a CJK
-    Unified Ideographs block of Unicode that is defined by Unihan.
+def isunihan(x):
+    """Given a codepoint x, e.g. "U+8000", return True if the x is within
+    a CJK Unified Ideographs block. Such characters are not defined in
+    UnicodeData.txt but can be looked up in Unihan_Readings.txt.
 
     """
     try:
-        x=cp2int(c)         # Remove U+ or 0x prefix and return integer
+        codepoint=cp2int(x)     		# Convert hex str x to integer
     except ValueError:
-        return False
+        return False            		# Could not convert
 
-    if getblock(x).find('Ideographs') != -1:
+    if getblock(codepoint).find('Ideographs') != -1:
         return True
     else:
         return False
     
     
+def lookup_readings(cp):
+    """Given a hexadecimal string cp ("2BAC3"), return a pair of strings,
+    first is the definition ("(CANT.) SARCASTIC INTERROGATIVE"),
+    second is transliteration in Mandarin or Cantonese ("e1").
+    """
+    # XXXX
+    # Example entry from Unihan_Readings.txt:
+    # U+2BAC3 kCantonese      e1
+    # U+2BAC3 kDefinition     (Cant.) sarcastic interrogative
+    r=r"\nU\+" + cp + "\t+" + "(?P<key>[^\t]+)" + "\t+" + "(?P<value>[^\t\n]+)"
+    print(r)
+    s=compile(bytes(r, 'utf-8'))
+    m=search(s, readings)
+    if m:
+        g=m.groupdict()
+        debugprint(g)
+        return (g["key"], g["value"])
+    else:
+        print("XXX not found")
+#XXX
 
 def showcharacterblock(codepoint):
 
@@ -342,6 +379,7 @@ def cp2int(cp):
     convert the hexadecimal number to an integer and return it.
     Throws ValueError if cp is not convertible to an integer.
     """
+    if type(cp) is int: return cp
     return( int(cp.lstrip("Uu+0Xx"), 16) )
 
 def int2cp(x):
@@ -754,8 +792,7 @@ def printmatches(s):
             if not isprint(category): c="\ufffd" # "Replacement Character"
             if iscombining(category): print('\u25cc', end='') # "Dotted circle"
             if should_box(codepoint, name, category):
-                try:
-                    c=curses.black_on_yellow(c)
+                try: c=curses.black_on_yellow(c)
                 except NameError: pass
             print(c, end='')
             maybe_close_box(codepoint, name, category)
@@ -1214,16 +1251,14 @@ readings = None
 def loadreadings():
     """Find the Unihan_Readings.txt file and load it up into the
     'readings' global variable. Note that the file may be compressed
-    with gzip or bzip2. 
+    with bzip2. 
 
     Unicode distributes it within a .zip file, but we do not yet
-    handle extracting it from a zip file.
+    handle reading it directly from that file.
 
     """
 
     global readings
-    compression=( "", ".bz2", ".gz" )
-
     ucdplaces=( "~/.local/share/unicode/",
                 "/usr/local/share/unicode/",
                 "/usr/share/unicode/",
@@ -1240,6 +1275,7 @@ def loadreadings():
             continue
 
     if readings == None:
+        # Plain text not found. Maybe it is compressed?
         try:
             import bz2
             for f in ucdplaces:
@@ -1253,7 +1289,7 @@ def loadreadings():
                     debugprint("File not found at " + f)
                     continue
         except ImportError:
-            debugprint("No python3 bzip2 library support.")
+            debugprint("Could not import bz2. Skipped looking for Unihan_Readings.txt.bz2.")
             pass
 
     # Sanity check: did we find the Unihan_Readings.txt file?

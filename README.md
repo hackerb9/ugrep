@@ -376,8 +376,8 @@ $ ugrep -c 蜂鳥
 
 ### Note 2: Not all characters have readings
 
-Unihan refers to this supplemental information, both the English gloss
-and the romanizations, as "readings". Readings are meant to be
+Unihan refers to this supplemental information — both the English
+gloss and the romanizations — as "readings". Readings are meant to be
 helpful, but are not normative and are only available for some
 characters.
 

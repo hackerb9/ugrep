@@ -365,7 +365,7 @@ $ ugrep -c 「⿺辶⿳穴⿰月⿰⿲⿱幺長⿱言馬⿱幺長刂心」
 Unihan calls the English gloss the character's "definition", but that
 is meant in a very loose sense. CJK characters change meaning based
 upon the context they are used in. For example, most Chinese words are
-made of two characters, such as "蜂鸟", which means "hummingbird", but
+made of two characters, such as "蜂鳥", which means "hummingbird", but
 ugrep would shows it as:
 
 ```
@@ -530,8 +530,10 @@ that data.
 
 ## Bugs, Misfeatures, and Workarounds
 
-* The usage message is getting long. 
-  We've already split the examples section into its own page with `-x`, but it now needs to split again.
+* ugrep 3400 shows the text defined in UnicodeData.txt, which states
+  that it is "<CJK Ideograph Extension A, First>". Now that ugrep can
+  show ideograph definitions using Unihan_Readings.txt, we should
+  replace any string in angle brackets with more useful info.
 
 * Brace expansion is confusing because of needing to be quoted from
   the shell. It is supported for ranges (not sequences), but is not

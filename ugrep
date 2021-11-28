@@ -251,7 +251,7 @@ def main():
                 for j in range(0,len(s[i])):
                     arg = hex(ord(s[i][j]))
                     if not showonecharacter( arg ):
-                        # Not Unicode, but could be CJK
+                        # Not Unicode, but could be Chinese, Japanese, Korean
                         if not showcjk( arg[2:] ):
                             # Not CJK, so print block name
                             showcharacterblock( arg )
@@ -269,9 +269,10 @@ def main():
         for arg in args.characters:
             # Show matches in Unicode.txt for each hex or name or alias  
             if not showonecharacter(arg):
-                # Hmm... it wasn't hex or name or alias.
-                # Print the character anyway and its CJK region
-                showcharacterblock(arg)
+                # Hmm... it wasn't hex or name or alias. Maybe CJK?
+                if not showcjk( arg ):
+                    # Nope, print the character anyway and its Unicode block.
+                    showcharacterblock(arg)
                 # If -l, show installed fonts which contain the glyph.
                 if args.list_fonts: show_fonts(arg)
     # Now, look up the entire argv[] as a character name or alias. 
@@ -292,8 +293,12 @@ def showcjk(x):
 
     """
 
-    x=x.upper()             # "face" -> "FACE"
-    codepoint=cp2int(x)
+    x=x.upper().lstrip("Uu+0Xx")             # "u+face" -> "FACE"
+    try:
+        codepoint=cp2int(x)
+    except ValueError:
+        return False
+    
     c=chr(codepoint)
     if not isunihan(codepoint):
         return False
@@ -301,20 +306,40 @@ def showcjk(x):
     if readings == None:
         loadreadings()
 
-    (definition, transliteration) = lookup_readings(x)
+    r = lookup_readings(x)
+    try:
+        definition = r["kDefinition"]
+    except TypeError:
+        return False
+    except KeyError:
+        definition = '[' + getblock(cp2int(x)) + ']'
+
+    transliteration=[]
+    shortlang = {
+        "kMandarin": "M",
+        "kCantonese": "C",
+        "kJapaneseKun": "J", 
+        "kKorean": "K", 
+        "kVietnamese": "V" 
+    }
+    for lang in (shortlang.keys()):
+        try:
+            transliteration.append(shortlang[lang] + ": " + r[lang] + ",")
+        except KeyError:
+            pass
+
+    if transliteration:
+        transliteration[-1] = transliteration[-1].rstrip(",")
 
     print("   ", end='') 	# Indent for MacOS
     print(c, end='\t')
     print ("U+" + x, end='\t')
     print(definition, end='')
     if transliteration:
-        print(" (", transliteration, ")", end='')
+        print(" (", *transliteration, ")", end='')
     print("", flush=True) 
 
-# XXX
-
-
-    return False
+    return True
 
 def isunihan(x):
     """Given a codepoint x, e.g. "U+8000", return True if the x is within
@@ -334,26 +359,65 @@ def isunihan(x):
     
     
 def lookup_readings(cp):
-    """Given a hexadecimal string cp ("2BAC3"), return a pair of strings,
-    first is the definition ("(CANT.) SARCASTIC INTERROGATIVE"),
-    second is transliteration in Mandarin or Cantonese ("e1").
+    """Given a hexadecimal string, cp ("2BAC3"), return a dictionary with
+    an entry for each line in Unihan_Readings.txt. Example:
+    
+    For input "2BAC3", the result is:
+    {'kDefinition':  '(CANT.) SARCASTIC INTERROGATIVE',
+     'kCantonese':   'e1' }
+
+    For input "9EBB", note that some of the results include embedded UTF-8:
+    { 'kCantonese': 'maa4', 
+      'kDefinition': 'hemp, jute, flax; sesame', 
+      'kHangul': '\xeb\xa7\x88:0E', 
+      'kHanyuPinlu': 'm\xc3\xa1(159) ma(11)', 
+      'kHanyuPinyin': '74723.010:m\xc3\xa1,m\xc4\x81', 
+      'kJapaneseKun': 'ASA', 
+      'kJapaneseOn': 'MA BA', 
+      'kKorean': 'MA', 
+      'kMandarin': 'm\xc3\xa1', 
+      'kTGHZ2013': '240.080:m\xc3\xa1', 
+      'kTang': '*ma', 
+      'kVietnamese': 'ma', 
+      'kXHC1983': '0753.040:m\xc4\x81 0753.110:m\xc3\xa1'
+    }
     """
-    # XXXX
+    # As of 2021 Unihan includes these keys, sorted by frequency:
+    # cat Unihan_Readings.txt | cut -f2 | sort | uniq -c | sort -n
+    ############################################################
+    #   3800  kHanyuPinlu   Mandarin Pinyin from XDHYPLCD      #
+    #   3812  kTang         Tang dynasty pronunciation         #
+    #   8106  kTGHZ2013     Mandarin Pinyin from TGHZ          #
+    #   8301  kVietnamese   Vietnamese transliteration         #
+    #   8414  kHangul       Korean pronunciation in Hangul     #
+    #   9051  kKorean       Korean in Yale romanization        #
+    # 11,018  kXHC1983      Mandarin Pinyin from XHC           #
+    # 11,293  kJapaneseKun  Japanese Hepburn romanization      #
+    # 13,176  kJapaneseOn   Sino-Japanese pronunciation        #
+    # 21,076  kDefinition   A short gloss in English           #
+    # 23,112  kCantonese    Cantonese Jyutping transliteration #
+    # 34,131  kHanyuPinyin  Mandarin Pinyin from HDZ           #
+    # 41,378  kMandarin     Mandarin Pinyin (most customary)   #
+    ############################################################
+    # For more details, see Unicode Standard Annex #38 
+    # https://www.unicode.org/reports/tr38/tr38-31.html
+
+    cp = cp.lstrip("Uu+0Xx")
+    results={}
     # Example entry from Unihan_Readings.txt:
     # U+2BAC3 kCantonese      e1
     # U+2BAC3 kDefinition     (Cant.) sarcastic interrogative
-
+    # Regex to match a line in Unihan_Readings.txt
     r=r"\nU\+" + cp + "\t+" + "(?P<key>[^\t]+)" + "\t+" + "(?P<value>[^\t\n]+)"
-    print(r)
     s=compile(bytes(r, 'utf-8'))
-    m=search(s, readings)
-    if m:
-        g=m.groupdict()
-        debugprint(g)
-        return (g["key"], g["value"])
-    else:
-        print("XXX not found")
-#XXX
+    matches=findall(s, readings)
+    if matches == None: 
+        debugprint("lookup_readings did not find", r)
+        return None
+    debugprint("lookup_readings found ", matches)
+    for m in matches:
+        results[str(m[0], 'UTF-8')] = str(m[1], 'UTF-8')
+    return results
 
 def showcharacterblock(codepoint):
 
@@ -996,7 +1060,8 @@ def show_fonts(x, category=None):
                       "+dither",  
                       "-colors", "4", 	# Faster sixels by reducing colors
                       "sixel:-" ]
-            debugprint(command)
+            if debug:
+                debugprint(*["'" + c + "'" for c in command], flush=True)
 
             try: output=run(command, capture_output=True)
             except FileNotFoundError: print(""); continue 	# No ImageMagick
@@ -1076,8 +1141,8 @@ def get_cell_size():
         get_cell_size.cached=None
 
     # Ideally, we use an Esc seq to ask terminal what its char cell size is.
-    output = terminal_query_list('\x1B[16')
-    if output:
+    output = terminal_query_list('\x1B[16t')
+    if len(output) >= 3:
         get_cell_size.cached = ( int(output[2]), int(output[1]) )
         return get_cell_size.cached
 

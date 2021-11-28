@@ -191,29 +191,32 @@ how many heart emojis Unicode has. 😜)
 	    📽	U+1F4FD	FILM PROJECTOR
 	    📾	U+1F4FE	PORTABLE STEREO
 	    📿	U+1F4FF	PRAYER BEADS
+    Sometimes it's useful (or fun) to page through the Unicode table
+    and see what characters are defined in a region. 
+	Try `ugrep 2700..ff` .
 
-  * Sometimes it's useful (or fun) to page through the Unicode table
-    and see what characters are defined in a region.
+  * Ranges can have an optional increment:
 
-  * Ranges can also have an optional increment:
-
+	```
 	$ ugrep 0..ffff..1000
 	   �    U+0000  <control> (null)
 	   က    U+1000  MYANMAR LETTER KA
-	        U+2000  EN QUAD
-	   　   U+3000  IDEOGRAPHIC SPACE
-	   䀀   U+4000  Block: [CJK Unified Ideographs Extension A]
-	   倀   U+5000  Block: [CJK Unified Ideographs]
-	   怀   U+6000  Block: [CJK Unified Ideographs]
-	   瀀   U+7000  Block: [CJK Unified Ideographs]
-	   耀   U+8000  Block: [CJK Unified Ideographs]
-	   退   U+9000  Block: [CJK Unified Ideographs]
+	  [ ]   U+2000  EN QUAD
+	  [　]  U+3000  IDEOGRAPHIC SPACE
+	   䀀   U+4000  cups; small cups ( M: fàn, C: fan3 fan4 fan6 )
+	   倀   U+5000  bewildered; rash, wildly ( M: chāng, C: caang1 caang4 coeng1 zaang1, J: KURUU TAORERU, K: CHANG, V: trành )
+	   怀   U+6000  bosom, breast; carry in bosom ( M: huái, C: waai4 )
+	   瀀   U+7000  [CJK Unified Ideographs] ( M: yōu, J: ATSUI )
+	   耀   U+8000  shine, sparkle, dazzle; glory ( M: yào, C: jiu6, J: KAGAYAKU, K: YO )
+	   退   U+9000  step back, retreat, withdraw ( M: tuì, C: teoi3, J: SHIRIZOKU SHIRIZOKERU, K: THOY, V: thoái )
 	   ꀀ   U+A000  YI SYLLABLE IT
 	   뀀   U+B000  Block: [Hangul Syllables]
 	   쀀   U+C000  Block: [Hangul Syllables]
 	   퀀   U+D000  Block: [Hangul Syllables]
 	   �    U+E000  <Private Use, First>
 	       U+F000  Block: [Private Use Area]
+	```
+
   * Tip: pipe long output to `less` and search for a code point by
     pressing `/U\+A60F`.
 
@@ -257,23 +260,31 @@ how many heart emojis Unicode has. 😜)
     [fonttable](https://github.com/hackerb9/fonttable). It shows all
     defined Unicode characters by default.
 
-* To see characters _not_ defined by Unicode, specify the hexadecimal
-  codepoint (or range)
+* To see CJK (Chinese-Japanese-Korean) characters that Unicode defines
+  indirectly via Unihan, you may specify the code point or paste in an
+  example character to look up.
 
-        $ ugrep U+8000
-        耀	U+8000	Block: [CJK Unified Ideographs]
+		$ ugrep 30ede
+		   𰻞	U+30EDE	biangbiang noodles ( M: biáng )
 
-  This is useful for the regions defined by other standards, for
-  example Unihan. 
+        $ ugrep 耀
+        耀	U+8000	shine, sparkle, dazzle; glory ( M: yào, C: jiu6, J: KAGAYAKU, K: YO )
+
+  <a href="README.md.d/biangbiang.png">
+  <img title="ugrep 30ede -L8" 
+       alt-text="Example of ugrep showing character U+30EDE at 8x scale"
+       src="README.md.d/biangbiang.png">
+  </a>
 
 * Show all possible code points, defined in Unicode or not:
 
 		$ ugrep 0..10FFFF | less
 	    ⋮	[ ... over a million lines elided for brevity ... ]
 
-  ☝ This is currently very slow due to a bug in how `ugrep` is
-  implemented. 
-
+  ☝ This is currently very slow due to the way `ugrep` is implemented.
+  You likely want to use
+  [fonttable -u](https://github.com/hackerb9/fonttable) instead. 
+  
 ### Fun things to try:
 
 To see some useful and lovely glyphs, try this:
@@ -568,8 +579,9 @@ that data.
   </details>
 
 * Gnome-terminal uses `font-config`, so it has very nice Unicode
-  support and can easily zoom in with Ctrl-+⃣ and Ctrl--⃣.
-  Unfortunately, older versions had a bug where combining characters
-  were combined with the following character instead of the previous.
-  Note that Xterm and mlterm handle this correctly.
+  support and can easily zoom in with Ctrl-+⃣ and Ctrl--⃣. Older
+  versions had a bug where combining characters were combined with the
+  following character instead of the previous, but this is now fixed.
 
+  It does not support sixel graphics, so the -l option cannot show
+  examples of the character in different fonts.

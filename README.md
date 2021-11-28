@@ -304,6 +304,114 @@ and place it in `~/.local/share/unicode/UnicodeData.txt`
 **Not hard**: Or, if you wish the file to be accessible to all users on
 your machine, place it in `/usr/local/share/unicode/UnicodeData.txt`.
 
+## Unihan CJK Support
+
+If the file `Unihan_Readings.txt` exists, then ugrep will
+automatically use it to show an English gloss describing a character
+in the CJK (Chinese-Japanese-Korean) Ideographs region.
+
+### CJK example
+
+#### Example 1: Unicode code point
+
+```
+$ ugrep 8000
+   耀   U+8000  shine, sparkle, dazzle; glory ( M: yào, C: jiu6, J: KAGAYAKU, K: YO )
+```
+
+The parenthesized text at the end shows the romanized pronunciation of
+the character in **M**andarin (pinyin), **C**antonese (jyutping),
+**J**apanese (Hepburn), and **K**orean (Yale).
+
+#### Example 2: Using -c to see characters in a string
+
+```
+$ ugrep -c 「⿺辶⿳穴⿰月⿰⿲⿱幺長⿱言馬⿱幺長刂心」
+   「   U+300C  LEFT CORNER BRACKET (opening corner bracket)
+   ⿺   U+2FFA  IDEOGRAPHIC DESCRIPTION CHARACTER SURROUND FROM LOWER LEFT
+   辶   U+8FB6  walk; walking; KangXi radical 162 ( M: chuò, J: SHINNYOU )
+   ⿳   U+2FF3  IDEOGRAPHIC DESCRIPTION CHARACTER ABOVE TO MIDDLE AND BELOW
+   穴   U+7A74  cave, den, hole; KangXi radical 116 ( M: xué, C: jyut6, J: ANA, K: HYEL, V: huyệt )
+   ⿰   U+2FF0  IDEOGRAPHIC DESCRIPTION CHARACTER LEFT TO RIGHT
+   月   U+6708  moon; month; KangXi radical 74 ( M: yuè, C: jyut6, J: TSUKI, K: WEL, V: nguyệt )
+   ⿰   U+2FF0  IDEOGRAPHIC DESCRIPTION CHARACTER LEFT TO RIGHT
+   ⿲   U+2FF2  IDEOGRAPHIC DESCRIPTION CHARACTER LEFT TO MIDDLE AND RIGHT
+   ⿱   U+2FF1  IDEOGRAPHIC DESCRIPTION CHARACTER ABOVE TO BELOW
+   幺   U+5E7A  one; tiny, small ( M: yāo, C: jiu1, J: CHIISAI, K: YO )
+   長   U+9577  long; length; excel in; leader ( M: zhǎng, C: coeng4 zoeng2, J: NAGAI TAKERU OSA, K: CANG, V: trường )
+   ⿱   U+2FF1  IDEOGRAPHIC DESCRIPTION CHARACTER ABOVE TO BELOW
+   言   U+8A00  words, speech; speak, say ( M: yán, C: jin4, J: KOTO IU KOTOBA, K: EN UN, V: ngôn )
+   馬   U+99AC  horse; surname; KangXi radical 187 ( M: mǎ, C: maa5, J: UMA, K: MA, V: mã )
+   ⿱   U+2FF1  IDEOGRAPHIC DESCRIPTION CHARACTER ABOVE TO BELOW
+   幺   U+5E7A  one; tiny, small ( M: yāo, C: jiu1, J: CHIISAI, K: YO )
+   長   U+9577  long; length; excel in; leader ( M: zhǎng, C: coeng4 zoeng2, J: NAGAI TAKERU OSA, K: CANG, V: trường )
+   刂   U+5202  knife; radical number 18 ( M: dāo, C: dou1, J: RITSUTOU, K: TO )
+   心   U+5FC3  heart; mind, intelligence; soul ( M: xīn, C: sam1, J: KOKORO, K: SIM, V: tâm )
+   」   U+300D  RIGHT CORNER BRACKET (closing corner bracket)
+```
+
+### Note 1: A "definition" is not a translation
+Unihan calls the English gloss the character's "definition", but that
+is meant in a very loose sense. CJK characters change meaning based
+upon the context they are used in. For example, most Chinese words are
+made of two characters, such as "蜂鸟", which means "hummingbird", but
+ugrep would shows it as:
+
+```
+$ ugrep -c 蜂鸟
+   蜂   U+8702  bee, wasp, hornet ( M: fēng, C: fung1, J: HACHI, K: PONG, V: ong )
+   鸟   U+9E1F  bird; KangXi radical 196 ( M: niǎo, C: niu5 )
+```
+
+### Note 2: Not all characters have readings
+
+Unihan refers to this supplemental information, both the English gloss
+and the romanizations, as "readings". Readings are meant to be
+helpful, but are not normative and are only available for some
+characters.
+
+|                    |  Count | Percent |
+|--------------------|-------:|--------:|
+| All CJK Characters | 93,858 |    100% |
+| Have any reading   | 47,429 |     51% |
+| Mandarin Pinyin    | 41,378 |     44% |
+| Cantonese Jyutping | 23,112 |     25% |
+| English definition | 21,076 |     23% |
+| Japanese Hepburn   | 11,293 |     12% |
+| Korean Yale        |  9,051 |     10% |
+| Vietnamese         |  8,301 |      9% |
+
+#### Example of CJK with no Mandarin
+
+```
+$ ugrep 2bac3
+   𫫃   U+2BAC3 (Cant.) sarcastic interrogative ( C: e1 )
+```
+#### Example of CJK with no pronunciation
+
+```
+$ ugrep 20015
+   𠀕   U+20015 Variant of U+4E99 亙
+```
+
+#### Example of CJK with no English definition
+
+```
+$ ugrep 20016
+   𠀖   U+20016 [CJK Unified Ideographs Extension B] ( V: khạng )
+```
+
+#### Example of CJK with no readings whatsoever
+
+```
+$ ugrep 2abcd
+   𪯍   U+2ABCD [CJK Unified Ideographs Extension C]
+```
+Note that ugrep currently prints just the name of the block the
+character is in [within square brackets] if it has no better way to
+identify the character. 
+
+
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
 ## Boring Implementation notes
@@ -327,12 +435,13 @@ BLACK HEART BULLET")`.
 
 ## Future Work
 
-### Maybe use Unihan_Readings.txt
+### Maybe use Unihan_Readings.txt for grepping
 
-Currently anything in the Unihan region just says "Block CJK", which
-is not very informative. But, if the user has `Unihan_Readings.txt`
-installed — which is the default if the user has done `apt install
-unicode-data) — it could actually be much more informative:
+Currently if `Unihan_Readings.txt` is installed — which is the default if
+the user has done `apt install unicode-data`) — and the user requests a
+character that is not in UnicodeData.txt, then the Readings data is
+used to show information about the character. However, Unihan_Readings
+could be used in the future for searching for characters to show.
 
 Example data from Unihan_Readings for U+9B44 (魄): 
 
@@ -352,15 +461,15 @@ Example data from Unihan_Readings for U+9B44 (魄):
 
 See [UAX #38: Unicode Han Database](https://www.unicode.org/reports/tr38/tr38-31.html).
 
-Two levels of support:
-1. Show kDefinition if block name is *CJK*
+Two levels of Unihan support:
+1. Show kDefinition if block name is *CJK Ideographs*
 2. Search Unihan_Readings when searching for a word. Possible example:
        $ ugrep mononoke
 	   魅	U+9B45	MONONOKE BAKEMONO SUDAMA (kind of forest demon, elf)
 
-Number 1 is not too hard, but number 2 may require a command line
-switch or something as searching through the Readings file may be
-slow. 
+Number 1 is finished and working, but number 2 may require a command
+line switch or some other way of enabling/disabling it as searching
+through the Readings file may be slow or cause other problems.
 
 ### Maybe use NamesList.txt
 

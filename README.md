@@ -369,9 +369,9 @@ made of two characters, such as "蜂鸟", which means "hummingbird", but
 ugrep would shows it as:
 
 ```
-$ ugrep -c 蜂鸟
+$ ugrep -c 蜂鳥
    蜂   U+8702  bee, wasp, hornet ( M: fēng, C: fung1, J: HACHI, K: PONG, V: ong )
-   鸟   U+9E1F  bird; KangXi radical 196 ( M: niǎo, C: niu5 )
+   鳥   U+9CE5  bird; KangXi radical 196 ( M: niǎo, C: niu5, J: TORI, K: CO, V: điểu )
 ```
 
 ### Note 2: Not all characters have readings

@@ -117,8 +117,7 @@ def examples():
     ]       U+005D  RIGHT SQUARE BRACKET (closing square bracket)
     }       U+007D  RIGHT CURLY BRACKET (closing curly bracket)
     〉      U+3009  RIGHT ANGLE BRACKET (closing angle bracket)
-
-Try 'ugrep --examples=2' to see more usage examples."""
+"""
     )
 
 def examples2():
@@ -141,8 +140,7 @@ def examples2():
 # ugrep finds aliases (in parens)
     $ ugrep backslash
     \	U+005C	REVERSE SOLIDUS (backslash)
-
-Try 'ugrep --examples=3' to see more usage examples."""
+"""
     )
 
 def examples3():
@@ -163,8 +161,8 @@ def examples3():
     [ Cannot show sixel examples here ]
 
 # Show every single Unicode character.
-    $ ugrep '.?'  |  less"""
-
+    $ ugrep '.?'  |  less
+"""
     )
 
 
@@ -187,10 +185,23 @@ def main():
 
     if argv[1].startswith('-x') or argv[1].startswith('--example'):
         try: x=int(argv[1][-1])
-        except ValueError: x=1
-        if x == 1: examples()
-        if x == 2: examples2()
-        if x == 3: examples3()
+        except ValueError: x=0
+        if x == 0:
+            examples()
+            if isatty(1):
+                print("Try 'ugrep --examples=2' to see more usage examples.")
+            else:
+                examples2()
+                examples3()
+        if x == 1:
+            examples()
+            print("Try 'ugrep --examples=2' to see more usage examples.")
+        if x == 2:
+            examples2()
+            print("Try 'ugrep --examples=3' to see even more usage examples.")
+        if x == 3:
+            examples3()
+            print("Try 'ugrep -x | less' to see all usage examples in one page.")
         exit(0)
 
     parser = argparse.ArgumentParser(

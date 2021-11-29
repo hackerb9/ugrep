@@ -436,7 +436,7 @@ def lookup_readings(cp):
     # U+2BAC3 kDefinition     (Cant.) sarcastic interrogative
     # Regex to match a line in Unihan_Readings.txt
     r=r"\nU\+" + cp + "\t+" + "(?P<key>[^\t]+)" + "\t+" + "(?P<value>[^\t\n]+)"
-    if type(readings) is bytes: r=bytes(r, 'utf-8') # bz lib returns 'bytes'
+    if type(readings) is bytes: r=bytes(r, 'utf-8')
     s=compile(r)
     matches=findall(s, readings)
     if matches == None: 
@@ -444,10 +444,13 @@ def lookup_readings(cp):
         return None
     debugprint("lookup_readings found ", matches)
     for m in matches:
-        if type(m[0]) is bytes:
-            m[0]=str(m[0], 'UTF-8')
-            m[1]=str(m[1], 'UTF-8')
-        results[m[0]] = m[1]
+        if type(m[0]) is bytes:		 # bz lib's read() returns 'bytes'
+            m0=str(m[0], 'UTF-8')
+            m1=str(m[1], 'UTF-8')
+        else:
+            m0=m[0]             	# normal read() returns 'str'
+            m1=m[1]
+        results[m0] = m1        # Build dictionary. 
     return results
 
 def showcharacterblock(codepoint):

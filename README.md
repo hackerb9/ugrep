@@ -321,6 +321,14 @@ If the file `Unihan_Readings.txt` exists, then ugrep will
 automatically use it to show an English gloss describing a character
 in the CJK (Chinese-Japanese-Korean) Ideographs region.
 
+Your OS may make it easy to install (e.g., `apt install unicode-data`). 
+On other systems, you can do this
+
+    mkdir -p ~/.local/share/unicode
+    cd ~/.local/share/unicode
+    wget ftp://ftp.unicode.org/Public/UNIDATA/Unihan.zip
+    unzip Unihan.zip
+
 ### CJK example
 
 #### Example 1: Unicode code point

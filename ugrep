@@ -1023,6 +1023,9 @@ def show_fonts(x, category=None):
         if args.never_double_text or not isatty(1):
             double_text=False
 
+        # Disable double-size text when debugging (at least for now)
+        if debug: double_text=False
+
         if not double_text:
             famstr = '\t\t' + famstr	# 	Two tabs, sixteen spaces
         else:
@@ -1698,10 +1701,20 @@ def terminal_query(seq, delimiter=None, timeout=0.2):
     cflag = cflag & ~(CSIZE | PARENB)
     cflag = cflag | CS8        # Set 8-bit character size
 
+    ## Polling read (MIN == 0, TIME == 0)  See termios(3).
+    cc[VMIN] = 0                
+    cc[VTIME] = 0
+    pollingread = copy.deepcopy([ iflag, oflag, cflag, lflag, ispeed, ospeed, cc ])
+    
     ## Read with timeout (MIN == 0, TIME > 0)  See termios(3).
     cc[VMIN] = 0                
     cc[VTIME] = int(timeout*10+0.5) # Timeout is in tenths of a second 
     readwithtimeout = copy.deepcopy([ iflag, oflag, cflag, lflag, ispeed, ospeed, cc ])
+
+    # Drain stdin in case there's junk from a prev req in there already. 
+    tcsetattr(sys.stdin.fileno(), TCSANOW, pollingread)
+    while posix.read(sys.stdin.fileno(), 1024):
+        debugprint(".", end='')
 
     output=""                   # String of output so far.
     c = None                    # Currently read character.
@@ -1718,7 +1731,7 @@ def terminal_query(seq, delimiter=None, timeout=0.2):
                 output=output+c
 #                debugprint("got", repr(c), "waiting for", repr(delimiter))
             else:
-                debugprint("read() returned 0 characters")
+                debugprint("read() returned 0 characters after", repr(seq))
                 # Timeout
                 break
     finally:

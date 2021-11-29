@@ -1338,7 +1338,7 @@ def loadreadings():
     """
 
     global readings
-    if readings: return readings 	# Only need to load the file once.
+    if readings != None: return readings 	# Only search once.
 
     ucdplaces=( "~/.local/share/unicode/",
                 "/usr/local/share/unicode/",
@@ -1374,8 +1374,9 @@ def loadreadings():
             pass
 
     # Sanity check: did we find the Unihan_Readings.txt file?
-    if readings == None and debug:
-        eprint("""\
+    if readings == None:
+        readings = False        # Don't check again for the file
+        debugprint("""\
     Could not find Unihan_Readings.txt in:
 
 %s
@@ -1389,8 +1390,7 @@ def loadreadings():
         wget ftp://ftp.unicode.org/Public/UNIDATA/Unihan.zip
         unzip Unihan.zip
 """ %
-               ("".join(["    " + s + "Unihan_Readings.txt" + "\n" for s in ucdplaces])))
-        exit(2)
+            ("".join(["    " + s + "Unihan_Readings.txt" + "\n" for s in ucdplaces])))
 
     return readings
 

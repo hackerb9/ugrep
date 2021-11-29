@@ -85,7 +85,7 @@ Usage:
 
        <codepoint> One or more hexadecimal numbers:	ugrep U+1F639
 		   Ranges are allowed with two dots:	ugrep 23b0..f
-	           Optional range increment: 	  ugrep 0..ffff..1000
+	           Optional range increment:		ugrep 0..ffff..1000
 
   <character name> A Unicode name (as a regex), e.g.:	ugrep alchemical
 
@@ -158,6 +158,7 @@ def examples3():
     $ ugrep -l math left tortoise
     ⟬    U+27EC  MATHEMATICAL LEFT WHITE TORTOISE SHELL BRACKET
                  Symbola 
+                 Unifont 
 
 # Use -L n to scale the font examples n-times larger; implies -l
     $ ugrep -L2 antimony
@@ -277,15 +278,7 @@ def main():
     # Do range expansion on argv. (e.g., 2301..f)
     args.characters = rangeexpansion(args.characters)
 
-    # First, look up the entire argv[] as a character name or alias. 
-    # Must NOT begin with U+ or 0x.
-    if not match("(?i)^U\+|^0x", args.characters[0]):
-        s=makeregexeither(args.characters)
-        if printmatches(s):
-            debugprint("Entire argv[] matched as a whole. All done.")
-            exit(0)
-
-    # If the entire argv[] didn't match, try looking up each arg individually.
+    # First, try looking up each arg individually as hexadecimal codepoints.
     # Loop to allow input like "ugrep 23b{0..9}" (NB: slower than 23b[0-9])
     # Must be hexadecimal.
     for arg in args.characters:
@@ -300,6 +293,13 @@ def main():
                 showcharacterblock(arg)
         # If -l, show installed fonts which contain the glyph.
         if args.list_fonts: show_fonts(arg)
+
+    # Also look up the entire argv[] as a character name or alias. 
+    # Must NOT begin with U+ or 0x.
+    if not match("(?i)^U\+|^0x", args.characters[0]):
+        s=makeregexcharname(args.characters)
+        if printmatches(s):
+            debugprint("Entire argv[] matched as a whole.")
 
 def showonecharacter(c):
     s=makeregexeither(c)

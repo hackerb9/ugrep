@@ -137,9 +137,9 @@ def examples2():
     )	U+0029	RIGHT PARENTHESIS (closing parenthesis)
     ᕗ	U+1557	CANADIAN SYLLABICS FO
 
-# ugrep finds aliases (in parens)
-    $ ugrep backslash
-    \	U+005C	REVERSE SOLIDUS (backslash)
+# Use 'U+' prefix to force a search for hexadecimal
+    $ ugrep u+ee			# "0xEE" also works
+    î   U+00EE  LATIN SMALL LETTER I WITH CIRCUMFLEX
 """
     )
 
@@ -150,11 +150,14 @@ def examples3():
     ⊻	U+22BB	XOR
     ⌧	U+2327	X IN A RECTANGLE BOX (clear key)
 
+# ugrep finds aliases (and puts them in parens)
+    $ ugrep backslash
+    \	U+005C	REVERSE SOLIDUS (backslash)
+
 # Use -l to see which fonts are installed that can render a certain character
     $ ugrep -l math left tortoise
     ⟬    U+27EC  MATHEMATICAL LEFT WHITE TORTOISE SHELL BRACKET
                  Symbola 
-                 Unifont 
 
 # Use -L n to scale the font examples n-times larger; implies -l
     $ ugrep -L2 antimony
@@ -261,7 +264,7 @@ def main():
             for i in range(len(s)):
                 for j in range(0,len(s[i])):
                     arg = hex(ord(s[i][j]))
-                    if not showonecharacter( arg ):
+                    if not showcodepoint( arg ):
                         # Not Unicode, but could be Chinese, Japanese, Korean
                         if not showcjk( arg[2:] ):
                             # Not CJK, so print block name
@@ -274,26 +277,37 @@ def main():
     # Do range expansion on argv. (e.g., 2301..f)
     args.characters = rangeexpansion(args.characters)
 
-    # First, try looking up each arg individually.
-    if args.characters:
-        # Loop to allow input like "ugrep 23b{0..9}" (NB: slower than 23b[0-9])
-        for arg in args.characters:
-            # Show matches in Unicode.txt for each hex or name or alias  
-            if not showonecharacter(arg):
-                # Hmm... it wasn't hex or name or alias. Maybe CJK?
-                if not showcjk( arg ):
-                    # Nope, print the character anyway and its Unicode block.
-                    showcharacterblock(arg)
-                # If -l, show installed fonts which contain the glyph.
-                if args.list_fonts: show_fonts(arg)
-    # Now, look up the entire argv[] as a character name or alias. 
-    if len(args.characters) > 1:
-        s=makeregexcharname(args.characters)
-        printmatches(s)
+    # First, look up the entire argv[] as a character name or alias. 
+    # Must NOT begin with U+ or 0x.
+    if not match("(?i)^U\+|^0x", args.characters[0]):
+        s=makeregexeither(args.characters)
+        if printmatches(s):
+            debugprint("Entire argv[] matched as a whole. All done.")
+            exit(0)
 
+    # If the entire argv[] didn't match, try looking up each arg individually.
+    # Loop to allow input like "ugrep 23b{0..9}" (NB: slower than 23b[0-9])
+    # Must be hexadecimal.
+    for arg in args.characters:
+        if arg.strip("Uu+0123456789ABCDEFXabcdefx[]-.*?^$(){,}"):
+            debugprint("Stopped looking for hex/regex arguments at", arg)
+            break
+        # Show matches in UnicodeData.txt for each hex codepoint
+        if not showcodepoint(arg):
+            # Hmm... it wasn't in UnicodeData. Maybe CJK?
+            if not showcjk(arg):
+                # Nope, print the character anyway and its Unicode block.
+                showcharacterblock(arg)
+        # If -l, show installed fonts which contain the glyph.
+        if args.list_fonts: show_fonts(arg)
 
 def showonecharacter(c):
     s=makeregexeither(c)
+    compileit(s)
+    return printmatches(s)
+              
+def showcodepoint(c):
+    s=makeregexcodepoint(c)
     compileit(s)
     return printmatches(s)
               
@@ -853,6 +867,13 @@ def printmatches(s):
             print("   ", end='') 	# Indent for MacOS
             g=m.groupdict()
             debugprint(g)
+            # Why is Python so silly about not allowing a default value of None?
+            for key in ( "hex", "hextwo", "hexthree", 
+                         "name", "desctwo", "namethree",
+                         "category", "categorytwo", "categorythree", 
+                         "alias", "aliastwo", "aliasthree" ):
+                if not key in g: g[key] = None
+            # What is the Pythonic way to do this?
             if g["hex"] == None: g["hex"]=g["hextwo"]
             if g["hex"] == None: g["hex"]=g["hexthree"]
             if g["name"] == None: g["name"]=g["desctwo"]
@@ -1416,8 +1437,7 @@ def makeregexcharname(words):
     # combine and quote the command line arguments so we can use them in
     # verbose regex. Also, allow the user to use ^ and $, just like in awk
     # to refer to the beginning and end of the field instead of line.
-
-    if words is list:
+    if type(words) is list:
         words=["("+x+")" for x in words] # wrap in parens to fix alternation
         arghs=".*".join(words)           # search terms can have junk between
     else:
@@ -1480,13 +1500,18 @@ def makeregexeither(wordsorcp):
     """Make a regular expression to search for a hexadecimal codepoint 
      or for a character name / alias."""
 
+    r=makeregexcharname(wordsorcp)
+
+    if (type(wordsorcp) is list) and (len(wordsorcp) == 1):
+        wordsorcp=wordsorcp[0]
+
+    if (type(wordsorcp) is list):
+        debugprint("Multiple args, so complete search regex is", r)
+        return r
+
     s=makeregexcodepoint(wordsorcp)
 
-    if wordsorcp.upper().startswith('U+'):
-        # Do not return "EGYPTIAN HIEROGLYPH U006A" for U+00[0-9A-F]{,2} 
-        return s.replace('three>', '>')
-
-    r=makeregexcharname(wordsorcp).lstrip('(?mix)')
+    r = r.lstrip('(?mix)')
 
     debugprint("Complete search regex is " + s + "|" + r)
 

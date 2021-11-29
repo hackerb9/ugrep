@@ -291,8 +291,8 @@ def main():
             if not showcjk(arg):
                 # Nope, print the character anyway and its Unicode block.
                 showcharacterblock(arg)
-        # If -l, show installed fonts which contain the glyph.
-        if args.list_fonts: show_fonts(arg)
+            # If -l, show installed fonts which contain the glyph.
+            if args.list_fonts: show_fonts(arg)
 
     # Also look up the entire argv[] as a character name or alias. 
     # Must NOT begin with U+ or 0x.
@@ -992,11 +992,16 @@ def show_fonts(x, category=None):
     except KeyboardInterrupt: exit(1) 			# Exit on ^C
 
     
-    #   debugprint(fonts)		# List of every matching font.
+    #debugprint(fonts)		# List of every matching font.
     
+    if debug: count=0
     for f in fonts.splitlines():
         try: (family, style, filename) = f.split('\t')
         except: continue
+
+        if debug:
+            count=count+1
+            debugprint(count, filename, family, style)
 
         # Don't print the style if it is just "Regular"
         if style == "Regular" or style == "Roman" or style == "Book":

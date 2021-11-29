@@ -1185,9 +1185,13 @@ def get_cell_size():
     # Ideally, we use an Esc seq to ask terminal what its char cell size is.
     output = terminal_query_list('\x1B[16t')
     if len(output) >= 3:
-        get_cell_size.cached = ( int(output[2]), int(output[1]) )
-        return get_cell_size.cached
-
+        try:
+            get_cell_size.cached = ( int(output[2]), int(output[1]) )
+            return get_cell_size.cached
+        except:
+            # Response got mangled somehow. Ignore it.
+            pass
+        
     # Didn't work, so try calculating cell size from geometry.
     # We get geometry in three ways: 
 
@@ -1202,14 +1206,20 @@ def get_cell_size():
     # Second, XTSMGRAPHICS escape sequence gives the best x,y accuracy.
     output = terminal_query_list('\x1B[?2;1;0S')
     if output:
-        (x, y) = ( int(output[2]), int(output[3]) )
-
+        try:
+            (x, y) = ( int(output[2]), int(output[3]) )
+        except ValueError:
+            # Escape sequence response got mangled somehow. Ignore it.
+            pass
     else:
         # Third, dtterm's x,y are (usually) better than TIOCGWINSZ.
         output = terminal_query_list('\x1B[14t')
         if output:
-            (x, y) = ( int(output[2]), int(output[1]) )
-    
+            try:
+                (x, y) = ( int(output[2]), int(output[1]) )
+            except ValueError:
+                pass
+
     # VT340 on serial line would still have x and y set to zero.
     if x==0: x=800
     if y==0: y=480

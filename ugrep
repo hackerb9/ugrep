@@ -314,9 +314,7 @@ def showcjk(x):
     if not isunihan(codepoint):
         return False
 
-    if readings == None:
-        loadreadings()
-
+    # Get the dictionary of "readings" for character x
     r = lookup_readings(x)
     try:
         definition = r["kDefinition"]
@@ -412,6 +410,10 @@ def lookup_readings(cp):
     ############################################################
     # For more details, see Unicode Standard Annex #38 
     # https://www.unicode.org/reports/tr38/tr38-31.html
+
+    # Initialize 'readings' global variable
+    if not loadreadings():
+        return False
 
     cp = cp.lstrip("Uu+0Xx")
     results={}
@@ -1336,6 +1338,8 @@ def loadreadings():
     """
 
     global readings
+    if readings: return readings 	# Only need to load the file once.
+
     ucdplaces=( "~/.local/share/unicode/",
                 "/usr/local/share/unicode/",
                 "/usr/share/unicode/",
@@ -1370,7 +1374,7 @@ def loadreadings():
             pass
 
     # Sanity check: did we find the Unihan_Readings.txt file?
-    if readings == None:
+    if readings == None and debug:
         eprint("""\
     Could not find Unihan_Readings.txt in:
 

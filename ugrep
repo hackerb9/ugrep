@@ -436,14 +436,18 @@ def lookup_readings(cp):
     # U+2BAC3 kDefinition     (Cant.) sarcastic interrogative
     # Regex to match a line in Unihan_Readings.txt
     r=r"\nU\+" + cp + "\t+" + "(?P<key>[^\t]+)" + "\t+" + "(?P<value>[^\t\n]+)"
-    s=compile(bytes(r, 'utf-8'))
+    if type(readings) is bytes: r=bytes(r, 'utf-8') # bz lib returns 'bytes'
+    s=compile(r)
     matches=findall(s, readings)
     if matches == None: 
         debugprint("lookup_readings did not find", r)
         return None
     debugprint("lookup_readings found ", matches)
     for m in matches:
-        results[str(m[0], 'UTF-8')] = str(m[1], 'UTF-8')
+        if type(m[0]) is bytes:
+            m[0]=str(m[0], 'UTF-8')
+            m[1]=str(m[1], 'UTF-8')
+        results[m[0]] = m[1]
     return results
 
 def showcharacterblock(codepoint):
@@ -1329,10 +1333,11 @@ def loaducd():
 
     global ucd
     ucd=None
-    ucdplaces=( "/usr/local/share/unicode/UnicodeData.txt",
-                "/usr/share/unicode/UnicodeData.txt",
+    ucdplaces=( "UnicodeData.txt",
                 "~/.local/share/unicode/UnicodeData.txt",
-                "UnicodeData.txt" )
+                "/usr/local/share/unicode/UnicodeData.txt",
+                "/usr/share/unicode/UnicodeData.txt"
+    )
     for f in ucdplaces:
         f=expanduser(expandvars(f)) 		# Python's open() is silly
         try:
@@ -1379,10 +1384,11 @@ def loadreadings():
     global readings
     if readings != None: return readings 	# Only search once.
 
-    ucdplaces=( "~/.local/share/unicode/",
+    ucdplaces=( "",
+                "~/.local/share/unicode/",
                 "/usr/local/share/unicode/",
-                "/usr/share/unicode/",
-                "" )
+                "/usr/share/unicode/"
+    )
     for f in ucdplaces:
         if readings: break
         f=f+"Unihan_Readings.txt"   	# Plain text file, not compressed.

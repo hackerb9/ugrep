@@ -519,6 +519,9 @@ def getblock(x):
     This is useful to identify characters that are not officially part
     of Unicode, for example all the CJK Ideographs from 4E00 to 9FFF.
 
+    An empty string is returned if the integer is not within any
+    Unicode block, e.g., ugrep U+80000.
+
     """
 
     # Data from Unicode 2021 Blocks-14.0.0.txt
@@ -856,7 +859,7 @@ F0000..FFFFF; Supplementary Private Use Area-A
         except ValueError: continue
 
     # If we get here, then no block matched.
-    return None
+    return ""
 
 def compileit(s):
     "Compile the regular expresion in s, or die trying."

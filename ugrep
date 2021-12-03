@@ -894,56 +894,64 @@ def iscombining(c):
     return c and c.startswith('M')
 
 def printmatches(s):
-    category=""
     foundone=None
     for m in finditer(s, ucd):
-        if m:
+        if printonematch(m):
             foundone=True
-            print("   ", end='') 	# Indent for MacOS
-            g=m.groupdict()
-            debugprint(g)
-            # Why is Python so silly about not allowing a default value of None?
-            for key in ( "hex", "hextwo", "hexthree", 
-                         "name", "desctwo", "namethree",
-                         "category", "categorytwo", "categorythree", 
-                         "alias", "aliastwo", "aliasthree" ):
-                if not key in g: g[key] = None
-            # What is the Pythonic way to do this?
-            if g["hex"] == None: g["hex"]=g["hextwo"]
-            if g["hex"] == None: g["hex"]=g["hexthree"]
-            if g["name"] == None: g["name"]=g["desctwo"]
-            if g["name"] == None: g["name"]=g["namethree"]
-            name=g["name"]
-            if g["category"] == None: g["category"] = g["categorytwo"]
-            if g["category"] == None: g["category"] = g["categorythree"]
-            category = g["category"]
-            if g["alias"] == None: g["alias"]=g["aliastwo"]
-            if g["alias"] == None: g["alias"]=g["aliasthree"]
-            alias=g["alias"]
-            codepoint=int(g["hex"], 16)
-            c=chr(codepoint)
-            maybe_open_box(codepoint, name, category)
-            if not isprint(category): c="\ufffd" # "Replacement Character"
-            if iscombining(category): print('\u25cc', end='') # "Dotted circle"
-            if should_box(codepoint, name, category):
-                try: c=curses.black_on_yellow(c)
-                except NameError: pass
-            print(c, end='')
-            maybe_close_box(codepoint, name, category)
-            print(end='\t')
-            print ("U+" + g["hex"], end='\t')
-            print(name, end='')
-            if (len(alias) and isdifferent(name, alias)):
-                print (" (" + alias.lower() + ")", end='')
-            for alias2 in lookup_namealias(g["hex"]):
-                if (len(alias2) and isdifferent(alias, alias2)):
-                    print (" (" + alias2.lower() + ")", end='')
-            
-            print("", flush=True)
-            # If -l, show list of installed fonts which contain the glyph.
-            if args.list_fonts:  show_fonts( g["hex"], category )
 
     # Return True if a match was found
+    return foundone
+
+def printonematch(m):
+    category=""
+    foundone=None
+    if m:
+        foundone=True
+        print("   ", end='') 	# Indent for MacOS
+
+        g=m.groupdict()
+
+        # Default to an empty string for missing regex keys.
+        from collections import defaultdict
+        g=defaultdict(str, m.groupdict())
+
+        debugprint(g)
+
+        # What is the Pythonic way to do this?
+        if not g["hex"]: g["hex"]=g["hextwo"]
+        if not g["hex"]: g["hex"]=g["hexthree"]
+        if not g["name"]: g["name"]=g["desctwo"]
+        if not g["name"]: g["name"]=g["namethree"]
+        name=g["name"]
+        if not g["category"]: g["category"] = g["categorytwo"]
+        if not g["category"]: g["category"] = g["categorythree"]
+        category = g["category"]
+        if not g["alias"]: g["alias"]=g["aliastwo"]
+        if not g["alias"]: g["alias"]=g["aliasthree"]
+        alias=g["alias"]
+        codepoint=int(g["hex"], 16)
+        c=chr(codepoint)
+        maybe_open_box(codepoint, name, category)
+        if not isprint(category): c="\ufffd" # "Replacement Character"
+        if iscombining(category): print('\u25cc', end='') # "Dotted circle"
+        if should_box(codepoint, name, category):
+            try: c=curses.black_on_yellow(c)
+            except NameError: pass
+        print(c, end='')
+        maybe_close_box(codepoint, name, category)
+        print(end='\t')
+        print ("U+" + g["hex"], end='\t')
+        print(name, end='')
+        if (len(alias) and isdifferent(name, alias)):
+            print (" (" + alias.lower() + ")", end='')
+        for alias2 in lookup_namealias(g["hex"]):
+            if (len(alias2) and isdifferent(alias, alias2)):
+                print (" (" + alias2.lower() + ")", end='')
+
+        print("", flush=True)
+        # If -l, show list of installed fonts which contain the glyph.
+        if args.list_fonts:  show_fonts( g["hex"], category )
+
     return foundone
 
 def maybe_open_box(*args):
@@ -1587,7 +1595,6 @@ def makeregexcharname(words):
 
     s=s+"|"+r                   # Search for either name or alias
     s="(?mix)"+s                # multiline, case insensitive, verbose
-
     return s
 
 def makeregexcodepoint(cp):

@@ -455,7 +455,7 @@ def lookup_readings(cp):
 def lookup_namealias(cp):
     """Given a hexadecimal string, cp ("0004"), return a list with
     an element for each line in NameAliases.txt. Example:
-    For input "0004", the result is: { 'END OF TRANSMISSION', 'EOT' }
+    For input "0004", the result is: { 'end of transmission', 'EOT' }
     """
     # Initialize 'namealiases' global variable
     if not loadnamealiases():
@@ -468,13 +468,24 @@ def lookup_namealias(cp):
     # 0004;EOT;abbreviation
     # 
     # Regex to match a line in NameAliases.txt
-    r=r"\n%04X;(?P<alias>[^;]+);" % (cp2int(cp))
-    matches=findall(r, namealiases)
+    r=r"(?m)^%04X;(?P<alias>[^;]+);(?P<type>[^;#\n]+)$" % (cp2int(cp))
+    matches=finditer(r, namealiases)
     if matches == None: 
         debugprint("lookup_namealias did not find", r)
         return None
-    debugprint("lookup_namealias found ", matches)
-    return matches
+
+    for m in matches:
+        g=m.groupdict()
+        debugprint("lookup_namealias", g)
+        if g['type'] != 'abbreviation':
+            # For clarity, usually only names are in all caps.
+            results.append(g['alias'].lower())  # "end of transmission"
+        else:
+            # Allow abbreviations to also be uppercase 
+            results.append(g['alias']) 		# "EOT"
+
+
+    return results
 
 def showcharacterblock(codepoint):
 
@@ -946,7 +957,7 @@ def printonematch(m):
             print (" (" + alias.lower() + ")", end='')
         for alias2 in lookup_namealias(g["hex"]):
             if (len(alias2) and isdifferent(alias, alias2)):
-                print (" (" + alias2.lower() + ")", end='')
+                print (" (" + alias2 + ")", end='')
 
         print("", flush=True)
         # If -l, show list of installed fonts which contain the glyph.

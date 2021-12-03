@@ -437,8 +437,7 @@ def lookup_readings(cp):
     # Regex to match a line in Unihan_Readings.txt
     r=r"\nU\+" + cp + "\t+" + "(?P<key>[^\t]+)" + "\t+" + "(?P<value>[^\t\n]+)"
     if type(readings) is bytes: r=bytes(r, 'utf-8')
-    s=compile(r)
-    matches=findall(s, readings)
+    matches=findall(r, readings)
     if matches == None: 
         debugprint("lookup_readings did not find", r)
         return None
@@ -470,8 +469,7 @@ def lookup_namealias(cp):
     # 
     # Regex to match a line in NameAliases.txt
     r=r"\n%04X;(?P<alias>[^;]+);" % (cp2int(cp))
-    s=compile(r)
-    matches=findall(s, namealiases)
+    matches=findall(r, namealiases)
     if matches == None: 
         debugprint("lookup_namealias did not find", r)
         return None
@@ -1678,8 +1676,8 @@ def rangeexpansion(oldargv):
 
     Ranges are slow in the current implementation because ugrep was
     originally written to create a single regexp and then use the
-    language's optimized routines to find it within a file. Ranges
-    simply run it over and over. 
+    language's optimized routines to find it within a file. 
+    Ranges simply run it over and over. 
 
     """
 
@@ -1697,7 +1695,6 @@ def rangeexpansion(oldargv):
 	  (?P<increment>[-0-9A-F]+)?
     	  (}(?P<postscript>[0-9A-F]*))?
     """
-    s=compile(s)
     newargv=[]
 
     for arg in oldargv:

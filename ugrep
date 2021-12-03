@@ -303,12 +303,12 @@ def main():
 
 def showonecharacter(c):
     s=makeregexeither(c)
-    compileit(s)
+    if debug: compileit(s)
     return printmatches(s)
               
 def showcodepoint(c):
     s=makeregexcodepoint(c)
-    compileit(s)
+    if debug: compileit(s)
     return printmatches(s)
               
 def showcjk(x):
@@ -862,21 +862,20 @@ F0000..FFFFF; Supplementary Private Use Area-A
     return ""
 
 def compileit(s):
-    "Compile the regular expresion in s, or die trying."
+    """Compile the regular expresion in s, or die trying.
+    This is for debugging of our regex generation, not for speed.
+    """
     global ucd, args
-
     if debug:
         debugprint(s)
         m=search(s,ucd)
         if not m: debugprint("Uncompiled, definitely not in ucd")
-
     try:
-        s=compile(s)
+        compile(s)
     except error as e:
         err("Error parsing regex: '%s'" % ".*".join(args.characters))
         err(e)
         exit(3)
-
 
 def isprint(c):
     # Given a category 'c', return True if it is printable.
@@ -1656,7 +1655,7 @@ def rangeexpansion(oldargv):
     Output prepends 0x at beginning to force hexadecimal lookup.
 	    (fdb..ff should not match OGHAM FEATHER MARK)
 
-    Design notes on curly brace expansion:
+    DESIGN NOTES ON CURLY BRACE EXPANSION:
 
     * TL;DR: Avoid curly braces due to quoting confusion with shell.
     * Ranges within curly braces '{' and '}' are minimally supported.
@@ -1671,9 +1670,17 @@ def rangeexpansion(oldargv):
     * ugrep {0..F}{0,4,8,C}00: works due to both shell and ugrep, but
       ugrep 0..FFFF..400: works better as it is sorted correctly.
     * Bash interprets an end number with fewer digits differently than ugrep!
-    * ugrep {8000..8}: Bash counts DOWN (!) from 8000 to 0008 (in decimal).
     * ugrep \{8000..8}: ugrep counts up from 8000 to 8008
-    * ugrep \{8000..0008}: ugrep counts DOWN from 8000 to 0008 (in hex).
+    * ugrep {8000..8}: Bash counts DOWN (!) from 8000 to 0008 (in DECIMAL).
+    * ugrep \{8000..0008}: ugrep counts down from 8000 to 0008 (in hex).
+
+    A NOTE ABOUT SLOWNESS. 
+
+    Ranges are slow in the current implementation because ugrep was
+    originally written to create a single regexp and then use the
+    language's optimized routines to find it within a file. Ranges
+    simply run it over and over. 
+
     """
 
 

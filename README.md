@@ -481,11 +481,13 @@ Note that ugrep currently prints just the name of the block the
 character is in [within square brackets] if it has no better way to
 identify the character. 
 
-</details>
-
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
+</details>
+
 ## Boring Implementation notes
+
+<details>
 
 This is a rewrite of b9's AWK ugrep into Python. While AWK makes more
 sense for what this program does (comparing fields based on regexps),
@@ -497,14 +499,29 @@ it for new scripts.
 Switching to Python did have the benefit of allowing more powerful
 Perlesque regexes (not that anyone has requested that).
 
-### Why not use unicodedata module?
+### Why not use the unicodedata module?
 
 I do not use Python's `unicodedata` module because it is woefully
 insufficient. It allows one to search by character name only by
 specifying it fully and exactly: `unicodedata.lookup("ROTATED HEAVY
 BLACK HEART BULLET")`.
 
+</details>
+
 ## Future Work
+
+### Rename this project
+
+Although I believe this `ugrep` existed first, there is now another
+[ugrep](https://github.com/Genivia/ugrep) which is quite widely known
+— with good reason as it looks pretty nifty — which hasnothing to do
+with looking up Unicode characters. The 'U' appears to stand for
+_Ultra-fast_ as it is a very speedy `grep` with lots of bells and
+whistles.
+
+What shall this project's new name be? `ug` is also taken by the other
+ugrep. How about `ugre`? It's an ugly, ogreish name, but it's probably
+a safe bet nobody is going to use that name for something else.
 
 ### Maybe use Unihan_Readings.txt for grepping
 
@@ -593,7 +610,7 @@ that data.
 * ugrep 3400 shows the text defined in UnicodeData.txt, which states
   that it is "<CJK Ideograph Extension A, First>". Now that ugrep can
   show ideograph definitions using Unihan_Readings.txt, we should
-  replace any string in angle brackets with more useful info.
+  (probably) replace any string in angle brackets with more useful info.
 
 * Brace expansion is confusing because of needing to be quoted from
   the shell. It is supported for ranges (not sequences), but is not
@@ -602,9 +619,24 @@ that data.
 
       ugrep {0..F}{0,4,8,C}00
 
-  but could be better written as:	
+  but is easier to understand using range expansion:
 
       ugrep 0..FFFF..400
+
+* Range expansion and a seemingly equivalent regular expression search
+  will give different results.
+  
+      ugrep 0..FFFF..400 | wc -l 
+	  64
+	  ugrep U+[0-9A-F][048C]00 | wc -l
+	  22
+
+  This is because regexes currently only return valid code points from
+  the UnicodeData.txt file, whereas range expansions can generate code
+  points which are in regions not directly defined by Unicode. For
+  example, the range from U+4E00 to U+9FEF is a block of CJK Ideographs.
+  Both are useful: regexes are blazingly fast, while range expansions
+  have more functionality. 
 
 * [Note: The following is not a problem for people who are willing to
   use vector fonts (truetype, opentype, postscript) that may be

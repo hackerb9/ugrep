@@ -314,14 +314,16 @@ $ ugrep 0..ffff..1000
 
 Unicode does not actually define most CJK characters, except
 indirectly via Unihan, which maps certain blocks of characters to
-other standards. Ugrep allows one to specify the code point or paste
-in an example character to look up.
+other standards. 
 
-		$ ugrep 𰻞
-		   𰻞	U+30EDE	biangbiang noodles ( M: biáng )
+* Ugrep allows one to specify the code point or paste in an example
+character to look up.
+
+        $ ugrep 𰻞
+           𰻞   U+30EDE biangbiang noodles ( M: biáng )
 
         $ ugrep 8000
-        耀	U+8000	shine, sparkle, dazzle; glory ( M: yào, C: jiu6, J: KAGAYAKU, K: YO )
+        耀  U+8000  shine, sparkle, dazzle; glory ( M: yào, C: jiu6, J: KAGAYAKU, K: YO )
 
   <a href="README.md.d/biangbiang.png">
   <img title="ugrep 30ede -L8" 

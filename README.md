@@ -207,6 +207,7 @@ To see some useful and lovely glyphs, try this:
 	    📽	U+1F4FD	FILM PROJECTOR
 	    📾	U+1F4FE	PORTABLE STEREO
 	    📿	U+1F4FF	PRAYER BEADS
+
     Sometimes it's useful (or just fun) to page through the Unicode
     table and see what characters are defined in a region. (`ugrep
     2700..ff`) Ranges are convenient, but very slow. Use regular
@@ -214,25 +215,25 @@ To see some useful and lovely glyphs, try this:
 
 ### Ranges can have an optional increment:
 
-	```
-	$ ugrep 0..ffff..1000
-	   �    U+0000  <control> (null)
-	   က    U+1000  MYANMAR LETTER KA
-	  [ ]   U+2000  EN QUAD
-	  [　]  U+3000  IDEOGRAPHIC SPACE
-	   䀀   U+4000  cups; small cups ( M: fàn, C: fan3 fan4 fan6 )
-	   倀   U+5000  bewildered; rash, wildly ( M: chāng, C: caang1 caang4 coeng1 zaang1, J: KURUU TAORERU, K: CHANG, V: trành )
-	   怀   U+6000  bosom, breast; carry in bosom ( M: huái, C: waai4 )
-	   瀀   U+7000  [CJK Unified Ideographs] ( M: yōu, J: ATSUI )
-	   耀   U+8000  shine, sparkle, dazzle; glory ( M: yào, C: jiu6, J: KAGAYAKU, K: YO )
-	   退   U+9000  step back, retreat, withdraw ( M: tuì, C: teoi3, J: SHIRIZOKU SHIRIZOKERU, K: THOY, V: thoái )
-	   ꀀ   U+A000  YI SYLLABLE IT
-	   뀀   U+B000  Block: [Hangul Syllables]
-	   쀀   U+C000  Block: [Hangul Syllables]
-	   퀀   U+D000  Block: [Hangul Syllables]
-	   �    U+E000  <Private Use, First>
-	       U+F000  Block: [Private Use Area]
-	```
+```
+$ ugrep 0..ffff..1000
+   �    U+0000  <control> (null)
+   က    U+1000  MYANMAR LETTER KA
+  [ ]   U+2000  EN QUAD
+  [　]  U+3000  IDEOGRAPHIC SPACE
+   䀀   U+4000  cups; small cups ( M: fàn, C: fan3 fan4 fan6 )
+   倀   U+5000  bewildered; rash, wildly ( M: chāng, C: caang1 caang4 coeng1 zaang1, J: KURUU TAORERU, K: CHANG, V: trành )
+   怀   U+6000  bosom, breast; carry in bosom ( M: huái, C: waai4 )
+   瀀   U+7000  [CJK Unified Ideographs] ( M: yōu, J: ATSUI )
+   耀   U+8000  shine, sparkle, dazzle; glory ( M: yào, C: jiu6, J: KAGAYAKU, K: YO )
+   退   U+9000  step back, retreat, withdraw ( M: tuì, C: teoi3, J: SHIRIZOKU SHIRIZOKERU, K: THOY, V: thoái )
+   ꀀ   U+A000  YI SYLLABLE IT
+   뀀   U+B000  Block: [Hangul Syllables]
+   쀀   U+C000  Block: [Hangul Syllables]
+   퀀   U+D000  Block: [Hangul Syllables]
+   �    U+E000  <Private Use, First>
+       U+F000  Block: [Private Use Area]
+```
 
   * Tip: pipe long output to `less` and search for a code point by
     pressing `/U\+A60F`.
@@ -307,7 +308,7 @@ To see some useful and lovely glyphs, try this:
   ugrep will show the correction in Title Case Letters and in red
   letters, if the terminal supports color text.
   
-- <span style="font-family: monospace">   ︘   U+FE18  PRESENTATION FORM FOR VERTICAL RIGHT WHITE LENTICULAR BRAKCET (<span style="color:red">Presentation Form For Vertical Right White Lenticular Bracket</span>)</span> -
+  <span style="font-family: monospace">   ︘   U+FE18  PRESENTATION FORM FOR VERTICAL RIGHT WHITE LENTICULAR BRAKCET (<span style="color:red">Presentation Form For Vertical Right White Lenticular Bracket</span>)</span>
 
 ### View CJK (Chinese-Japanese-Korean) characters
 

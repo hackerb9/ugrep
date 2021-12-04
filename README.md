@@ -191,9 +191,10 @@ how many heart emojis Unicode has. 😜)
 	    📽	U+1F4FD	FILM PROJECTOR
 	    📾	U+1F4FE	PORTABLE STEREO
 	    📿	U+1F4FF	PRAYER BEADS
-    Sometimes it's useful (or fun) to page through the Unicode table
-    and see what characters are defined in a region. 
-	Try `ugrep 2700..ff` .
+    Sometimes it's useful (or just fun) to page through the Unicode
+    table and see what characters are defined in a region. (`ugrep
+    2700..ff`) Ranges are convenient, but very slow. Use regular
+    expressions if you want speed. (`ugrep U+27..`)
 
   * Ranges can have an optional increment:
 
@@ -246,10 +247,49 @@ how many heart emojis Unicode has. 😜)
   ugrep -L4 fdfd
   ```
 
-  * Note: Increasing the glyph size also increased the text size. Not
-    all terminals are capable of "double height" text. If yours shows
-    two lines of the same text in the usual size, try using
+  * Note that increasing the glyph size also increased the text size.
+    Not all terminals are capable of "double height" text. If yours
+    shows two lines of the same text in the usual size, try using
     `--never-double-text`.
+
+* Copying whitespace from the terminal
+
+        $ ugrep -w space
+		  [ ]   U+0020  SPACE (SP)
+		  [ ]   U+00A0  NO-BREAK SPACE (non-breaking space) (NBSP)
+		  [ ]   U+1680  OGHAM SPACE MARK
+		  [ ]   U+2002  EN SPACE
+		  [ ]   U+2003  EM SPACE
+		  [ ]   U+2004  THREE-PER-EM SPACE
+		  [ ]   U+2005  FOUR-PER-EM SPACE
+		  [ ]   U+2006  SIX-PER-EM SPACE
+		  [ ]   U+2007  FIGURE SPACE
+		  [ ]   U+2008  PUNCTUATION SPACE
+		  [ ]   U+2009  THIN SPACE
+		  [ ]   U+200A  HAIR SPACE
+
+  Whitespace characters are printed with square brackets around them
+  to make it easy to highlight and copy them from the terminal. If
+  your terminal supports colors, they will also be shown with a yellow
+  background.
+
+* Determine if an alias is actually a correction. 
+
+  Ugrep usually shows the character name in all caps and then aliases
+  in lowercase in parentheses. Some aliases are treated differently. 
+  For aesthetic reasons, aliases that are abbreviations are also shown
+  in uppercase. For example:
+  
+         �    U+FEFF  ZERO WIDTH NO-BREAK SPACE (byte order mark) (BOM) (ZWNBSP)
+
+  There are also 31 characters in Unicode which have the wrong name.
+  Unicode cannot correct the name in the standard UnicodeData.txt
+  database, but can add an alias in NameAliases.txt and mark it as a
+  correction. If that file exists on your system, then ugrep will show
+  the correction in Title Case Letters and, if your terminal can
+  handle it, the text will be colored red.
+  
+  <span style="font-family: monospace">   ︘   U+FE18  PRESENTATION FORM FOR VERTICAL RIGHT WHITE LENTICULAR BRAKCET (<span style="color:red">Presentation Form For Vertical Right White Lenticular Bracket</span>)</span>
 
 * View _all_ characters defined by Unicode:
 
@@ -330,6 +370,8 @@ On other systems, you can do this
     unzip Unihan.zip
 
 ### CJK example
+
+<details>
 
 #### Example 1: Unicode code point
 
@@ -430,6 +472,7 @@ Note that ugrep currently prints just the name of the block the
 character is in [within square brackets] if it has no better way to
 identify the character. 
 
+</details>
 
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 

@@ -263,8 +263,8 @@ To see some useful and lovely glyphs, try this:
   ugrep -L4 fdfd
      ﷽    U+FDFD  ARABIC LIGATURE BISMILLAH AR-RAHMAN AR-RAHEEM
                     Aldhabi
-					Trutypewriter PolyglOTT
-					Unifont
+                    Trutypewriter PolyglOTT
+                    Unifont
   ```
 
   * Note that increasing the glyph size also increased the text size.
@@ -292,10 +292,10 @@ To see some useful and lovely glyphs, try this:
   to make it easy to highlight and copy them from the terminal. They
   will also be shown with a yellow background, if the terminal allows.
 
-### Determine if an alias is actually a correction. 
+### Determine if an alias is actually a correction
 
   Ugrep shows the character name in all caps and aliases are usually
-  in lowercase in parentheses. Some aliases are treated differently.
+  lowercase in parentheses. Some aliases are treated differently.
   For aesthetic reasons, abbreviations are also shown in uppercase.
   For example:
   
@@ -307,7 +307,7 @@ To see some useful and lovely glyphs, try this:
   ugrep will show the correction in Title Case Letters and in red
   letters, if the terminal supports color text.
   
-  - <span style="font-family: monospace">   ︘   U+FE18  PRESENTATION FORM FOR VERTICAL RIGHT WHITE LENTICULAR BRAKCET (<span style="color:red">Presentation Form For Vertical Right White Lenticular Bracket</span>)</span>
+- <span style="font-family: monospace">   ︘   U+FE18  PRESENTATION FORM FOR VERTICAL RIGHT WHITE LENTICULAR BRAKCET (<span style="color:red">Presentation Form For Vertical Right White Lenticular Bracket</span>)</span> -
 
 ### View CJK (Chinese-Japanese-Korean) characters
 

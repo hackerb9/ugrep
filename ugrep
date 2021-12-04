@@ -928,7 +928,7 @@ def printonematch(m):
         if not g["hex"]: g["hex"]=g["hextwo"]
         if not g["hex"]: g["hex"]=g["hexthree"]
         cphex=g["hex"]
-        if not g["name"]: g["name"]=g["desctwo"]
+        if not g["name"]: g["name"]=g["nametwo"]
         if not g["name"]: g["name"]=g["namethree"]
         name=g["name"]
         if not g["category"]: g["category"] = g["categorytwo"]
@@ -937,16 +937,6 @@ def printonematch(m):
         if not g["alias"]: g["alias"]=g["aliastwo"]
         if not g["alias"]: g["alias"]=g["aliasthree"]
         alias=g["alias"]
-
-        # Because Python doesn't have AWK's concept of fields, there's
-        # a chance the user passed in a regex that crossed into
-        # another field. For example: ugrep 'U+.*' would also match
-        # semicolons. To handle that, we try to sanitize the data by
-        # removing any semicolons and any trailing data.
-        cphex = cphex.split(';')[0]
-        name = name.split(';')[0]
-        category = category.split(';')[0]
-        alias = alias.split(';')[0]
 
         try:
             codepoint=int(cphex, 16)
@@ -1614,7 +1604,7 @@ def makeregexcharname(words):
     # # r is a search regex for field 11 (alias)
     r=r"""
         ^(?P<hextwo>[^;\n]*)            # first field is hexadecimal codepoint
-        ;(?P<desctwo>[^;\n]*)           # second field is charactername
+        ;(?P<nametwo>[^;\n]*)           # second field is charactername
         ;(?P<categorytwo>[^;\n]*)       # third field is general category 
         (;[^;\n]*){7}                   # skip next 7 fields
         ;(?P<aliastwo>[^;\n]*(

@@ -469,7 +469,7 @@ def lookup_namealias(cp):
     # 0004;EOT;abbreviation
     # 
     # Regex to match a line in NameAliases.txt
-    r=r"(?m)^%04X;(?P<alias>[^;]+);(?P<type>[^;#\n]+)$" % (cp2int(cp))
+    r=r"(?m)^%04X;(?P<alias>[^;\n]+);(?P<type>[^;\n]+)$" % (cp2int(cp))
     matches=finditer(r, namealiases)
     if matches == None: 
         debugprint("lookup_namealias did not find", r)
@@ -966,17 +966,17 @@ def printonematch(m):
         print(c, end='')
         maybe_close_box(codepoint, name, category)
         print(end='\t')
-        print ("U+" + g["hex"], end='\t')
+        print ("U+" + cphex, end='\t')
         print(name, end='')
         if (len(alias) and isdifferent(name, alias)):
             print (" (" + alias.lower() + ")", end='')
-        for alias2 in lookup_namealias(g["hex"]):
+        for alias2 in lookup_namealias(cphex):
             if (len(alias2) and isdifferent(alias, alias2)):
                 print (" (" + alias2 + ")", end='')
 
         print("", flush=True)
         # If -l, show list of installed fonts which contain the glyph.
-        if args.list_fonts:  show_fonts( g["hex"], category )
+        if args.list_fonts:  show_fonts( cphex, category )
 
     return foundone
 
@@ -1600,24 +1600,28 @@ def makeregexcharname(words):
     arghs=sub(r"\$\)$", r"(?=;))", arghs)  # $ matches semicolon after field 
 
     # s is a search regex for field 2 (name) based on the command line arguments
-    s=r"""^
-        (?P<hex>[^;]*);             # first field is hexadecimal codepoint
-        (?P<name>[^;]*"""+arghs+"""[^;]*); # field 2 (charactername) matches?
-        (?P<category>[^;]*);        # third field is general category 
-        ([^;]*;){7}                 # skip next 7 fields
-        (?P<alias>[^;]*)            # field 11 is comment/alias
-        (;[^;]*){4}$                # line ends with four more fields
+    s=r"""
+        ^(?P<hex>[^;\n]*)		# first field is hexadecimal codepoint
+        ;(?P<name>[^;\n]*
+        """ + arghs + """		# field 2 (charactername) matches?
+        [^;\n]*) 		       
+        ;(?P<category>[^;\n]*)		# third field is general category 
+        (;[^;\n]*){7}			# skip next 7 fields
+        ;(?P<alias>[^;\n]*)		# field 11 is comment/alias
+        (;[^;\n]*){4}$			# line ends with four more fields
     """
 
-    # r is a search regex for field 11 (alias)
-    r=r"""^
-        (?P<hextwo>[^;]*);            # first field is hexadecimal codepoint
-        (?P<desctwo>[^;]*);           # second field is charactername
-        (?P<categorytwo>[^;]*);       # third field is general category 
-        ([^;]*;){7}                   # skip next 7 fields
-        (?P<aliastwo>[^;]*("""+arghs+""")[^;]*) # field 11 (alias) matches?
-        (;[^;]*){4}$                  # line ends with four more fields
-    """
+    # # r is a search regex for field 11 (alias)
+    r=r"""
+        ^(?P<hextwo>[^;\n]*)            # first field is hexadecimal codepoint
+        ;(?P<desctwo>[^;\n]*)           # second field is charactername
+        ;(?P<categorytwo>[^;\n]*)       # third field is general category 
+        (;[^;\n]*){7}                   # skip next 7 fields
+        ;(?P<aliastwo>[^;\n]*(
+        """ + arghs + r"""		# field 11 (alias) matches?
+        )[^;\n]*)
+        (;[^;\n]*){4}$                  # line ends with four more fields
+        """
 
     s=s+"|"+r                   # Search for either name or alias
     s="(?mix)"+s                # multiline, case insensitive, verbose
@@ -1635,12 +1639,13 @@ def makeregexcodepoint(cp):
     debugprint("codepoint we'll search for is", cp)
 
     # s is a search regex for field 1 (hexadecimal)
-    s=r"""^
-        (?P<hexthree>"""+cp+""");		#first field is hex codepoint
-        (?P<namethree>[^;]*);			# second field is charactername
-        (?P<categorythree>[^;]*);		# third field is category
-        ([^;]*;){7}				# skip next 7 fields
-        (?P<aliasthree>[^;]*)            	# field 11 is comment/alias # 
+    s=r"""
+        ^(?P<hexthree>"""+cp+""")	# first field is hex codepoint
+        ;(?P<namethree>[^;\n]*)		# second field is charactername
+        ;(?P<categorythree>[^;\n]*)	# third field is category
+        (;[^;\n]*){7}			# skip next 7 fields
+        ;(?P<aliasthree>[^;\n]*)	# field 11 is comment/alias 
+        (;[^;\n]*){4}$ 			# line ends with four more fields
     """
     s="(?mix)"+s                     # multiline, case insensitive, verbose
     return(s)

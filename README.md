@@ -80,12 +80,28 @@ and make it executable.
 
     Useful scale values range from 2 to 8. 
 
-### Examples:
+## Examples
 
 Note: output from all examples has been excerpted. (You'd be amazed
 how many heart emojis Unicode has. 😜)
 
-* Plain text search is simple:
+<details>
+
+### Fun things to try:
+
+To see some useful and lovely glyphs, try this:
+
+    ugrep face 
+    ugrep alchemical 
+    ugrep ornament
+    ugrep bullet
+    ugrep '(vine|bud)'
+    ugrep vai
+    ugrep heavy
+    ugrep drawing
+    ugrep combining
+
+### Plain text search is simple:
 
 	    $ ugrep heart
 	    ☙	U+2619	REVERSED ROTATED FLORAL HEART BULLET
@@ -97,12 +113,12 @@ how many heart emojis Unicode has. 😜)
 	    😍	U+1F60D SMILING FACE WITH HEART-SHAPED EYES
 	    😻	U+1F63B	SMILING CAT FACE WITH HEART-SHAPED EYES
 
-* Paste in a single character to lookup its codepoint:
+### Paste in a single character to lookup its codepoint:
 
 	    $ ugrep ☺
 	    ☺       U+263A  WHITE SMILING FACE
 
-* Arguments on the command line have an implicit wildcard between them:
+### Arguments on the command line have an implicit wildcard between them:
 
 	    $ ugrep right.*gle
 	    $ ugrep right gle       # Equivalent
@@ -111,7 +127,7 @@ how many heart emojis Unicode has. 😜)
 	    ∟	U+221F	RIGHT ANGLE
 	    ⊿	U+22BF	RIGHT TRIANGLE
 
-* You can use regular expressions for fancier searches: 
+### You can use regular expressions for fancier searches: 
 
 	    $ ugrep -w '(wo|hu)?m(a|e)ns?'
 	    ᛗ	U+16D7	RUNIC LETTER MANNAZ MAN M
@@ -132,7 +148,7 @@ how many heart emojis Unicode has. 😜)
 	    ⊻	U+22BB	XOR
 	    ⌧	U+2327	X IN A RECTANGLE BOX (clear key)
 
-* Use the `-w` flag to search only for complete words:
+### Use the `-w` flag to search only for complete words:
 
 	    $ ugrep -w R	    # The letter R used as a word
 	    $ ugrep "\bR\b"	    # (regex equivalent)
@@ -142,7 +158,7 @@ how many heart emojis Unicode has. 😜)
 	    ℜ	U+211C	BLACK-LETTER CAPITAL R (Black-letter r)
 	    ℝ	U+211D	DOUBLE-STRUCK CAPITAL R (Double-struck r)
 
-* Use -c to display info for each character in a string.
+### Use -c to display info for each character in a string.
 
         $ ugrep -c "ᕕ( ᐛ )ᕗ"
         ᕕ   U+1555  CANADIAN SYLLABICS FI
@@ -153,12 +169,12 @@ how many heart emojis Unicode has. 😜)
         )   U+0029  RIGHT PARENTHESIS (closing parenthesis)
         ᕗ   U+1557  CANADIAN SYLLABICS FO
 
-* Aliases (alternate names) are also searched:
+### Aliases (alternate names) are also searched:
 
 	    $ ugrep backslash
 	    \	U+005C	REVERSE SOLIDUS (backslash)
 
-* Use **..** to browse through a range of Unicode characters:
+### Use **..** to browse through a range of Unicode characters:
 
 	    $ ugrep 26b3..b
 	    ⚳	U+26B3	CERES
@@ -196,7 +212,7 @@ how many heart emojis Unicode has. 😜)
     2700..ff`) Ranges are convenient, but very slow. Use regular
     expressions if you want speed. (`ugrep U+27..`)
 
-  * Ranges can have an optional increment:
+### Ranges can have an optional increment:
 
 	```
 	$ ugrep 0..ffff..1000
@@ -221,7 +237,7 @@ how many heart emojis Unicode has. 😜)
   * Tip: pipe long output to `less` and search for a code point by
     pressing `/U\+A60F`.
 
-* Use -l to list which installed fonts contain a certain glyph:
+### Use -l to list which installed fonts contain a certain glyph:
   <a href="https://raw.githubusercontent.com/hackerb9/ugrep/master/README.md.d/list-fonts.png">
   <img title="ugrep -l swash amp" alt-text="Example of ugrep listing fonts" align="right" src="README.md.d/list-fonts.png" width="50%">
   </a>
@@ -235,7 +251,7 @@ how many heart emojis Unicode has. 😜)
     graphics (e.g., `xterm -ti vt340`) and you have ImageMagick
     installed.
 
-* Use -L to scale up the font examples when listing fonts
+### Use -L to scale up the font examples when listing fonts
   
   <a href="https://raw.githubusercontent.com/hackerb9/ugrep/master/README.md.d/list-fonts-scale.png">
   <img title="ugrep -L4 fdfd" 
@@ -245,6 +261,10 @@ how many heart emojis Unicode has. 😜)
   
   ```
   ugrep -L4 fdfd
+     ﷽    U+FDFD  ARABIC LIGATURE BISMILLAH AR-RAHMAN AR-RAHEEM
+                    Aldhabi
+					Trutypewriter PolyglOTT
+					Unifont
   ```
 
   * Note that increasing the glyph size also increased the text size.
@@ -252,7 +272,7 @@ how many heart emojis Unicode has. 😜)
     shows two lines of the same text in the usual size, try using
     `--never-double-text`.
 
-* Copying whitespace from the terminal
+### Copy whitespace from the terminal
 
         $ ugrep -w space
 		  [ ]   U+0020  SPACE (SP)
@@ -269,45 +289,37 @@ how many heart emojis Unicode has. 😜)
 		  [ ]   U+200A  HAIR SPACE
 
   Whitespace characters are printed with square brackets around them
-  to make it easy to highlight and copy them from the terminal. If
-  your terminal supports colors, they will also be shown with a yellow
-  background.
+  to make it easy to highlight and copy them from the terminal. They
+  will also be shown with a yellow background, if the terminal allows.
 
-* Determine if an alias is actually a correction. 
+### Determine if an alias is actually a correction. 
 
-  Ugrep usually shows the character name in all caps and then aliases
-  in lowercase in parentheses. Some aliases are treated differently. 
-  For aesthetic reasons, aliases that are abbreviations are also shown
-  in uppercase. For example:
+  Ugrep shows the character name in all caps and aliases are usually
+  in lowercase in parentheses. Some aliases are treated differently.
+  For aesthetic reasons, abbreviations are also shown in uppercase.
+  For example:
   
-         �    U+FEFF  ZERO WIDTH NO-BREAK SPACE (byte order mark) (BOM) (ZWNBSP)
+  <span style="font-family: monospace">   �    U+FEFF  ZERO WIDTH NO-BREAK SPACE (byte order mark) (BOM) (ZWNBSP)
 
-  There are also 31 characters in Unicode which have the wrong name.
-  Unicode cannot correct the name in the standard UnicodeData.txt
-  database, but can add an alias in NameAliases.txt and mark it as a
-  correction. If that file exists on your system, then ugrep will show
-  the correction in Title Case Letters and, if your terminal can
-  handle it, the text will be colored red.
+  There are 31 characters in Unicode which have the wrong name in the
+  UnicodeData.txt database. Unicode includes the correct name as an
+  alias in NameAliases.txt. If that file exists on your system, then
+  ugrep will show the correction in Title Case Letters and in red
+  letters, if the terminal supports color text.
   
-  <span style="font-family: monospace">   ︘   U+FE18  PRESENTATION FORM FOR VERTICAL RIGHT WHITE LENTICULAR BRAKCET (<span style="color:red">Presentation Form For Vertical Right White Lenticular Bracket</span>)</span>
+  - <span style="font-family: monospace">   ︘   U+FE18  PRESENTATION FORM FOR VERTICAL RIGHT WHITE LENTICULAR BRAKCET (<span style="color:red">Presentation Form For Vertical Right White Lenticular Bracket</span>)</span>
 
-* View _all_ characters defined by Unicode:
+### View CJK (Chinese-Japanese-Korean) characters
 
-	    $ ugrep .?  |  less
-	    ⋮	[ ... over 30,000 glyphs elided for brevity ... ]
+Unicode does not actually define most CJK characters, except
+indirectly via Unihan, which maps certain blocks of characters to
+other standards. Ugrep allows one to specify the code point or paste
+in an example character to look up.
 
-  * Want just Unicode glyphs without the description? Please use
-    [fonttable](https://github.com/hackerb9/fonttable). It shows all
-    defined Unicode characters by default.
-
-* To see CJK (Chinese-Japanese-Korean) characters that Unicode defines
-  indirectly via Unihan, you may specify the code point or paste in an
-  example character to look up.
-
-		$ ugrep 30ede
+		$ ugrep 𰻞
 		   𰻞	U+30EDE	biangbiang noodles ( M: biáng )
 
-        $ ugrep 耀
+        $ ugrep 8000
         耀	U+8000	shine, sparkle, dazzle; glory ( M: yào, C: jiu6, J: KAGAYAKU, K: YO )
 
   <a href="README.md.d/biangbiang.png">
@@ -316,7 +328,16 @@ how many heart emojis Unicode has. 😜)
        src="README.md.d/biangbiang.png">
   </a>
 
-* Show all possible code points, defined in Unicode or not:
+### View _all_ characters defined by Unicode:
+
+	    $ ugrep .?  |  less
+	    ⋮	[ ... over 30,000 glyphs elided for brevity ... ]
+
+  * Want just Unicode glyphs without the description? Please use
+    [fonttable](https://github.com/hackerb9/fonttable). It shows all
+    defined Unicode characters by default.
+
+### Show all possible code points, even the ones _not_ defined in Unicode:
 
 		$ ugrep 0..10FFFF | less
 	    ⋮	[ ... over a million lines elided for brevity ... ]
@@ -325,19 +346,7 @@ how many heart emojis Unicode has. 😜)
   You likely want to use
   [fonttable -u](https://github.com/hackerb9/fonttable) instead. 
   
-### Fun things to try:
-
-To see some useful and lovely glyphs, try this:
-
-    ugrep face 
-    ugrep alchemical 
-    ugrep ornament
-    ugrep bullet
-    ugrep '(vine|bud)'
-    ugrep vai
-    ugrep heavy
-    ugrep drawing
-    ugrep combining
+</details>
 
 ## Prerequisite: UnicodeData.txt
 

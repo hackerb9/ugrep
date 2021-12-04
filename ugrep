@@ -46,6 +46,7 @@ from os import isatty
 from subprocess import getoutput, run
 import argparse
 from math import floor, copysign
+from collections import defaultdict
 
 from pprint import pprint as pp
 
@@ -917,20 +918,16 @@ def printonematch(m):
     category=""
     foundone=None
     if m:
-        foundone=True
-        print("   ", end='') 	# Indent for MacOS
-
         g=m.groupdict()
+        debugprint(g)
 
         # Default to an empty string for missing regex keys.
-        from collections import defaultdict
-        g=defaultdict(str, m.groupdict())
-
-        debugprint(g)
+        g=defaultdict(str, g)
 
         # What is the Pythonic way to do this?
         if not g["hex"]: g["hex"]=g["hextwo"]
         if not g["hex"]: g["hex"]=g["hexthree"]
+        cphex=g["hex"]
         if not g["name"]: g["name"]=g["desctwo"]
         if not g["name"]: g["name"]=g["namethree"]
         name=g["name"]
@@ -940,8 +937,26 @@ def printonematch(m):
         if not g["alias"]: g["alias"]=g["aliastwo"]
         if not g["alias"]: g["alias"]=g["aliasthree"]
         alias=g["alias"]
-        codepoint=int(g["hex"], 16)
+
+        # Because Python doesn't have AWK's concept of fields, there's
+        # a chance the user passed in a regex that crossed into
+        # another field. For example: ugrep 'U+.*' would also match
+        # semicolons. To handle that, we try to sanitize the data by
+        # removing any semicolons and any trailing data.
+        cphex = cphex.split(';')[0]
+        name = name.split(';')[0]
+        category = category.split(';')[0]
+        alias = alias.split(';')[0]
+
+        try:
+            codepoint=int(cphex, 16)
+        except ValueError: 
+            debugprint("BUG: Could not convert", cphex, "to integer.")
+            return False
+
         c=chr(codepoint)
+        foundone=True
+        print("   ", end='') 	# Indent for MacOS
         maybe_open_box(codepoint, name, category)
         if not isprint(category): c="\ufffd" # "Replacement Character"
         if iscombining(category): print('\u25cc', end='') # "Dotted circle"

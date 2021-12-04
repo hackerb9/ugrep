@@ -366,9 +366,10 @@ def showcjk(x):
     return True
 
 def isunihan(x):
-    """Given a codepoint x, e.g. "U+8000", return True if the x is within
+    """Given a codepoint x, e.g. "U+8000", return True if x is within
     a CJK Unified Ideographs block. Such characters are not defined in
     UnicodeData.txt but can be looked up in Unihan_Readings.txt.
+    See lookup_readings().
 
     """
     try:
@@ -915,8 +916,7 @@ def printmatches(s):
     return foundone
 
 def printonematch(m):
-    category=""
-    foundone=None
+    foundone=False
     if m:
         g=m.groupdict()
         debugprint(g)
@@ -937,6 +937,10 @@ def printonematch(m):
         if not g["alias"]: g["alias"]=g["aliastwo"]
         if not g["alias"]: g["alias"]=g["aliasthree"]
         alias=g["alias"]
+
+        if name == '<control>' and alias:
+            name = alias
+            alias = ""
 
         try:
             codepoint=int(cphex, 16)
@@ -961,8 +965,10 @@ def printonematch(m):
         if (len(alias) and isdifferent(name, alias)):
             print (" (" + alias.lower() + ")", end='')
         for alias2 in lookup_namealias(cphex):
-            if (len(alias2) and isdifferent(alias, alias2)):
-                print (" (" + alias2 + ")", end='')
+            if len(alias2):
+                if not alias or isdifferent(alias, alias2):
+                    if not name or isdifferent(name, alias2):
+                        print (" (" + alias2 + ")", end='')
 
         print("", flush=True)
         # If -l, show list of installed fonts which contain the glyph.
@@ -1351,24 +1357,50 @@ def isdifferent(a, b):
 
     if a == b:
         return False
-    if a == b.replace(" DIGIT ", " "):
-        return False
-    if a == b.replace("FORMS ", "BOX DRAWINGS "):
-        return False
-    if a == b.replace("GRAPHIC ", "SYMBOL "):
-        return False
-    if a == b.replace("GLYPH ", "PRESENTATION FORM "):
-        return False
-    if a == b.replace("CENTER", "CENTRE"):
-        return False
-    if a == b.replace("CENTERED", "CENTRED"):
-        return False
-    if a == b.replace("SQUARED ", "SQUARE "):
+
+    bb = b.replace("NON-SPACING", "COMBINING")
+    bb = bb.replace("SPACING ", "")
+    bb = bb.replace("OVERSCORE", "OVERLINE")
+    bb = bb.replace("UNDERSCORE", "LOW LINE")
+    aa = a.replace("PRESENTATION FORM", "GLYPH")
+
+    if a == bb:
         return False
 
-    b=b.replace(" ", ".*")
+    if aa.replace(" ACCENT", "") == bb:
+        return False
+    if aa == bb.replace(" DIGIT ", " "):
+        return False
+    if aa == bb.replace("FORMS ", "BOX DRAWINGS "):
+        return False
+    if aa == bb.replace("GRAPHIC ", "SYMBOL "):
+        return False
+    if aa == bb.replace("CENTER", "CENTRE"):
+        return False
+    if aa == bb.replace("CENTERED", "CENTRED"):
+        return False
+    if aa == bb.replace("SQUARED ", "SQUARE "):
+        return False
+    if aa == bb.replace("SPACING ", ""):
+        return False
+    if aa == bb.replace("BAR", "LINE"):
+        return False
+    if aa == bb.replace("BAR", "STROKE"):
+        return False
+    if aa == bb.replace("BAR", "WITH STROKE"):
+        return False
+    if aa == bb.replace("OPENING", "LEFT"):
+        return False
+    if aa == bb.replace("CLOSING", "RIGHT"):
+        return False
+    if bb.find("GUILLEMET") != -1:
+        return False
+
+    # If b is found within a, it is likely not different. (Return False)
+    # Word breaks, \b, are used to distinguish TAB from CHARACTER TABULATION. 
+    r=r'\b'+b.replace(" ", ".*")+r'\b'
     try:
-        m=search(b, a)
+        m=search(r, a)
         if m:
             return False
         else:

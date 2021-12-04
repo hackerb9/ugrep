@@ -479,12 +479,18 @@ def lookup_namealias(cp):
     for m in matches:
         g=m.groupdict()
         debugprint("lookup_namealias", g)
-        if g['type'] != 'abbreviation':
-            # For clarity, usually only names are in all caps.
-            results.append(g['alias'].lower())  # "end of transmission"
-        else:
+        if g['type'] == 'abbreviation':
             # Allow abbreviations to also be uppercase 
             results.append(g['alias']) 		# "EOT"
+        elif g['type'] == 'correction':
+            # Corrections to the official name are noteworthy.
+            c=g['alias'].title() 	       # "Weierstrass Elliptic Function"
+            try: c=curses.red(c)
+            except NameError: pass
+            results.append(c)
+        else:
+            # For clarity, usually only names are in all caps.
+            results.append(g['alias'].lower())  # "end of transmission"
 
 
     return results
@@ -938,6 +944,7 @@ def printonematch(m):
         if not g["alias"]: g["alias"]=g["aliasthree"]
         alias=g["alias"]
 
+        # Do not use <control> as the name if we've got an alias in UCD.
         if name == '<control>' and alias:
             name = alias
             alias = ""
@@ -945,7 +952,7 @@ def printonematch(m):
         try:
             codepoint=int(cphex, 16)
         except ValueError: 
-            debugprint("BUG: Could not convert", cphex, "to integer.")
+            eprint("BUG: Could not convert", cphex, "to integer.")
             return False
 
         c=chr(codepoint)
@@ -1393,8 +1400,13 @@ def isdifferent(a, b):
         return False
     if aa == bb.replace("CLOSING", "RIGHT"):
         return False
+
     if bb.find("GUILLEMET") != -1:
         return False
+
+    if bb.find("ARABIC") != -1:
+        if aa.endswith("FORM"):
+            return False
 
     # If b is found within a, it is likely not different. (Return False)
     # Word breaks, \b, are used to distinguish TAB from CHARACTER TABULATION. 

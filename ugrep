@@ -1396,12 +1396,25 @@ def isdifferent(a, b):
         return False
     if aa == bb.replace("BAR", "WITH STROKE"):
         return False
+    if aa == bb.replace("SLASH", "WITH STROKE"):
+        return False
     if aa == bb.replace("OPENING", "LEFT"):
         return False
     if aa == bb.replace("CLOSING", "RIGHT"):
         return False
+    if aa == bb.replace("EASTERN ARABIC", "EXTENDED ARABIC"):
+        return False
 
-    if bb.find("GUILLEMET") != -1:
+    if bb.find("HACEK") != -1:  # Replaced with CARON
+        return False
+
+    if bb.find("YOGH") != -1:   # Replaced with EZH
+        return False
+
+    if bb.find("GUILLEMET") != -1: # Replaced with ANGLE QUOTATION MARK
+        return False
+
+    if bb.find("HAMZAH") != -1: # Replaced with HAMZA
         return False
 
     if bb.find("ARABIC") != -1:

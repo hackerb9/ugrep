@@ -1182,9 +1182,11 @@ def show_fonts(x, category=None):
                 debugprint(*["'" + c + "'" for c in command], flush=True)
 
             try: output=run(command, capture_output=True)
-            except FileNotFoundError: print(""); continue 	# No ImageMagick
-            except KeyboardInterrupt: exit(1)                   # Exit on ^C
-            except ValueError:                                  # Handle NULL
+            except FileNotFoundError: print(""); continue   # No ImageMagick
+            except KeyboardInterrupt: exit(1)               # Exit on ^C
+            except (ValueError, TypeError):
+                # ValueError occurs on NULL,
+                # TypeError from Python <3.7 which did not have capture_output
                 if double_text: print("") 
                 print("", flush=True)
                 continue

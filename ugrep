@@ -1995,8 +1995,10 @@ atexit.register(cleanup)		       	# When exiting, cleanup sixels
 # Python3 defaults to dying horribly on simple things like print('\u2020')
 import sys
 if sys.stdout:
-    sys.stdout.reconfigure(errors='replace') 	# Print a ? instead of dying.
-
+    try:
+        sys.stdout.reconfigure(errors='replace') # Print a ? instead of dying.
+    except AttributeError:
+        pass                    	       # Python<3.7 cannot reconfigure.
 
 ### Run the main routine
 try:

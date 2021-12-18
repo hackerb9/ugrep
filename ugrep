@@ -458,10 +458,12 @@ def lookup_namealias(cp):
     """Given a hexadecimal string, cp ("0004"), return a list with
     an element for each line in NameAliases.txt. Example:
     For input "0004", the result is: { 'end of transmission', 'EOT' }
+
+    Returns {} if no alias was found or if NameAliases.txt does not exist.
     """
     # Initialize 'namealiases' global variable
     if not loadnamealiases():
-        return False
+        return {}
 
     cp = cp.lstrip("Uu+0Xx")
     results=[]
@@ -474,7 +476,7 @@ def lookup_namealias(cp):
     matches=finditer(r, namealiases)
     if matches == None: 
         debugprint("lookup_namealias did not find", r)
-        return None
+        return {}
 
     for m in matches:
         g=m.groupdict()

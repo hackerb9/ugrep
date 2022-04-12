@@ -458,10 +458,12 @@ def lookup_namealias(cp):
     """Given a hexadecimal string, cp ("0004"), return a list with
     an element for each line in NameAliases.txt. Example:
     For input "0004", the result is: { 'end of transmission', 'EOT' }
+
+    Returns {} if no alias was found or if NameAliases.txt does not exist.
     """
     # Initialize 'namealiases' global variable
     if not loadnamealiases():
-        return False
+        return {}
 
     cp = cp.lstrip("Uu+0Xx")
     results=[]
@@ -474,7 +476,7 @@ def lookup_namealias(cp):
     matches=finditer(r, namealiases)
     if matches == None: 
         debugprint("lookup_namealias did not find", r)
-        return None
+        return {}
 
     for m in matches:
         g=m.groupdict()
@@ -1182,9 +1184,11 @@ def show_fonts(x, category=None):
                 debugprint(*["'" + c + "'" for c in command], flush=True)
 
             try: output=run(command, capture_output=True)
-            except FileNotFoundError: print(""); continue 	# No ImageMagick
-            except KeyboardInterrupt: exit(1)                   # Exit on ^C
-            except ValueError:                                  # Handle NULL
+            except FileNotFoundError: print(""); continue   # No ImageMagick
+            except KeyboardInterrupt: exit(1)               # Exit on ^C
+            except (ValueError, TypeError):
+                # ValueError occurs on NULL,
+                # TypeError from Python <3.7 which did not have capture_output
                 if double_text: print("") 
                 print("", flush=True)
                 continue
@@ -1995,8 +1999,10 @@ atexit.register(cleanup)		       	# When exiting, cleanup sixels
 # Python3 defaults to dying horribly on simple things like print('\u2020')
 import sys
 if sys.stdout:
-    sys.stdout.reconfigure(errors='replace') 	# Print a ? instead of dying.
-
+    try:
+        sys.stdout.reconfigure(errors='replace') # Print a ? instead of dying.
+    except AttributeError:
+        pass                    	       # Python<3.7 cannot reconfigure.
 
 ### Run the main routine
 try:

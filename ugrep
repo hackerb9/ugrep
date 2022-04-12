@@ -1061,7 +1061,7 @@ def show_fonts(x, category=None):
     # (Dupes often caused by multiple point sizes of a bitmap font). 
     fclistcmd="fc-list :charset=" + x
     fclistcmd+=" -f '%{family[0]}\t%{style[0]}\t%{file}\n'"
-    fclistcmd+=" | cat -n | sort -k2,3 -u | sort -n | cut -f2-"
+    fclistcmd+=" | cat -n | sort -t'\t' -k2,3 -u | sort -n | cut -f2-"
 
     try: fonts = getoutput(fclistcmd)
     except FileNotFoundError: print(""); return 	# No FontConfig
@@ -1079,7 +1079,7 @@ def show_fonts(x, category=None):
             count=count+1
             debugprint(count, filename, family, style)
 
-        # Don't print the style if it is just "Regular"
+        # Don't print the style name if it is just "Regular"
         if style == "Regular" or style == "Roman" or style == "Book":
             style = ""
 
@@ -1176,7 +1176,7 @@ def show_fonts(x, category=None):
                       "-compose", "over",
                       "-composite",
                       "+dither",  
-                      "-colors", "4", 	# Faster sixels by reducing colors
+                      "-colors", "16", 	# Faster sixels by reducing colors
                       "sixel:-" ]
             if debug:
                 debugprint(*["'" + c + "'" for c in command], flush=True)

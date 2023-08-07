@@ -78,9 +78,10 @@ Usage:
               -w:  Match only whole words:		ugrep -w pi
               -c:  Show each character in a string:	ugrep -c "(ﾟ∀ﾟ)"
               -l:  List installed fonts that include matching characters.
-             	   -ll: Also includes style variants (bold, italic,...)
+             	   -ll: Also includes style variants (bold, italic,...).
         	   -L scale:  Scale font examples from 2 to 8x.
-    -x, -x2, -x3:  Show example usage.
+        	   -m:  Only list monospace fonts.
+    -x, -x2, -x3:  Show usage examples.
 
        <character> A single character; implies -c:	ugrep ☙
 
@@ -91,8 +92,6 @@ Usage:
   <character name> A Unicode name (as a regex), e.g.:	ugrep alchemical
 
 <character string> One or more characters. e.g.: 	ugrep -c "( ͡° ͜ʖ ͡°)"
-
-Try 'ugrep --examples' to see typical usage examples.
 """, end='' )
 
 def examples():
@@ -221,6 +220,8 @@ def main():
         help='show each character in a string, e.g., ugrep -c "(ﾟ∀ﾟ)"')
     parser.add_argument('-l', '--list-fonts', action="store_true",
         help='list fonts that include a glyph for a given character')
+    parser.add_argument('-m', '--monospace-fonts-only', action="store_true",
+        help='when listing fonts, only show fixed-width fonts')
     parser.add_argument('-ll', '--list-fonts-long', action="store_true",
         help='list all fonts, including variants like italic, bold, etc.')
     # XXX Argh. argparse gives an error on 'ugrep -L foo' but works for 'ugrep foo -L'.
@@ -237,6 +238,10 @@ def main():
 
     args = parser.parse_args()
 
+    # -m restricts listed fonts to monospace (implies -l)
+    if args.monospace_fonts_only:
+        args.list_fonts = True
+
     # -ll (list_fonts_long) same as -l but shows all font variants
     if args.list_fonts_long:
         args.list_fonts = True
@@ -245,7 +250,7 @@ def main():
     if args.list_fonts and not args.fonts_scale:
         args.fonts_scale = 1
 
-    # if -L is like -l (list fonts), but with larger images.
+    # -L is like -l (list fonts), but with larger images.
     if args.fonts_scale:
         args.list_fonts = True;
 
@@ -1062,7 +1067,7 @@ def show_fonts(x, category=None):
     # Find fonts that contain x, remove dupes, and put back in original order.
     # (Dupes often caused by multiple point sizes of a bitmap font). 
     fclistcmd="fc-list :charset=" + x
-    fclistcmd+=" -f '%{family[0]}\t%{style[0]}\t%{file}\n'"
+    fclistcmd+=" -f '%{family[0]}\t%{style[0]}\t%{file}\t%{spacing}\n'"
     fclistcmd+=" | cat -n | sort -t'\t' -k2,3 -u | sort -n | cut -f2-"
 
     try: fonts = getoutput(fclistcmd)
@@ -1074,12 +1079,12 @@ def show_fonts(x, category=None):
     
     if debug: count=0
     for f in fonts.splitlines():
-        try: (family, style, filename) = f.split('\t')
+        try: (family, style, filename, spacing) = f.split('\t')
         except: continue
 
         if debug:
             count=count+1
-            debugprint(count, filename, family, style)
+            debugprint(count, filename, family, style, spacing)
 
         # Don't print the style name if it is just "Regular"
         if style == "Regular" or style == "Roman" or style == "Book":
@@ -1088,6 +1093,10 @@ def show_fonts(x, category=None):
         # If we're not doing a long listing, then skip variant styles
         if not args.list_fonts_long:
             if style != "": continue
+
+        # If user requested monospace fonts, then skip proportional fonts
+        if args.monospace_fonts_only:
+            if spacing == "": continue
 
         famstr="%(family)s %(style)s" % locals()
         

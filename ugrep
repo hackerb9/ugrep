@@ -1208,8 +1208,8 @@ def show_fonts(x, category=None):
                 print("", flush=True)
                 continue
 
-            # Workaround ImageMagick bug by deleting graphics newline (-) at end
-            output.stdout.replace(b'-\x1b\\', b'\x1b\\') 
+            # Workaround ImageMagick bug: graphics newline '-' for '\n'
+            output.stdout = output.stdout.replace(b'-\x1B\\', b'\x1B\\\n')
 
             print(flush=True, end='')   # Send any pending output to stdout
 

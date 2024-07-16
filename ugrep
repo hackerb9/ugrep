@@ -976,8 +976,8 @@ def printonematch(m):
         foundone=True
         print("   ", end='') 	# Indent for MacOS
         maybe_open_box(codepoint, name, category)
-        if not isprint(category): c="\ufffd" # "Replacement Character"
-        if iscombining(category): print('\u25cc', end='') # "Dotted circle"
+        if not isprint(category): c="\uFFFD" # "Replacement Character"
+        if iscombining(category): print('\u25CC', end='') # "Dotted circle"
         if should_box(codepoint, name, category):
             try: c=curses.black_on_yellow(c)
             except NameError: pass
@@ -1152,8 +1152,8 @@ def show_fonts(x, category=None):
             except NameError:
                 previous_line = esc + '[A' 	# Just presume VT100
 
-            # Escape sequence to print double size text (DECDHL)
-            # (Previous line is so we'll be positioned for sixels)
+            # Escape sequence to print double size text (DECDHL).
+            # (previous_line is so we'll be positioned for sixels)
             if double_text:
                 famstr = esc + '#3' + famstr + '\n' \
                     + esc + '#4' + famstr + previous_line
@@ -1169,7 +1169,7 @@ def show_fonts(x, category=None):
         if not is_sixel_capable():
             print("")           # stdout is not a tty, so  send a newline
         else:
-	    # stdout is a terminal, show the glyph as sixels
+	    # stdout is a sixel terminal, show the glyph bitmaps
             (foreground, background) = get_term_colors()
             (width, height) = get_cell_size()   # Character cell font size
             height = args.fonts_scale * height  # Increase size of font (maybe).
@@ -1183,7 +1183,7 @@ def show_fonts(x, category=None):
             codepoint=chr(int(x,16))
 
             # If it's a combining character, add a dotted circle to combine with
-            if iscombining(category): codepoint='\u25cc'+codepoint
+            if iscombining(category): codepoint='\u25CC'+codepoint
 
             command=[ "convert",
                       "-size",
@@ -1237,9 +1237,15 @@ def is_sixel_capable():
         if is_sixel_capable.cached: return is_sixel_capable.cached
     except AttributeError:
         is_sixel_capable.cached=False
+        return False
+
+    # Force sixels on if --pipe-sixels was given.
+    if args.pipe_sixels:
+        is_sixel_capable.cached=True
+        return True
 
     # If stdin or stdout is not a terminal, don't send sixels
-    if not args.pipe_sixels and ( not isatty(0) or not isatty(1) ):
+    if not isatty(0) or not isatty(1):
         is_sixel_capable.cached=False
         return False
 
@@ -1248,9 +1254,9 @@ def is_sixel_capable():
     if "4" in results:
         is_sixel_capable.cached=True
         return True
-
-    is_sixel_capable.cached=False
-    return False
+    else:
+        is_sixel_capable.cached=False
+        return False
 
 def get_rows_cols():
     # Return number of (rows, columns) in current terminal window
@@ -1894,7 +1900,7 @@ def terminal_query(seq, delimiter=None, timeout=0.2):
     character DELIMITER is read or TIMEOUT seconds is reached. 
     Input that is read is returned to the calling function. 
 
-    If TIMEOUT is not specified, it default to 0.2.
+    If TIMEOUT is not specified, it defaults to 0.2s. (Minimum is 0.1).
     If DELIMITER is not specified, it defaults to the last character of SEQ.
 
     If neither DELIMITER nor SEQ are specified, then "" is returned.
@@ -1903,6 +1909,10 @@ def terminal_query(seq, delimiter=None, timeout=0.2):
     import sys, copy, posix
 
     if not delimiter and not seq:
+        return ""
+
+    # Make sure we can query the terminal via stdin and stderr.
+    if not isatty(0) or not isatty(2) :
         return ""
 
     if not seq: seq=""          # Allow simply reading from terminal.
@@ -1933,13 +1943,13 @@ def terminal_query(seq, delimiter=None, timeout=0.2):
     cflag = cflag | CS8        # Set 8-bit character size
 
     ## Polling read (MIN == 0, TIME == 0)  See termios(3).
-    cc[VMIN] = 0                
+    cc[VMIN] = 0
     cc[VTIME] = 0
     pollingread = copy.deepcopy([ iflag, oflag, cflag, lflag, ispeed, ospeed, cc ])
     
     ## Read with timeout (MIN == 0, TIME > 0)  See termios(3).
-    cc[VMIN] = 0                
-    cc[VTIME] = int(timeout*10+0.5) # Timeout is in tenths of a second 
+    cc[VMIN] = 0
+    cc[VTIME] = max(int(timeout*1+0.5), 1) # VTIME is in tenths of a second 
     readwithtimeout = copy.deepcopy([ iflag, oflag, cflag, lflag, ispeed, ospeed, cc ])
 
     # Drain stdin in case there's junk from a prev req in there already. 
@@ -1975,7 +1985,7 @@ def terminal_query(seq, delimiter=None, timeout=0.2):
         if (c == delimiter):
             debugprint("Exited on delimiter", repr(c))
         else:
-            debugprint("Exited after timeout", repr(c))
+            debugprint("Exited after timeout of", cc[VTIME]/10, "seconds")
 
     return(output)
 

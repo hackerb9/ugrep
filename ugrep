@@ -290,7 +290,7 @@ def main():
     # Must be hexadecimal.
     for arg in args.characters:
         if arg.strip("Uu+0123456789ABCDEFXabcdefx[]-.*?^$(){,}"):
-            debugprint("Stopped looking for hex/regex arguments at", arg)
+            debugprint("Determined to not be hex/regex at", arg)
             break
         # Show matches in UnicodeData.txt for each hex codepoint
         if not showcodepoint(arg):
@@ -303,7 +303,7 @@ def main():
 
     # Also look up the entire argv[] as a character name or alias. 
     # Must NOT begin with U+ or 0x.
-    if not match("(?i)^U+|^0x", args.characters[0]):
+    if not match(r"(?i)^U\+|^0x", args.characters[0]):
         s=makeregexcharname(args.characters)
         if printmatches(s):
             debugprint("argv[] array matched as a whole.")
@@ -1949,7 +1949,7 @@ def terminal_query(seq, delimiter=None, timeout=0.2):
     
     ## Read with timeout (MIN == 0, TIME > 0)  See termios(3).
     cc[VMIN] = 0
-    cc[VTIME] = max(int(timeout*1+0.5), 1) # VTIME is in tenths of a second 
+    cc[VTIME] = max(int(timeout*10+0.5), 1) # VTIME is in tenths of a second 
     readwithtimeout = copy.deepcopy([ iflag, oflag, cflag, lflag, ispeed, ospeed, cc ])
 
     # Drain stdin in case there's junk from a prev req in there already. 

@@ -1491,6 +1491,7 @@ def loaducd():
         try:
             ucd=open(f).read()
             debugprint("Found data file at " + f)
+            break
         except:
             continue
 

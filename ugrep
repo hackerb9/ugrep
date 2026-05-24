@@ -69,7 +69,7 @@ except ImportError:
 
 
 def usage():
-    print("""\
+    print(r"""\
 ugrep: find unicode characters based on their names or codepoints
 
 Usage: 
@@ -96,7 +96,7 @@ Usage:
 """, end='' )
 
 def examples():
-    print("""\
+    print(r"""\
 # You can search by character name.
     $ ugrep heart
     ☙	U+2619	REVERSED ROTATED FLORAL HEART BULLET
@@ -122,7 +122,7 @@ def examples():
     )
 
 def examples2():
-    print("""\
+    print(r"""\
 # Use -w to match only whole words.
     $ ugrep -w "R"			# Equivalent to "\\bR\\b"
     R	U+0052  LATIN CAPITAL LETTER R
@@ -145,7 +145,7 @@ def examples2():
     )
 
 def examples3():
-    print("""\
+    print(r"""\
 # Regex ^ and $ work, mostly
     $ ugrep ^x				
     ⊻	U+22BB	XOR
@@ -153,7 +153,7 @@ def examples3():
 
 # ugrep finds aliases (and puts them in parens)
     $ ugrep backslash
-    \\	U+005C	REVERSE SOLIDUS (backslash)
+    \	U+005C	REVERSE SOLIDUS (backslash)
 
 # Use -l to see which fonts are installed that can render a certain character
     $ ugrep -l math left tortoise
@@ -319,8 +319,7 @@ def showcodepoint(c):
     return printmatches(s)
               
 def showcjk(x):
-    """
-    Prints a line for a codepoint x (hexadecimal string) using the data
+    r"""Prints a line for a codepoint x (hexadecimal string) using the data
     from Unihan_Readings.txt. If that file is not available or if the
     codepoint is not in a CJK region, then return False.
     """
@@ -372,7 +371,7 @@ def showcjk(x):
     return True
 
 def isunihan(x):
-    """
+    r"""
     Given a codepoint x, e.g. "U+8000", return True if x is within
     a CJK Unified Ideographs block. Such characters are not defined in
     UnicodeData.txt but can be looked up in Unihan_Readings.txt.
@@ -391,7 +390,7 @@ def isunihan(x):
     
     
 def lookup_readings(cp):
-    """
+    r"""
     Given a hexadecimal string, cp ("2BAC3"), return a dictionary with
     an entry for each line in Unihan_Readings.txt. Example:
     
@@ -464,7 +463,7 @@ def lookup_readings(cp):
     return results
 
 def lookup_namealias(cp):
-    """
+    r"""
     Given a hexadecimal string, cp ("0004"), return a list with
     an element for each line in NameAliases.txt. Example:
     For input "0004", the result is: { 'end of transmission', 'EOT' }
@@ -508,7 +507,7 @@ def lookup_namealias(cp):
     return results
 
 def showcharacterblock(codepoint):
-    """
+    r"""
     Prints a line showing which character block a hex number belongs in.
     If showonecharacter() fails, this can be used to at least print something,
     """
@@ -529,7 +528,7 @@ def showcharacterblock(codepoint):
         
     
 def cp2int(cp):
-    """
+    r"""
     Given a Unicode codepoint as a string (e.g., U+1D0DE)
     convert the hexadecimal number to an integer and return it.
     Throws ValueError if cp is not convertible to an integer.
@@ -546,7 +545,7 @@ def int2cp(x):
     return( "U+%04X" % (x) )
 
 def getblock(x):
-    """
+    r"""
     Given an integer representing a Unicode code point, return its
     block. E.g, U+0041 -> Basic Latin, U+1F675 -> Ornamental Dingbats.
     This is useful to identify characters that are not officially part
@@ -894,7 +893,7 @@ F0000..FFFFF; Supplementary Private Use Area-A
     return ""
 
 def compileit(s):
-    """
+    r"""
     Compile the regular expresion in s, or die trying.
     This is for debugging of our regex generation, not for speed.
     """
@@ -1001,7 +1000,7 @@ def printonematch(m):
     return foundone
 
 def maybe_open_box(*args):
-    """
+    r"""
     Display the next character differently if it is whitespace or has
     some unusual meaning. This is similar to the Unicode charts which
     put some characters in dashed boxes, but for ugrep we mostly only
@@ -1013,7 +1012,7 @@ def maybe_open_box(*args):
         print("\b[", end='')
 
 def maybe_close_box(*args):
-    """
+    r"""
     Display the previous character differently and disable any
     formatting changes (such as color) set by maybe_open_box.
     """
@@ -1023,7 +1022,7 @@ def maybe_close_box(*args):
         print(']', end='')
 
 def should_box(x, name, category):
-    """
+    r"""
     Input: codepoint x, character name, and category. return true if a
     box of some sort should be drawn around the character to distinguish it.
     This is mostly handy for invisible whitespace which is otherwise
@@ -1067,7 +1066,7 @@ def should_box(x, name, category):
     return False
 
 def show_fonts(x, category=None):
-    """
+    r"""
     Given a hexadecimal string representing a Unicode code point, 
     list every installed font that defines a glyph at that code point.
     """
@@ -1279,7 +1278,7 @@ def get_rows_cols():
     return (rows,cols)
 
 def get_cell_size():
-    """
+    r"""
     Inquire from the terminal what its character cell size is.
     Returns a tuple (width, height) in pixels. 
     """
@@ -1344,7 +1343,7 @@ def get_cell_size():
     return get_cell_size.cached
 
 def get_term_colors():
-    """
+    r"""
     Returns a terminals colors as a tuple (foreground, background)
     Handles reversed video by checking mode 5.
     """
@@ -1383,18 +1382,18 @@ def get_term_colors():
     return get_term_colors.cached
 
 def isdifferent(a, b):
-    """Given two strings A & B, determine if B is different enough
-       from A that we don't need to print it as well. "Enough" means
-       "adds significant new information". For example, the following
-       would return False:
-    
-       "LATIN CAPITAL LETTER A WITH GRAVE", "LATIN CAPITAL LETTER A GRAVE"
+    r"""
+    Given two strings A & B, determine if B is different enough
+    from A that we don't need to print it as well. "Enough" means
+    "adds significant new information". For example, the following
+    would return False:
 
-       Note that order matters. For example,
+    "LATIN CAPITAL LETTER A WITH GRAVE", "LATIN CAPITAL LETTER A GRAVE"
 
-       "BROKEN BAR", "BROKEN VERTICAL BAR" 	Should return True
-       "BROKEN VERTICAL BAR", "BROKEN BAR" 	Should return False
+    Note that order matters. For example,
 
+    "BROKEN BAR", "BROKEN VERTICAL BAR" 	Should return True
+    "BROKEN VERTICAL BAR", "BROKEN BAR" 	Should return False
     """
     a=a.upper()
     b=b.upper()
@@ -1525,7 +1524,7 @@ def loaducd():
 
 readings = None
 def loadreadings():
-    """
+    r"""
     Find the Unihan_Readings.txt file and load it up into the
     'readings' global variable. Note that the file may be compressed
     with bzip2. 
@@ -1595,7 +1594,8 @@ def loadreadings():
 
 namealiases = None
 def loadnamealiases():
-    """Find the NameAliases.txt file and load it up into the 'namealiases'
+    r"""
+    Find the NameAliases.txt file and load it up into the 'namealiases'
     global variable. This is useful for a handful of aliases which
     should have been in UnicodeData.txt but are not. 
 
@@ -1735,8 +1735,10 @@ def makeregexcodepoint(cp):
 
 
 def makeregexeither(wordsorcp):
-    """Make a regular expression to search for a hexadecimal codepoint 
-     or for a character name / alias."""
+    r"""
+    Make a regular expression to search for a hexadecimal codepoint 
+    or for a character name / alias.
+    """
 
     r=makeregexcharname(wordsorcp)
 
@@ -1894,7 +1896,7 @@ def cleanup():
 ## See man termios(3) for details on tcgetattr
 from termios import *
 def terminal_query(seq, delimiter=None, timeout=0.2):
-    """
+    r"""
     Given an escape SEQuence, and optionally a DELIMITER and a TIMEOUT,
     print SEQ to stderr and read a response from stdin until the
     character DELIMITER is read or TIMEOUT seconds is reached. 
@@ -1904,7 +1906,6 @@ def terminal_query(seq, delimiter=None, timeout=0.2):
     If DELIMITER is not specified, it defaults to the last character of SEQ.
 
     If neither DELIMITER nor SEQ are specified, then "" is returned.
-
     """
     import sys, copy, posix
 
@@ -2013,7 +2014,7 @@ def terminal_query_list(seq, delimiter=None, timeout=0.2):
     return output
 
 def terminal_request_mode(n):
-    """
+    r"""
     DECRQM: Request info on a mode by number.
 
     Mode  3 is DECCOLM (132 column mode)

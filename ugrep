@@ -69,8 +69,7 @@ except ImportError:
 
 
 def usage():
-    print(r"""\
-ugrep: find unicode characters based on their names or codepoints
+    print(r"""ugrep: find unicode characters based on their names or codepoints
 
 Usage: 
     ugrep [-wlx] [-L n] <char> | <codepoint ...> | <char name>
@@ -96,8 +95,7 @@ Usage:
 """, end='' )
 
 def examples():
-    print(r"""\
-# You can search by character name.
+    print(r"""# You can search by character name.
     $ ugrep heart
     ☙	U+2619	REVERSED ROTATED FLORAL HEART BULLET
     ❣	U+2763	HEAVY HEART EXCLAMATION MARK ORNAMENT
@@ -122,8 +120,7 @@ def examples():
     )
 
 def examples2():
-    print(r"""\
-# Use -w to match only whole words.
+    print(r"""# Use -w to match only whole words.
     $ ugrep -w "R"			# Equivalent to "\\bR\\b"
     R	U+0052  LATIN CAPITAL LETTER R
     ℛ	U+211B  SCRIPT CAPITAL R (Script r)
@@ -145,8 +142,7 @@ def examples2():
     )
 
 def examples3():
-    print(r"""\
-# Regex ^ and $ work, mostly
+    print(r"""# Regex ^ and $ work, mostly
     $ ugrep ^x				
     ⊻	U+22BB	XOR
     ⌧	U+2327	X IN A RECTANGLE BOX (clear key)

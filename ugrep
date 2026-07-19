@@ -1088,7 +1088,7 @@ def show_fonts(x, category=None):
     if debug: count=0
     for f in fonts.splitlines():
         try: (family, style, filename, spacing) = f.split('\t')
-        except: continue
+        except Exception: continue
 
         if debug:
             count=count+1
@@ -1292,7 +1292,7 @@ def get_cell_size():
         try:
             get_cell_size.cached = ( int(output[2]), int(output[1]) )
             return get_cell_size.cached
-        except:
+        except Exception:
             # Response got mangled somehow. Ignore it.
             pass
         
@@ -1462,7 +1462,7 @@ def isdifferent(a, b):
             return False
         else:
             return True
-    except:
+    except Exception:
         # regex should never fail, but if it does, we don't care.
         return True
 
@@ -1492,7 +1492,7 @@ def loaducd():
             ucd=open(f).read()
             debugprint("Found data file at " + f)
             break
-        except:
+        except Exception:
             continue
 
     # Sanity check: did we find the UnicodeData.txt file?
